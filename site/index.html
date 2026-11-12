@@ -1,0 +1,281 @@
+<title>Red Gold News Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a broadcast rundown. Each section is a numbered block from the real
+   10-block episode order, so the numbers tell students where their piece airs. */
+:root {
+  --bg: #f6f4f1;
+  --surface: #ffffff;
+  --ink: #1d1718;
+  --muted: #6b6061;
+  --line: #e2dcd8;
+  --red: #a3172b;
+  --red-ink: #ffffff;
+  --gold: #b8860b;
+  --gold-soft: #f6ecd2;
+  --flag: #8a4b00;
+  --flag-bg: #fff1dc;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151112; --surface: #1f191a; --ink: #f2ece8; --muted: #a89c9a; --line: #362d2e;
+    --red: #d64557; --red-ink: #ffffff; --gold: #e3b341; --gold-soft: #33290f;
+    --flag: #ffc372; --flag-bg: #3a2810; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151112; --surface: #1f191a; --ink: #f2ece8; --muted: #a89c9a; --line: #362d2e;
+  --red: #d64557; --red-ink: #ffffff; --gold: #e3b341; --gold-soft: #33290f;
+  --flag: #ffc372; --flag-bg: #3a2810; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+a { color: var(--red); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Masthead */
+.mast { background: var(--red); color: var(--red-ink); border-bottom: 4px solid var(--gold); }
+.mast .wrap { padding-block: 22px 20px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: .18em; text-transform: uppercase; opacity: .9; }
+.ep { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 6vw, 46px); line-height: 1.02; margin: 4px 0 0; text-wrap: balance; }
+.mast-meta { font-family: var(--mono); font-size: 12px; text-align: right; opacity: .9; }
+@media (max-width: 560px) { .mast-meta { text-align: left; } }
+
+/* Week strip */
+.week { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 20px 0 6px; }
+.wd { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-width: 0; }
+.wd b { display: block; font-family: var(--display); font-size: 18px; font-weight: 600; letter-spacing: .02em; }
+.wd span { font-size: 13px; color: var(--muted); }
+.wd.off { background: transparent; border-style: dashed; }
+.wd.off b { color: var(--muted); text-decoration: line-through; }
+.intro { color: var(--muted); font-size: 15px; margin: 8px 0 0; max-width: 68ch; }
+
+/* Rundown blocks */
+.block { margin-top: 34px; }
+.block-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--ink); padding-bottom: 6px; flex-wrap: wrap; }
+.slot { font-family: var(--mono); font-size: 12px; font-weight: 600; background: var(--ink); color: var(--bg); padding: 2px 7px; border-radius: 3px; letter-spacing: .04em; }
+.block-head h2 { font-family: var(--display); font-weight: 700; font-size: 28px; margin: 0; letter-spacing: .01em; text-transform: uppercase; line-height: 1.1; }
+.block-head .who { margin-left: auto; font-size: 14px; color: var(--muted); }
+.sub { font-family: var(--display); font-weight: 600; font-size: 19px; text-transform: uppercase; letter-spacing: .04em; margin: 22px 0 8px; color: var(--muted); }
+
+/* Script box */
+.script { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin-top: 14px; }
+.script-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.script-top .label { font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.script-body { padding: 12px 14px 14px; font-size: 17px; max-width: 72ch; }
+.script-body p { margin: 0 0 8px; }
+.script-body p:last-child { margin-bottom: 0; }
+
+button.copy { font: 600 14px var(--body); background: var(--gold-soft); color: var(--ink); border: 1px solid var(--gold); border-radius: 999px; padding: 5px 14px; cursor: pointer; min-height: 32px; }
+button.copy:hover { background: var(--gold); color: #1d1718; }
+button.copy.done { background: var(--gold); color: #1d1718; }
+
+/* Weather tiles */
+.wx { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 14px; }
+.wx-day { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.wx-day h3 { font-family: var(--display); font-size: 20px; margin: 0; font-weight: 600; }
+.wx-cond { font-size: 14px; color: var(--muted); min-height: 2.6em; margin: 2px 0 6px; }
+.temps { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 15px; display: flex; gap: 12px; }
+.temps .hi { font-size: 24px; font-weight: 600; color: var(--red); line-height: 1; }
+.temps .lo { align-self: flex-end; color: var(--muted); }
+.rain { margin-top: 8px; font-size: 13px; color: var(--muted); }
+.bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--gold); }
+.wx-day.na { border-style: dashed; background: transparent; }
+
+/* Menu table */
+.tbl-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 560px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.day { font-family: var(--display); font-size: 18px; font-weight: 600; white-space: nowrap; }
+
+/* Leads */
+.leads { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+.lead { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: start; }
+.lead .when { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.lead .title { font-weight: 600; font-size: 17px; overflow-wrap: anywhere; }
+.lead .detail { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
+.lead a.src { font-size: 14px; white-space: nowrap; }
+.lead.flag { background: var(--flag-bg); border-color: var(--flag); }
+.chip { display: inline-block; font: 600 12px var(--body); padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; vertical-align: 2px; margin-left: 6px; }
+.chip.flag { color: var(--flag); }
+.chip.si { color: var(--gold); }
+.flag-note { grid-column: 1 / -1; font-size: 14px; color: var(--flag); font-weight: 600; }
+
+.board { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
+.board h3 { font-family: var(--display); font-size: 21px; margin: 0; font-weight: 600; }
+.board .meta { font-size: 14px; color: var(--muted); margin: 2px 0 8px; }
+.items { list-style: none; padding: 0; margin: 0; font-size: 15px; }
+.items li { display: grid; grid-template-columns: 4.2em minmax(0, 1fr); gap: 8px; padding: 5px 0; border-top: 1px solid var(--line); }
+.items .n { font-family: var(--mono); font-size: 12px; color: var(--muted); padding-top: 3px; }
+.pending { color: var(--flag); font-weight: 600; font-size: 14px; }
+
+.notes { margin-top: 12px; font-size: 14px; color: var(--muted); border-left: 3px solid var(--gold); padding: 2px 0 2px 10px; }
+.notes p { margin: 2px 0; overflow-wrap: anywhere; }
+.err { color: var(--flag); font-weight: 600; }
+.empty { color: var(--muted); font-style: italic; }
+
+footer { margin: 44px 0 30px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+footer p { margin: 4px 0; max-width: 80ch; }
+.loading { padding: 40px 0; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { button.copy { transition: background .15s; } }
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <div>
+      <div class="brand">Red Gold News · Story Desk</div>
+      <h1 class="ep" id="ep">This week's episode</h1>
+    </div>
+    <div class="mast-meta" id="gen">Jimmy Carter Early College HS</div>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+  <p class="loading" id="loading">Loading this week's rundown…</p>
+</main>
+
+<script>
+(function () {
+  const app = document.getElementById("app");
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const scripts = {};
+
+  function copyBtn(id) {
+    return `<button class="copy" type="button" data-copy="${id}">Copy script</button>`;
+  }
+  function scriptBox(id, label, lines) {
+    scripts[id] = lines.join("\n");
+    return `<div class="script"><div class="script-top"><span class="label">${esc(label)}</span>${copyBtn(id)}</div>
+      <div class="script-body" id="s-${id}">${lines.map((l) => `<p>${esc(l)}</p>`).join("")}</div></div>`;
+  }
+  function notes(list) {
+    return list && list.length ? `<div class="notes">${list.map((n) => `<p>${esc(n)}</p>`).join("")}</div>` : "";
+  }
+  function head(slot, title, who) {
+    return `<div class="block-head"><span class="slot">BLOCK ${slot}</span><h2>${esc(title)}</h2><span class="who">${esc(who)}</span></div>`;
+  }
+
+  function render(d) {
+    document.getElementById("ep").textContent = "Episode of " + d.episode_label;
+    document.getElementById("gen").innerHTML = `Updated ${esc(d.generated_label)}<br>Recorded Fri or Mon · airs as Monday`;
+
+    const closed = Object.fromEntries((d.closures || []).map((c) => [c.date, c.reason]));
+    const mon = new Date(d.episode_date + "T12:00:00");
+    const names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    let week = `<div class="week" aria-label="School days this week">`;
+    names.forEach((n, i) => {
+      const day = new Date(mon); day.setDate(mon.getDate() + i);
+      const iso = day.toISOString().slice(0, 10);
+      const off = closed[iso];
+      week += `<div class="wd${off ? " off" : ""}"><b>${n.slice(0, 3)}</b><span>${day.toLocaleDateString("en-US", { month: "short", day: "numeric" })}${off ? " · " + esc(off) : ""}</span></div>`;
+    });
+    week += `</div><p class="intro">Everything here is a starting point. Check every fact against the linked source before it goes in your script. Items marked <span class="chip flag" style="margin-left:0">See adviser</span> are sensitive: talk to the adviser before covering them. Write your script on the <a href="https://claude.ai/artifact/Rv5Ari6FbU4FZqP1CxvQr6" target="_blank" rel="noopener">Episode Script</a> page.</p>`;
+
+    // Block 3: News
+    const n = d.news || {};
+    let news = `<section class="block" id="news">${head(3, "News block", "Anchors")}`;
+    if (n.error) news += `<p class="err">${esc(n.error)}</p>`;
+    else {
+      if (n.closures && n.closures.length) {
+        news += `<h3 class="sub">No school</h3><ul class="leads">${n.closures.map((c) => `<li class="lead"><div><div class="title">${esc(c)}</div></div></li>`).join("")}</ul>`;
+      }
+      news += `<h3 class="sub">District calendar leads</h3>`;
+      if (!n.leads || !n.leads.length) news += `<p class="empty">Nothing on the district calendar this week. Ask campus staff for school news.</p>`;
+      else news += `<ul class="leads">${n.leads.map((l) => `
+        <li class="lead${l.flagged ? " flag" : ""}">
+          <div><div class="when">${esc(l.when)}</div><div class="title">${esc(l.title)}${l.flagged ? `<span class="chip flag">See adviser</span>` : ""}</div></div>
+          <a class="src" href="${esc(l.url)}" target="_blank" rel="noopener">Calendar entry ↗</a>
+          ${l.detail ? `<div class="detail">${esc(l.detail)}</div>` : ""}
+          ${l.flagged ? `<div class="flag-note">Sensitive topic. Do not write this one until you have talked with the adviser.</div>` : ""}
+        </li>`).join("")}</ul>`;
+      if (n.board && n.board.length) {
+        news += `<h3 class="sub">School board meets this week</h3>`;
+        n.board.forEach((m) => {
+          news += `<div class="board"><h3>${esc(m.title)}</h3><div class="meta">${esc(m.when)} · <a href="${esc(m.url)}" target="_blank" rel="noopener">${m.agenda_pending ? "BoardBook" : "Full agenda"} ↗</a>${m.posted ? " · posted " + esc(m.posted) : ""}</div>`;
+          if (m.agenda_pending) news += `<p class="pending">The agenda isn't posted yet. Texas requires it at least 72 hours before the meeting, so check BoardBook again before writing.</p>`;
+          if (m.items && m.items.length) {
+            news += `<ul class="items">${m.items.map((it) => `<li><span class="n">${esc(it.number)}</span><span>${esc(it.text)}${it.flagged ? `<span class="chip flag">See adviser</span>` : it.student_interest ? `<span class="chip si">Student interest</span>` : ""}</span></li>`).join("")}</ul>`;
+          }
+          news += `</div>`;
+        });
+      }
+      news += notes(n.notes);
+    }
+    news += `</section>`;
+
+    // Block 5: Weather
+    const w = d.weather || {};
+    let wx = `<section class="block" id="weather">${head(5, "Weather", "On camera + forecast graphics")}`;
+    if (w.error) wx += `<p class="err">${esc(w.error)}</p>`;
+    else if (!w.days || !w.days.length) wx += `<p class="empty">No school days this week, so no forecast.</p>`;
+    else {
+      wx += `<div class="wx">${w.days.map((f) => f.available ? `
+        <div class="wx-day"><h3>${esc(f.day)}${f.extended ? ` <span class="chip si" title="From NWS grid data. Can still change.">Early outlook</span>` : ""}</h3><div class="wx-cond">${esc(f.conditions)}</div>
+          <div class="temps"><span class="hi">${f.high}°</span><span class="lo">Low ${f.low ?? "–"}°</span></div>
+          <div class="rain">Rain chance ${f.rain || 0}%<div class="bar"><i style="width:${Math.min(100, f.rain || 0)}%"></i></div></div></div>`
+        : `<div class="wx-day na"><h3>${esc(f.day)}</h3><div class="wx-cond">Forecast not out yet</div></div>`).join("")}</div>`;
+      if (w.script && w.script.length) wx += scriptBox("weather", "Weather read", w.script);
+      wx += notes([`Source: ${w.source}, updated ${w.updated}.`].concat(w.notes || []));
+    }
+    wx += `</section>`;
+
+    // Block 8: Menu
+    const m = d.menu || {};
+    let menu = `<section class="block" id="menu">${head(8, "Menu", "Voiceover + menu graphics")}`;
+    if (m.error) menu += `<p class="err">${esc(m.error)}</p>`;
+    else if (!m.days || !m.days.length) menu += `<p class="empty">No menu for this week yet.</p>`;
+    else {
+      menu += `<div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Breakfast</th><th>Lunch</th><th>Sides</th></tr></thead><tbody>
+        ${m.days.map((x) => `<tr><td class="day">${esc(x.day)}</td><td>${esc(x.breakfast)}</td><td>${esc(x.entree)}</td><td>${esc((x.sides || []).join(", "))}</td></tr>`).join("")}
+        </tbody></table></div>`;
+      menu += scriptBox("menu", "Menu voiceover read", m.script);
+      if (m.canva && m.canva.length) menu += scriptBox("canva", "Menu for Canva graphic", m.canva).replace("Copy script", "Copy for Canva");
+    }
+    if (m.sources) menu += notes(m.sources.map((s) => "Source: " + s).concat(m.notes || []));
+    menu += `</section>`;
+
+    const foot = `<footer>
+      <p>Sources: La Joya ISD district calendar (lajoyaisd.com), BoardBook public meetings, the LJISD Child Nutrition high school menu, and the National Weather Service.</p>
+      <p>The episode order: anchor open, show open, news (block 3), bumper, weather (block 5), bumper, student voices, menu (block 8), anchor close, outro.</p>
+    </footer>`;
+
+    app.innerHTML = week + news + wx + menu + foot;
+  }
+
+  app.addEventListener("click", async (e) => {
+    const b = e.target.closest("button.copy");
+    if (!b) return;
+    const id = b.dataset.copy;
+    try {
+      await navigator.clipboard.writeText(scripts[id]);
+      b.textContent = "Copied"; b.classList.add("done");
+      setTimeout(() => { b.textContent = "Copy script"; b.classList.remove("done"); }, 1800);
+    } catch (err) {
+      const el = document.getElementById("s-" + id);
+      const r = document.createRange(); r.selectNodeContents(el);
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      b.textContent = "Selected. Press Ctrl+C";
+    }
+  });
+
+  fetch("week.json", { cache: "no-store" })
+    .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(render)
+    .catch((err) => {
+      app.innerHTML = `<p class="err">This week's data didn't load (${esc(err.message)}). Ask the adviser to republish the page.</p>`;
+    });
+})();
+</script>

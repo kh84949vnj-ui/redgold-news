@@ -1,0 +1,233 @@
+{
+  "episode_date": "2026-11-16",
+  "episode_label": "Monday, November 16, 2026",
+  "generated": "2026-11-12T15:39-06:00",
+  "generated_label": "Thursday, November 12 at 3:39 PM",
+  "school_days": [
+    {
+      "date": "2026-11-16",
+      "day": "Monday"
+    },
+    {
+      "date": "2026-11-17",
+      "day": "Tuesday"
+    },
+    {
+      "date": "2026-11-18",
+      "day": "Wednesday"
+    },
+    {
+      "date": "2026-11-19",
+      "day": "Thursday"
+    },
+    {
+      "date": "2026-11-20",
+      "day": "Friday"
+    }
+  ],
+  "closures": [],
+  "prior_break": null,
+  "weather": {
+    "script": [
+      "Let's take a look at the weather through Thursday!",
+      "We're starting the week off mild on Monday, with a high of 74 degrees, partly sunny skies, a morning low of 65, and a 15 percent chance of rain showers.",
+      "Tuesday stays about the same, with a high of 72, partly sunny skies, a morning low of 59, and no rain expected.",
+      "Wednesday warms up to 75 degrees, with mostly cloudy skies, a morning low of 62, and no rain expected.",
+      "Thursday warms up to 80 degrees, with mostly cloudy skies, a morning low of 67, and an 18 percent chance of rain.",
+      "Have a great week, RedWolves!"
+    ],
+    "days": [
+      {
+        "day": "Monday",
+        "date": "2026-11-16",
+        "high": 74,
+        "low": 65,
+        "rain": 15,
+        "conditions": "Slight Chance Rain Showers then Partly Sunny",
+        "available": true,
+        "extended": false
+      },
+      {
+        "day": "Tuesday",
+        "date": "2026-11-17",
+        "high": 72,
+        "low": 59,
+        "rain": 6,
+        "conditions": "Partly Sunny",
+        "available": true,
+        "extended": false
+      },
+      {
+        "day": "Wednesday",
+        "date": "2026-11-18",
+        "high": 75,
+        "low": 62,
+        "rain": 5,
+        "conditions": "Mostly Cloudy",
+        "available": true,
+        "extended": false
+      },
+      {
+        "day": "Thursday",
+        "date": "2026-11-19",
+        "high": 80,
+        "low": 67,
+        "rain": 18,
+        "conditions": "mostly cloudy",
+        "available": true,
+        "extended": true
+      },
+      {
+        "day": "Friday",
+        "date": "2026-11-20",
+        "high": null,
+        "low": null,
+        "rain": null,
+        "conditions": "",
+        "available": false,
+        "extended": false
+      }
+    ],
+    "updated": "Thursday, November 12 at 3:30 PM",
+    "source": "National Weather Service, La Joya TX",
+    "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
+    "notes": [
+      "Thursday comes from NWS grid data because the 7-day text forecast doesn't reach it yet. These numbers can still change, so rerun the morning of recording.",
+      "No NWS forecast yet for Friday (NWS reaches about 7 days out), so the read stops at Thursday. Rerun the morning of recording to get as many days as possible."
+    ]
+  },
+  "menu": {
+    "script": [
+      "Hey RedWolves, here's what's cookin' this week.",
+      "Monday, Hawaiian Sandwich for breakfast. Lunch will be Pulled Pork Burger with Ranch Style Beans, Onion Rings and Burger Salad.",
+      "Tuesday, Kolache for breakfast. Lunch will be Cherry Blossom Chicken with Fried Rice and Egg Roll, along with Carrot Coins and Broccoli with Queso.",
+      "Wednesday, Buttermaple Waffle for breakfast. Lunch will be VIP Turkey with Dinner Roll, along with Mashed Potato with Gravy and Golden Corn.",
+      "Thursday, Pancake on a Stick for breakfast. Lunch will be Chili and Cheese Hot Dog with Tater Tots and Carrot Coins.",
+      "Friday, Assorted Cereal with Cracker for breakfast. Lunch will be Pizza with Wings, along with Baby Carrots and Garden Salad."
+    ],
+    "canva": [
+      "MONDAY",
+      "Breakfast: Hawaiian Sandwich",
+      "Lunch: Pulled Pork Burger, Ranch Style Beans, Onion Rings, Burger Salad",
+      "",
+      "TUESDAY",
+      "Breakfast: Kolache",
+      "Lunch: Cherry Blossom Chicken w/ Fried Rice & Egg Roll, Carrot Coins, Broccoli w/ Queso",
+      "",
+      "WEDNESDAY",
+      "Breakfast: Buttermaple Waffle",
+      "Lunch: VIP Turkey w/ Dinner Roll, Mashed Potato w/ Gravy, Golden Corn",
+      "",
+      "THURSDAY",
+      "Breakfast: Pancake on a Stick",
+      "Lunch: Chili & Cheese Hot Dog, Tater Tots, Carrot Coins",
+      "",
+      "FRIDAY",
+      "Breakfast: Assorted Cereal w/ Cracker",
+      "Lunch: Pizza w/ Wings, Baby Carrots, Garden Salad"
+    ],
+    "days": [
+      {
+        "day": "Monday",
+        "date": "2026-11-16",
+        "breakfast": "Hawaiian Sandwich",
+        "entree": "Pulled Pork Burger",
+        "sides": [
+          "Ranch Style Beans",
+          "Onion Rings",
+          "Burger Salad"
+        ]
+      },
+      {
+        "day": "Tuesday",
+        "date": "2026-11-17",
+        "breakfast": "Kolache",
+        "entree": "Cherry Blossom Chicken w/ Fried Rice & Egg Roll",
+        "sides": [
+          "Carrot Coins",
+          "Broccoli w/ Queso"
+        ]
+      },
+      {
+        "day": "Wednesday",
+        "date": "2026-11-18",
+        "breakfast": "Buttermaple Waffle",
+        "entree": "VIP Turkey w/ Dinner Roll",
+        "sides": [
+          "Mashed Potato w/ Gravy",
+          "Golden Corn"
+        ]
+      },
+      {
+        "day": "Thursday",
+        "date": "2026-11-19",
+        "breakfast": "Pancake on a Stick",
+        "entree": "Chili & Cheese Hot Dog",
+        "sides": [
+          "Tater Tots",
+          "Carrot Coins"
+        ]
+      },
+      {
+        "day": "Friday",
+        "date": "2026-11-20",
+        "breakfast": "Assorted Cereal w/ Cracker",
+        "entree": "Pizza w/ Wings",
+        "sides": [
+          "Baby Carrots",
+          "Garden Salad"
+        ]
+      }
+    ],
+    "sources": [
+      "https://www.lajoyaisdcns.com/downloadMenu.php/0208131445498761/921009"
+    ],
+    "notes": []
+  },
+  "news": {
+    "closures": [],
+    "leads": [
+      {
+        "when": "Wednesday, November 18 (all day)",
+        "title": "Education Support Professionals Day",
+        "url": "https://www.lajoyaisd.com/event_view?event_id=2sqd4nhm0ff2ilpuce41dhgjel%40google.com&calIDref=145985&feedID=6400&uid=2sqd4nhm0ff2ilpuce41dhgjel%40google.com&did=35fd75bdc3be7b0d68af2544226ccb160aa87179&eventDate=2026-11-18&feed_type=ics",
+        "detail": "",
+        "flagged": false
+      },
+      {
+        "when": "Thursday, November 19 (all day)",
+        "title": "National Parental Involvement Day",
+        "url": "https://www.lajoyaisd.com/event_view?event_id=4qpdm2ko91e0so41drautrspfg%40google.com&calIDref=145985&feedID=6400&uid=4qpdm2ko91e0so41drautrspfg%40google.com&did=7d4779322b926d2f97e1c3b453e4482abf009820&eventDate=2026-11-19&feed_type=ics",
+        "detail": "",
+        "flagged": false
+      },
+      {
+        "when": "Thursday, November 19, 6:30 PM",
+        "title": "La Joya ISD Conjunto Showcase",
+        "url": "https://www.lajoyaisd.com/event_view?event_id=5g10r0fnn6bu9pduojdacstmvj%40google.com&calIDref=145985&feedID=6400&uid=5g10r0fnn6bu9pduojdacstmvj%40google.com&did=1c7a1901d0cfb64b05e7e181bedb2f6dec87c147&eventDate=2026-11-20&feed_type=ics",
+        "detail": "",
+        "flagged": false
+      },
+      {
+        "when": "Friday, November 20 (all day)",
+        "title": "Substitute Appreciation Day",
+        "url": "https://www.lajoyaisd.com/event_view?event_id=5eo4gf0j56irbs3kt19s71p8sj%40google.com&calIDref=145985&feedID=6400&uid=5eo4gf0j56irbs3kt19s71p8sj%40google.com&did=ed13822ab2b204a397cf6f2478fcb3a2bd62fe4e&eventDate=2026-11-20&feed_type=ics",
+        "detail": "",
+        "flagged": false
+      }
+    ],
+    "board": [
+      {
+        "when": "Wednesday, November 18, 6:00 PM",
+        "title": "Board Meeting",
+        "url": "https://meetings.boardbook.org/Public/Organization/3263",
+        "posted": "",
+        "agenda_pending": true,
+        "items": []
+      }
+    ],
+    "board_page": "https://meetings.boardbook.org/Public/Organization/3263",
+    "calendar_page": "https://www.lajoyaisd.com/calendar",
+    "notes": []
+  }
+}

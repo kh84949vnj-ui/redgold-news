@@ -1,0 +1,9 @@
+# secrets
+.env
+# generated output and downloaded menu PDFs
+output/
+__pycache__/
+*.pyc
+.venv/
+# student-written script snapshots (may include names); published to the script page, never committed
+site-script/script.json

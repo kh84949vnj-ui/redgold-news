@@ -1,0 +1,38 @@
+# One keyword or phrase per line (case-insensitive). Calendar events and board
+# agenda items that match are FLAGGED on the tip sheet with no suggested lead.
+suicide
+self-harm
+self harm
+mental health
+crisis
+depression
+bullying
+abuse
+assault
+violence
+harassment
+sexual
+trafficking
+overdose
+fentanyl
+drug
+alcohol
+vaping
+vape
+grief
+memorial
+death
+in memory
+condolence
+eating disorder
+threat
+lockdown
+shooting
+weapon
+intruder
+investigation
+arrest
+lawsuit
+litigation
+termination
+personnel
