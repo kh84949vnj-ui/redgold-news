@@ -580,7 +580,7 @@ function requestUpdate() {
   window.open(UPDATE_URL, "_blank", "noopener");
   const before = published && published.generated;
   const until = Date.now() + 6 * 60 * 1000;
-  updateNote("On GitHub, click “Run workflow”. The new draft shows up here in about 2 minutes.");
+  updateNote("On GitHub, sign in (the Red Gold News account), then click “Run workflow”. The new draft shows up here in about 2 minutes.");
   clearInterval(watchTimer);
   watchTimer = setInterval(async () => {
     const pub = await fetchPublished();
