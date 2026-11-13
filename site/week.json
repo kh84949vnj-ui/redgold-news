@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-13T12:17-06:00",
-  "generated_label": "Friday, November 13 at 12:17 PM",
+  "generated": "2026-11-13T15:19-06:00",
+  "generated_label": "Friday, November 13 at 3:19 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -52,20 +52,20 @@
   "weather": {
     "script": [
       "Let's take a look at this week's weather forecast!",
-      "We're starting the week off mild on Monday, with a high of 74 degrees. Expect partly sunny skies, a morning low of 65, and a 14 percent chance of rain.",
-      "Tuesday stays about the same, with a high of 72. Expect partly sunny skies, a morning low of 59, and no rain.",
-      "Wednesday warms up to 76 degrees. Expect partly sunny skies, a morning low of 62, and no rain.",
-      "Thursday warms up to 80 degrees. Expect mostly cloudy skies, a morning low of 67, and an 11 percent chance of rain.",
-      "Friday warms up to 83 degrees. Expect mostly cloudy skies, a morning low of 69, and no rain.",
+      "We're starting the week off mild on Monday, with a high of 72 degrees. Expect partly sunny skies, a morning low of 64, and no rain.",
+      "Tuesday stays about the same, with a high of 71. Expect partly sunny skies, a morning low of 58, and no rain.",
+      "Wednesday warms up to 77 degrees. Expect mostly cloudy skies, a morning low of 62, and no rain.",
+      "Thursday warms up to 80 degrees. Expect mostly cloudy skies, a morning low of 68, and a 12 percent chance of rain.",
+      "Friday warms up to 83 degrees. Expect mostly cloudy skies, a morning low of 70, and a 10 percent chance of rain.",
       "Have a great week, RedWolves!"
     ],
     "days": [
       {
         "day": "Monday",
         "date": "2026-11-16",
-        "high": 74,
-        "low": 65,
-        "rain": 14,
+        "high": 72,
+        "low": 64,
+        "rain": 7,
         "conditions": "Partly Sunny",
         "available": true,
         "extended": false
@@ -73,9 +73,9 @@
       {
         "day": "Tuesday",
         "date": "2026-11-17",
-        "high": 72,
-        "low": 59,
-        "rain": 5,
+        "high": 71,
+        "low": 58,
+        "rain": 4,
         "conditions": "Partly Sunny",
         "available": true,
         "extended": false
@@ -83,10 +83,10 @@
       {
         "day": "Wednesday",
         "date": "2026-11-18",
-        "high": 76,
+        "high": 77,
         "low": 62,
         "rain": 3,
-        "conditions": "Partly Sunny",
+        "conditions": "Mostly Cloudy",
         "available": true,
         "extended": false
       },
@@ -94,8 +94,8 @@
         "day": "Thursday",
         "date": "2026-11-19",
         "high": 80,
-        "low": 67,
-        "rain": 11,
+        "low": 68,
+        "rain": 12,
         "conditions": "Mostly Cloudy",
         "available": true,
         "extended": false
@@ -104,19 +104,33 @@
         "day": "Friday",
         "date": "2026-11-20",
         "high": 83,
-        "low": 69,
-        "rain": 5,
+        "low": 70,
+        "rain": 10,
         "conditions": "mostly cloudy",
         "available": true,
         "extended": true
       }
     ],
-    "updated": "Friday, November 13 at 12:00 PM",
+    "updated": "Friday, November 13 at 3:15 PM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": [
       "Friday comes from NWS grid data because the 7-day text forecast doesn't reach it yet. These numbers can still change, so rerun the morning of recording."
     ]
+  },
+  "menu": {
+    "script": [
+      "Hey, RedWolves! I'm [MENU REPORTER], and here's what's on the menu this week.",
+      "On Monday, breakfast is Hawaiian Sandwich. For lunch, it's Pulled Pork Burger, plus Ranch Style Beans, Onion Rings and Burger Salad.",
+      "On Tuesday, breakfast is Kolache. For lunch, it's Cherry Blossom Chicken with Fried Rice and Egg Roll, plus Carrot Coins and Broccoli with Queso.",
+      "On Wednesday, breakfast is Buttery Maple Waffle. For lunch, it's VIP Turkey with Dinner Roll, plus Mashed Potato with Gravy and Golden Corn.",
+      "On Thursday, breakfast is Pancake on a Stick. For lunch, it's Chili and Cheese, plus Hot Dog, Tater Tots and Carrot Coins.",
+      "On Friday, breakfast is Assorted Cereal with Cracker. For lunch, it's Pizza with Wings, plus Baby Carrots and Garden Salad.",
+      "Enjoy your meals, RedWolves!"
+    ],
+    "notes": [],
+    "source": "La Joya ISD Child Nutrition (High School menu)",
+    "source_url": "https://www.lajoyaisdcns.com/index.php?sid=0208131445498761&page=menus"
   },
   "news": {
     "closures": [],
