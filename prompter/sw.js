@@ -1,10 +1,10 @@
 // Offline support: after the first visit the prompter, speech library and
 // model load from this device, so a bad Wi-Fi day doesn't stop a recording.
-const CACHE = "rgn-prompter-v8";
+const CACHE = "rgn-prompter-v9";
 const CORE = [
   "./", "index.html", "css/prompter.css",
   "js/app.js", "js/text.js", "js/align.js", "js/motion.js", "js/render.js", "js/engines.js",
-  "js/editor.js", "js/segments.js", "js/board.js",
+  "js/editor.js", "js/segments.js", "js/board.js", "js/board-panel.js", "js/store.js",
   "vendor/vosk.js",
 ];
 const MODEL = "models/vosk-model-small-en-us-0.15.tar.gz";

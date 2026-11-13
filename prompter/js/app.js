@@ -6,7 +6,8 @@ import { Stage } from "./render.js";
 import { VoskEngine, WebSpeechEngine } from "./engines.js";
 import { Editor } from "./editor.js";
 import { deriveDoc, oneAnchor, fillNames } from "./segments.js";
-import { boardLine, itemKey } from "./board.js";
+import { boardPanel } from "./board-panel.js";
+import { store } from "./store.js";
 
 const $ = (id) => document.getElementById(id);
 const TALENT = new URLSearchParams(location.search).get("view") === "talent";
@@ -18,10 +19,6 @@ if (TOUCH) document.body.classList.add("touch");
 // ------------------------------------------------------------------ settings
 const DEFAULT_SETTINGS = { size: 56, width: 30, eye: 33, speed: 4, mirror: false, caps: false, dim: true,
   engine: "vosk", grammar: true, mic: "", notes: false };
-const store = {
-  get(k, d) { try { const v = localStorage.getItem("rgn-prompter-" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem("rgn-prompter-" + k, JSON.stringify(v)); } catch (e) {} },
-};
 let settings = { ...DEFAULT_SETTINGS, ...store.get("settings", {}) };
 // Who's on air, kept on this device only (never published).
 const getNames = () => store.get("names", { a1: "", a2: "", wx: "" });
@@ -30,6 +27,7 @@ const getNames = () => store.get("names", { a1: "", a2: "", wx: "" });
 const stageEl = $("stage");
 const stage = new Stage(stageEl);
 let editor = null;            // created below (operator page only)
+let board = null;             // school board panel (News rundown)
 let doc = null;               // "news" | "weather" | "custom" (null on the start page)
 let stageStale = false;       // editor changed since the stage was last built
 const spring = new Spring(7);
@@ -572,7 +570,7 @@ function refreshDocUI() {
   $("nameA2Row").hidden = doc === "weather" || (doc === "news" && anchors === 1);
   $("nameWxRow").hidden = doc === "news" && !/\[WEATHER REPORTER\]/i.test(editor.getText());
   $("btnReset").textContent = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
-  renderBoard();
+  board.render();
   $("anchorsOpt").hidden = doc !== "news";
   $("twoAnchors").checked = anchors === 2;
   const newer = !!(DOCS[doc].draft && published && meta.base !== deriveFor(doc) &&
@@ -594,114 +592,6 @@ function updateOpenBar() {
   if (!items.length) return;
   const names = items.map((t) => (t.kind === "NAME" ? `name for ${t.text.toLowerCase()}` : t.text.split(":")[0].toLowerCase()));
   $("openText").textContent = `${items.length} thing${items.length === 1 ? "" : "s"} still open: ${[...new Set(names)].slice(0, 3).join(", ")}${items.length > 3 ? "…" : ""}`;
-}
-
-// ------------------------------------------------------------------ board agenda picks
-// In the News rundown, the week's school board agenda items can be checked to
-// add a plain-English line to the news block; unchecking takes it back out.
-// Choices are kept with the news script (meta.board: key -> the added text).
-let boardStudentOnly = true;
-
-function renderBoard() {
-  const box = $("boardPick");
-  const meetings = (doc === "news" && published && published.board) || [];
-  box.hidden = !meetings.length;
-  if (!meetings.length) { box.replaceChildren(); return; }
-  const picked = getMeta().board || {};
-  const wasOpen = box.querySelector("details")?.open;
-  const det = document.createElement("details");
-  det.open = wasOpen ?? Object.keys(picked).length > 0;
-  const sum = document.createElement("summary");
-  const n = Object.keys(picked).length;
-  const count = meetings.reduce((a, m) => a + m.items.length, 0);
-  sum.append("School board this week ");
-  const sub = document.createElement("span");
-  sub.className = "sub";
-  sub.textContent = `· ${count ? count + " agenda items" : "agenda not posted yet"}${n ? ` · ${n} added to the news block` : ""}`;
-  sum.appendChild(sub);
-  det.appendChild(sum);
-  const body = document.createElement("div");
-  body.className = "board-body";
-  const tip = document.createElement("p");
-  tip.className = "fine";
-  tip.textContent = "Check an item to add a line about it to the news block. Uncheck to take it out. Flagged items need the adviser first.";
-  body.appendChild(tip);
-  if (count) {
-    const tools = document.createElement("label");
-    tools.className = "board-tools";
-    const only = document.createElement("input");
-    only.type = "checkbox"; only.checked = boardStudentOnly; only.id = "boardOnly";
-    only.onchange = () => { boardStudentOnly = only.checked; renderBoard(); };
-    tools.append(only, " Show only items marked student interest");
-    body.appendChild(tools);
-  }
-  for (const m of meetings) {
-    const head = document.createElement("p");
-    head.className = "fine";
-    head.append(`${m.title}, ${m.when} · `);
-    const a = document.createElement("a");
-    a.href = m.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Full agenda";
-    head.appendChild(a);
-    body.appendChild(head);
-    const ul = document.createElement("ul");
-    ul.className = "board-list";
-    const rows = m.items.length ? m.items : [null];
-    for (const it of rows) {
-      const key = itemKey(m, it);
-      if (it && boardStudentOnly && !it.student_interest && !picked[key]) continue;
-      const li = document.createElement("li");
-      const lab = document.createElement("label");
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = !!picked[key];
-      cb.disabled = !!(it && it.flagged);
-      if (cb.disabled) lab.className = "off";
-      cb.onchange = () => toggleBoardItem(m, it, cb.checked);
-      const num = document.createElement("span");
-      num.className = "num";
-      num.textContent = it ? it.number : "";
-      const txt = document.createElement("span");
-      txt.textContent = it ? it.text.replace(/,?\s*(presented by|item lead:).*/i, "") : "Mention the meeting (the agenda isn't posted yet)";
-      if (it && it.student_interest) { const b = document.createElement("span"); b.className = "si"; b.textContent = "student interest"; txt.appendChild(b); }
-      if (it && it.flagged) { const b = document.createElement("span"); b.className = "flag"; b.textContent = "see adviser"; txt.appendChild(b); }
-      lab.append(cb, num, txt);
-      li.appendChild(lab);
-      ul.appendChild(li);
-    }
-    body.appendChild(ul);
-  }
-  det.appendChild(body);
-  box.replaceChildren(det);
-}
-
-function toggleBoardItem(meeting, item, on) {
-  const meta = getMeta();
-  const picked = { ...(meta.board || {}) };
-  const key = itemKey(meeting, item);
-  if (on) {
-    const first = !Object.keys(picked).some((k) => k.startsWith(meeting.url + "#"));
-    const text = boardLine(meeting, item, first);
-    picked[key] = text;
-    setMeta({ ...meta, board: picked });
-    editor.insertParagraph(text, /ADD CAMPUS STORY/, anchors === 1);
-    note("Added to the news block.");
-  } else {
-    const text = picked[key];
-    delete picked[key];
-    // If this was the line that opened with the meeting time, the next item
-    // from the same meeting takes over that opening.
-    const wasFirst = text && text.startsWith("The school board");
-    const nextKey = wasFirst && Object.keys(picked).find((k) => k.startsWith(meeting.url + "#"));
-    if (nextKey) {
-      const nextItem = meeting.items.find((it) => itemKey(meeting, it) === nextKey) || null;
-      const fresh = boardLine(meeting, nextItem, true);
-      if (editor.replaceParagraph(picked[nextKey], fresh)) picked[nextKey] = fresh;
-    }
-    setMeta({ ...meta, board: picked });
-    if (text && editor.removeParagraph(text)) note("Taken out of the news block.");
-    else note("That line was edited, so it's still in the news block. Delete it there if you don't want it.");
-  }
-  refreshDocUI();
 }
 
 function setView(v) {
@@ -745,6 +635,16 @@ if (TALENT) {
   if (chan) chan.postMessage({ type: "hello" });
 } else {
   editor = new Editor($("editor"), { onChange: onEdited, names: getNames });
+  board = boardPanel({
+    box: $("boardPick"),
+    meetings: () => (doc === "news" && published && published.board) || [],
+    picked: () => getMeta().board || {},
+    setPicked: (picked) => setMeta({ ...getMeta(), board: picked }),
+    editor,
+    oneAnchor: () => anchors === 1,
+    note,
+    changed: refreshDocUI,
+  });
   setPill("idle", "Not listening");
   window.addEventListener("hashchange", route);
   route();

@@ -5,7 +5,6 @@ that Monday-Friday week. Run this the day before recording (or that morning):
 
   python -m rgn.weekly                  # episode week (this Monday if today is Monday, else next Monday)
   python -m rgn.weekly --week 2026-11-30
-  python -m rgn.weekly --gdoc           # also write the week's block into the Google Doc
   python -m rgn.weekly --publish        # also publish the episode script to the live prompter
 
 Writes to output/<monday>/:
@@ -274,16 +273,11 @@ def publish(monday: dt.date) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--week", help="any date in the target week (default: the episode week)")
-    ap.add_argument("--gdoc", action="store_true", help="also write this week's block into the weekly Google Doc")
     ap.add_argument("--publish", action="store_true", help="commit and push the episode script to the live prompter")
     ap.add_argument("--board-picks", type=Path, help="JSON list of board item keys to include (default: output/<monday>/board_picks.json)")
     args = ap.parse_args()
     path = run(c.parse_week(args.week), args.board_picks)
     print("Saved", path)
-    if args.gdoc:
-        from .gdoc import send
-
-        print(send(json.loads((path.parent / "week.json").read_text(encoding="utf-8"))))
     print("Saved", path.with_suffix(".txt"))
     print("Saved", SITE_DIR / "week.json", "(publish this with the student page)")
     print("Saved", PROMPTER_SCRIPT)

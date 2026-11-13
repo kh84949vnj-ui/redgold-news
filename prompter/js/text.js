@@ -1,6 +1,6 @@
 // Script parsing and word normalization for the voice-following prompter.
 //
-// The script uses the weekly Google Doc format:
+// The script format (same as the old weekly Google Doc):
 //   [ANCHOR 1]            speaker tag (shown, never matched)
 //   [CUE INTRO SEQUENCE]  cue card (shown, never matched; scrolling waits here)
 //   Text lines            what the anchors read
