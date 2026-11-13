@@ -5,6 +5,18 @@ holds when they pause or ad-lib, and catches up if they skip ahead.
 
 Live at (once GitHub Pages is on): `https://kh84949vnj-ui.github.io/redgold-news/prompter/`
 
+**Google Apps Script copy** (for school Wi-Fi that blocks github.io):
+`gas/Code.gs` is pasted once into a new Apps Script project and deployed as a
+web app (Execute as: Me, Who has access: Anyone). On each visit it fetches
+`gas/App.html` and this week's draft from raw.githubusercontent.com on
+Google's servers, so the school filter never sees github.io, and changes
+pushed here show up there without re-pasting. `gas/App.html` is the whole
+prompter in one file, built by `node build-gas.mjs` (CI fails if it is out of
+date). The speech library loads from jsDelivr and the model from
+raw.githubusercontent.com; if those are blocked, both come through the Apps
+Script server instead (slower). Whether the microphone works inside Google's
+frame still needs a real test.
+
 **claude.ai copy** (for computers or networks that block github.io):
 https://claude.ai/artifact/AabhYE5cJH4Xew39BPQmun. It is built with
 `node build-claude.mjs <out-dir>` and published by Claude. Differences:

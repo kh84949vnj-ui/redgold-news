@@ -1,0 +1,2748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Built by prompter/build-gas.mjs from index.html, css/ and js/. Don't edit by hand. -->
+<meta charset="utf-8">
+<meta name="rgn-host" content="gas">
+<meta name="rgn-view" content="%%VIEW%%">
+<meta name="rgn-exec" content="%%EXEC%%">
+<style>
+/* RGN Prompter. The stage is always white on black, the studio convention.
+   The operator chrome is dark too so it doesn't light up the set. */
+:root {
+  --bg: #0b0a0a;
+  --chrome: #161314;
+  --chrome-2: #221d1e;
+  --line: #3a3233;
+  --ink: #f3eeea;
+  --muted: #a39897;
+  --red: #d64557;
+  --gold: #e3b341;
+  --ok: #6fcf8a;
+  --warn: #ffb35c;
+  --stage-bg: #000;
+  --stage-ink: #fff;
+  --read-ink: #6f6f6f;
+  --size: 56px;
+  --width: 30ch;
+  --eye: 33%;
+  --body: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --stage-font: -apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.4 var(--body); display: flex; flex-direction: column; overflow: hidden; }
+[hidden] { display: none !important; }
+button, select, input { font: inherit; color: inherit; }
+button { background: var(--chrome-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; min-height: 36px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* Top bar */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: calc(8px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); background: var(--chrome); border-bottom: 1px solid var(--line); }
+.brand { font-weight: 800; letter-spacing: .08em; color: var(--gold); text-decoration: none; }
+.doc-label { font-weight: 700; }
+.doc-label:empty { display: none; }
+.brand span { color: var(--ink); font-weight: 600; letter-spacing: .02em; }
+.brand .ep { color: var(--muted); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-size: 13px; }
+.bar-main, .bar-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bar-side { margin-left: auto; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: transparent; }
+.seg button[aria-pressed="true"] { background: var(--gold); color: #111; font-weight: 600; }
+.pill { font: 600 12px var(--mono); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill[data-state="following"] { color: var(--ok); border-color: var(--ok); }
+.pill[data-state="holding"] { color: var(--warn); border-color: var(--warn); }
+.pill[data-state="loading"] { color: var(--gold); border-color: var(--gold); }
+.pill[data-state="error"] { color: #fff; background: var(--red); border-color: var(--red); }
+.meter { width: 64px; height: 8px; border-radius: 4px; background: var(--chrome-2); overflow: hidden; border: 1px solid var(--line); }
+.meter i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .08s linear; }
+
+.heard { display: flex; gap: 10px; align-items: baseline; padding: 4px max(12px, env(safe-area-inset-right, 0px)) 4px max(12px, env(safe-area-inset-left, 0px)); background: var(--chrome); border-bottom: 1px solid var(--line); font: 13px var(--mono); color: var(--muted); min-height: 26px; }
+.heard-label { text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+.heard-text { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; direction: rtl; text-align: left; flex: 1; min-width: 0; }
+.status-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
+
+/* Stage */
+.stage { position: relative; flex: 1; min-height: 0; background: var(--stage-bg); color: var(--stage-ink); overflow: hidden; }
+.stage-scroll { position: absolute; inset: 0; overflow: hidden; }
+.stage-text { width: min(var(--width), 100% - 48px); margin: 0 auto; font: 600 var(--size)/1.32 var(--stage-font); will-change: transform; padding-bottom: 80vh; }
+.stage.mirror .stage-scroll { transform: scaleX(-1); }
+.stage.caps .stage-text { text-transform: uppercase; }
+.stage-text p { margin: 0 0 .55em; }
+.stage-text .w { cursor: default; }
+body:not(.talent) .stage-text .w { cursor: pointer; }
+.stage-text .w.read { color: var(--read-ink); }
+.stage-text .w.note, .stage-text .note { color: var(--gold); font: 600 .38em var(--mono); letter-spacing: .04em; vertical-align: middle; }
+.stage-text div.note { display: block; margin: .6em 0; }
+.stage-text .tag { font: 700 .42em var(--mono); color: var(--gold); letter-spacing: .1em; margin: 1.3em 0 .25em; }
+.stage-text .cue { font: 700 .5em var(--mono); color: var(--gold); letter-spacing: .08em; text-align: center; border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold); padding: .45em 0; margin: 1.1em 0; }
+.stage-text .end { font: 700 .45em var(--mono); color: var(--muted); text-align: center; margin-top: 2em; }
+.eyeline { position: absolute; left: 0; right: 0; top: var(--eye); height: 0; border-top: 3px solid var(--red); opacity: .75; z-index: 2; pointer-events: none; }
+.eyeline::before { content: ""; position: absolute; left: max(6px, env(safe-area-inset-left, 0px)); top: -12px; border: 10px solid transparent; border-left: 15px solid var(--red); }
+.empty { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; padding: 24px; color: var(--muted); }
+.empty h1 { color: var(--ink); font-size: 26px; margin: 0 0 8px; }
+.empty p { max-width: 46ch; margin: 0 auto; }
+
+/* Settings panel */
+.panel { position: absolute; right: max(10px, env(safe-area-inset-right, 0px)); top: 110px; width: min(380px, calc(100% - 20px)); max-height: calc(100% - 130px); overflow: auto; background: var(--chrome); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 6px 0 10px; }
+.panel h2 + .row { margin-top: 0; }
+.row { display: grid; grid-template-columns: 7.5em 1fr 3.5em; align-items: center; gap: 8px; margin: 8px 0; }
+.row.col { grid-template-columns: 1fr; gap: 4px; }
+.row output { font: 12px var(--mono); color: var(--muted); text-align: right; }
+.row select { background: var(--chrome-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px; width: 100%; }
+.check { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.fine { font-size: 13px; color: var(--muted); }
+code { font: 12px var(--mono); color: var(--gold); }
+
+/* Script dialog */
+dialog { background: var(--chrome); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; width: min(760px, calc(100% - 24px)); padding: 0; }
+dialog::backdrop { background: rgba(0,0,0,.6); }
+.dlg { padding: 16px; display: grid; gap: 10px; }
+.dlg h2 { margin: 0; font-size: 18px; }
+.dlg textarea { width: 100%; background: #000; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 14px/1.45 var(--mono); resize: vertical; }
+.dlg-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+.file { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* Views: Home picks a script, Edit shows the rundown editor, Prompt the stage. */
+body[data-view="edit"] .stage, body[data-view="edit"] .prompt-only, body[data-view="edit"] .panel { display: none !important; }
+body[data-view="prompt"] .editor, body.talent .editor { display: none !important; }
+body[data-view="home"] .stage, body[data-view="home"] .editor, body[data-view="home"] .prompt-only,
+body[data-view="home"] .panel, body[data-view="home"] .views, body[data-view="home"] .banner { display: none !important; }
+body:not(.listening) .heard { display: none !important; }
+body.touch #btnTalent { display: none !important; }
+body:not([data-view="home"]) .home, body.talent .home { display: none !important; }
+
+.home { flex: 1; min-height: 0; overflow-y: auto; }
+.home-wrap { max-width: 980px; margin: 0 auto; padding: 40px max(16px, env(safe-area-inset-right, 0px)) 60px max(16px, env(safe-area-inset-left, 0px)); }
+.home h1 { margin: 0; font-size: clamp(28px, 4vw, 40px); letter-spacing: -.01em; }
+.home-ep { margin: 6px 0 0; color: var(--muted); }
+.home-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 14px 0 0; }
+.home-actions .update-btn { border-color: var(--gold); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 26px 0 18px; }
+.card { display: flex; flex-direction: column; gap: 10px; padding: 22px 20px; min-height: 190px; border: 1px solid var(--line); border-radius: 14px; background: var(--chrome); color: var(--ink); text-decoration: none; }
+.card:hover { border-color: var(--gold); }
+.card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.card-k { font-size: 24px; font-weight: 800; }
+.card-d { color: var(--muted); flex: 1; }
+.card-s { font: 600 12px var(--mono); color: var(--gold); }
+.views button { min-width: 72px; }
+
+.editor { flex: 1; min-height: 0; overflow-y: auto; background: var(--bg); -webkit-overflow-scrolling: touch; }
+.ed-wrap { max-width: 860px; margin: 0 auto; padding: 18px max(16px, env(safe-area-inset-right, 0px)) 60px max(16px, env(safe-area-inset-left, 0px)); }
+.ed-top { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; justify-content: space-between; }
+.ed-title h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
+.ed-title .total { margin: 4px 0 0; color: var(--muted); font: 13px var(--mono); }
+.ed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.anchors-opt { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; min-height: 36px; border: 1px solid var(--gold); border-radius: 8px; background: var(--chrome-2); font-weight: 600; cursor: pointer; }
+.anchors-opt input { width: 18px; height: 18px; accent-color: var(--gold); }
+.ed-note { margin: 10px 0 0; color: var(--gold); font-size: 14px; min-height: 0; }
+.ed-note:empty { display: none; }
+.todo { margin: 16px 0 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); }
+.todo-head { margin: 0 0 8px; font-weight: 600; color: var(--warn); }
+.todo-done { margin: 0; color: var(--ok); font-weight: 600; }
+.todo ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.todo-item { font-size: 13px; min-height: 30px; padding: 4px 10px; border-radius: 999px; }
+.todo-name { border-color: var(--gold); }
+.todo-verify, .todo-add { border-color: var(--warn); }
+.todo-flagged { border-color: var(--red); color: #ffb3bb; }
+.board { margin: 10px 0 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); }
+.board summary { cursor: pointer; padding: 12px 14px; font-weight: 600; }
+.board summary .sub { color: var(--muted); font-weight: 400; }
+.board-body { padding: 0 14px 12px; }
+.board-body .fine { margin: 0 0 8px; }
+.board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.board-list label { display: grid; grid-template-columns: 22px 3.6em minmax(0, 1fr); gap: 8px; align-items: start; padding: 6px 4px; border-radius: 6px; cursor: pointer; }
+.board-list label:hover { background: var(--chrome-2); }
+.board-list input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--gold); }
+.board-list .num { font: 12px var(--mono); color: var(--muted); padding-top: 3px; }
+.board-list .si { color: var(--gold); font: 600 11px var(--mono); margin-left: 6px; white-space: nowrap; }
+.board-list .flag { color: #ffb3bb; font: 600 11px var(--mono); margin-left: 6px; white-space: nowrap; }
+.board-list label.off { cursor: not-allowed; opacity: .6; }
+.board-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+
+/* Talent view: just the text. Tap shows nothing; F or double-tap for full screen. */
+body.talent .bar, body.talent .heard, body.talent .panel, body.talent .empty { display: none; }
+
+/* "Talent mode" in the operator page (iPad alone): hide chrome until tapped. */
+body.solo .bar, body.solo .heard { display: none; }
+body.solo.show-chrome .bar, body.solo.show-chrome .heard { display: flex; }
+
+@media (max-width: 760px) {
+  .bar-side { margin-left: 0; }
+  .status-text { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meter i { transition: none; }
+}
+
+/* Banners under the top bar */
+.banner, .openbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); font-weight: 600; }
+.banner { background: var(--gold); color: #1a1405; }
+.banner button { background: rgba(0,0,0,.12); border-color: rgba(0,0,0,.35); color: #1a1405; min-height: 32px; }
+.banner button.primary { background: #1a1405; color: var(--gold); border-color: #1a1405; }
+.offbar { padding: 8px max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); background: #7a1010; color: #fff; font-weight: 600; font-size: 14px; }
+.openbar { background: var(--chrome-2); color: var(--warn); border-bottom: 1px solid var(--line); font-size: 14px; }
+.openbar button { min-height: 30px; font-size: 13px; }
+
+/* Settings additions */
+.panel .seg { display: inline-flex; margin-bottom: 10px; }
+.panel-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 6px; }
+
+/* Editor: More menu, names, one script box */
+.more { position: relative; }
+.more summary { list-style: none; cursor: pointer; padding: 7px 14px; min-height: 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--chrome-2); display: inline-flex; align-items: center; gap: 6px; }
+.more summary::-webkit-details-marker { display: none; }
+.more summary::after { content: "\25BE"; color: var(--muted); }
+.more .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; display: grid; gap: 4px; min-width: 260px; padding: 6px; background: var(--chrome); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.more .menu button { text-align: left; border-color: transparent; background: transparent; }
+.more .menu button:hover { background: var(--chrome-2); }
+.names { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 14px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); }
+.names-k { font-weight: 700; margin-right: 4px; }
+.names label { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
+.names input { width: 150px; background: #000; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font: 15px var(--body); }
+.names.flash { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold) inset; }
+.script-box { display: block; width: 100%; margin-top: 12px; min-height: 60vh; resize: vertical; overflow: hidden; background: #000; color: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; font: 18px/1.6 var(--body); }
+.script-box:focus { border-color: var(--gold); outline: none; }
+.stage-text .tag { text-transform: uppercase; }
+
+/* Keep the Prompt bar on one row on iPads: drop the episode date and the word
+   "Prompter" there (both are on the Edit view). */
+@media (max-width: 1100px) {
+  body[data-view="prompt"] .bar .ep { display: none; }
+}
+@media (max-width: 900px) {
+  body[data-view="prompt"] .brand span { display: none; }
+  body[data-view="prompt"] .meter { width: 40px; }
+}
+</style>
+</head>
+<body>
+<header class="bar" id="bar">
+  <a class="brand" href="#" title="Back to the start page">RGN <span>Prompter</span></a>
+  <span id="docLabel" class="doc-label"></span>
+  <small id="epLabel" class="ep"></small>
+  <div class="seg views" role="group" aria-label="View">
+    <button type="button" id="viewEdit" aria-pressed="false">Edit</button>
+    <button type="button" id="viewPrompt" aria-pressed="false">Prompt</button>
+  </div>
+  <div class="bar-main prompt-only">
+    <button type="button" id="btnListen" class="primary">Start listening</button>
+    <span class="pill" id="pill" data-state="idle">Not listening</span>
+    <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+  </div>
+  <div class="bar-side prompt-only">
+    <button type="button" id="btnSettings" aria-expanded="false">Settings</button>
+  </div>
+</header>
+
+<div class="offbar" id="offBar" role="status" hidden>
+  Can’t reach the prompter site from this device, so this is the copy saved here earlier. New drafts and fixes won’t show until it connects. Try your phone, or a different Wi-Fi network.
+</div>
+
+<div class="banner" id="draftBanner" hidden>
+  <span id="draftText"></span>
+  <button type="button" id="draftLoad" class="primary">Load it</button>
+  <button type="button" id="draftKeep">Keep mine</button>
+</div>
+
+<div class="openbar prompt-only" id="openBar" hidden>
+  <span id="openText"></span>
+  <button type="button" id="openEdit">Back to Edit</button>
+</div>
+
+<div class="heard prompt-only" id="heardRow"><span class="heard-label">Heard</span><span id="heard" class="heard-text"></span><span id="status" class="status-text"></span></div>
+
+<main class="stage" id="stage">
+  <div class="eyeline" id="eyeline" aria-hidden="true"></div>
+  <div class="stage-scroll" id="scroll">
+    <div class="stage-text" id="text"></div>
+  </div>
+  <div class="empty" id="empty">
+    <h1>No script loaded</h1>
+    <p>Go to <b>Edit</b> to load this week's script or paste one, or drop a .txt file here.</p>
+  </div>
+</main>
+
+<section class="home" id="home">
+  <div class="home-wrap">
+    <h1>What are you recording?</h1>
+    <p class="home-ep" id="homeEp"></p>
+    <p class="home-actions">
+      <button type="button" class="update-btn" id="btnUpdate">Update this week's draft</button>
+      <span class="fine" id="updateNote"></span>
+    </p>
+    <div class="cards">
+      <a class="card" href="#news">
+        <span class="card-k">News rundown</span>
+        <span class="card-d">The anchors' script: open, school news, close. Drafted each week from the district calendar.</span>
+        <span class="card-s" id="stNews"></span>
+      </a>
+      <a class="card" href="#weather">
+        <span class="card-k">Weather</span>
+        <span class="card-d">The forecast read for the weather reporter. Drafted each week from the National Weather Service.</span>
+        <span class="card-s" id="stWeather"></span>
+      </a>
+      <a class="card" href="#custom">
+        <span class="card-k">Custom</span>
+        <span class="card-d">Start blank and type or paste anything: student voices intros, a promo, a standalone segment.</span>
+        <span class="card-s" id="stCustom"></span>
+      </a>
+    </div>
+    <p class="fine">Each one keeps its own script on this device, with an Edit view to finish it and a Prompt view that follows your voice.</p>
+  </div>
+</section>
+
+<section class="editor" id="editor">
+  <div class="ed-wrap">
+    <div class="ed-top">
+      <div class="ed-title">
+        <h1 id="edTitle">Script</h1>
+        <p class="total"></p>
+      </div>
+      <div class="ed-actions">
+        <label class="anchors-opt" id="anchorsOpt" hidden><input type="checkbox" id="twoAnchors" checked> Two anchors</label>
+        <details class="more" id="moreMenu">
+          <summary>More</summary>
+          <div class="menu">
+            <button type="button" class="update-btn" id="btnUpdate2">Update this week's draft</button>
+            <button type="button" id="btnCopy">Copy for Google Doc</button>
+            <button type="button" id="btnDownload">Download .txt</button>
+            <button type="button" id="btnPaste">Paste a script</button>
+            <button type="button" id="btnReset">Start over from this week's draft</button>
+          </div>
+        </details>
+      </div>
+    </div>
+    <p class="ed-note" id="edNote"></p>
+    <div class="names" id="names">
+      <span class="names-k">Who's on air</span>
+      <label id="nameA1Row">Anchor 1 <input type="text" id="nameA1" autocomplete="off" placeholder="Name"></label>
+      <label id="nameA2Row">Anchor 2 <input type="text" id="nameA2" autocomplete="off" placeholder="Name"></label>
+      <label id="nameWxRow">Weather <input type="text" id="nameWx" autocomplete="off" placeholder="Name"></label>
+    </div>
+    <div class="todo"></div>
+    <div class="board" id="boardPick" hidden></div>
+    <textarea class="script-box" id="scriptBox" spellcheck="true" aria-label="Script"
+      placeholder="Type or paste your script. Put each speaker on their own line in brackets, like [ANCHOR 1], and cues like [CUE BUMPER] on their own line."></textarea>
+    <p class="fine">Saves on this device as you type. <code>[ANCHOR 1]</code> lines are speakers and <code>[CUE …]</code> lines are cues. Notes like <code>[VERIFY: …]</code> are never read and stay off the prompter. Names fill in on the prompter and in copies; the script keeps the placeholders. When it's ready, switch to <b>Prompt</b>.</p>
+  </div>
+</section>
+
+<aside class="panel" id="panel" hidden>
+  <h2>Scrolling</h2>
+  <div class="seg" role="group" aria-label="Scrolling mode">
+    <button type="button" id="modeVoice" aria-pressed="true">Follow voice</button>
+    <button type="button" id="modeManual" aria-pressed="false">Steady scroll</button>
+  </div>
+  <div class="panel-row">
+    <button type="button" id="btnTalent" title="Opens just the script in its own window. Drag it to the iPad with Sidecar.">Open talent screen</button>
+    <button type="button" id="btnFull" title="Full screen (F)">Full screen</button>
+  </div>
+  <h2>Display</h2>
+  <label class="row">Text size <input type="range" id="setSize" min="28" max="120" step="2"><output id="outSize"></output></label>
+  <label class="row">Line width <input type="range" id="setWidth" min="18" max="48" step="1"><output id="outWidth"></output></label>
+  <label class="row">Eye line <input type="range" id="setEye" min="15" max="55" step="1"><output id="outEye"></output></label>
+  <label class="row">Steady speed <input type="range" id="setSpeed" min="1" max="10" step="1"><output id="outSpeed"></output></label>
+  <label class="check"><input type="checkbox" id="setMirror"> Mirror (for beam-splitter glass)</label>
+  <label class="check"><input type="checkbox" id="setCaps"> ALL CAPS</label>
+  <label class="check"><input type="checkbox" id="setDim"> Dim words already read</label>
+  <label class="check"><input type="checkbox" id="setNotes"> Show notes like [VERIFY] on the prompter</label>
+  <h2>Listening</h2>
+  <label class="row col">Speech engine
+    <select id="setEngine">
+      <option value="vosk">On this device: private, works offline (recommended)</option>
+      <option value="web">Browser speech service: may send audio to Apple or Google</option>
+    </select>
+  </label>
+  <label class="check"><input type="checkbox" id="setGrammar"> Listen only for words in the script (more accurate)</label>
+  <label class="row col">Microphone <select id="setMic"><option value="">Default microphone</option></select></label>
+  <p class="fine">Keys: <b>Space</b> pause/resume · <b>↑ ↓</b> or clicker: line back/forward · <b>Home</b> top · <b>M</b> mirror · <b>+ −</b> size · <b>F</b> full screen. Click any word to jump there.</p>
+</aside>
+
+<dialog id="dlgScript">
+  <form method="dialog" class="dlg">
+    <h2>Episode script</h2>
+    <p class="fine">Paste the script in the weekly doc format. Lines like <code>[ANCHOR 1]</code> are speaker tags, <code>[CUE BUMPER]</code> lines are cue cards, and <code>[VERIFY: …]</code> notes are shown but never read.</p>
+    <textarea id="scriptText" rows="16" spellcheck="false"></textarea>
+    <div class="dlg-actions">
+      <button type="button" id="btnWeekly">Load this week's script</button>
+      <span id="weeklyNote" class="fine"></span>
+      <label class="file">Open .txt file<input type="file" id="scriptFile" accept=".txt,text/plain"></label>
+      <span class="spacer"></span>
+      <button value="cancel" type="submit">Cancel</button>
+      <button value="ok" type="submit" class="primary" id="scriptOk">Use this script</button>
+    </div>
+  </form>
+</dialog>
+<script>
+"use strict";
+const __text_js = (() => {
+// Script parsing and word normalization for the voice-following prompter.
+//
+// The script format (same as the old weekly Google Doc):
+//   [ANCHOR 1]            speaker tag (shown, never matched)
+//   [CUE INTRO SEQUENCE]  cue card (shown, never matched; scrolling waits here)
+//   Text lines            what the anchors read
+//   ... [VERIFY: ...]     inline brackets inside a line are notes, not read
+//
+// Every spoken word becomes one or more "tokens" in the form a recognizer
+// would hear them: "77" -> "seventy seven", "6:30" -> "six thirty",
+// "RedWolves" -> "red wolves", "ISD" -> "i s d". The aligner matches heard
+// words against this token list.
+
+const ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+  "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+const TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+const ORD = { one: "first", two: "second", three: "third", five: "fifth", eight: "eighth", nine: "ninth", twelve: "twelfth" };
+const MONTHS = new Set(["january", "february", "march", "april", "may", "june", "july", "august",
+  "september", "october", "november", "december", "jan", "feb", "mar", "apr", "jun", "jul", "aug",
+  "sep", "sept", "oct", "nov", "dec"]);
+
+function numberWords(n) {
+  if (!Number.isFinite(n) || n < 0) return [];
+  n = Math.floor(n);
+  if (n < 20) return [ONES[n]];
+  if (n < 100) return n % 10 ? [TENS[Math.floor(n / 10)], ONES[n % 10]] : [TENS[n / 10]];
+  if (n < 1000) {
+    const rest = n % 100;
+    return [ONES[Math.floor(n / 100)], "hundred", ...(rest ? numberWords(rest) : [])];
+  }
+  if (n < 1000000) {
+    const rest = n % 1000;
+    return [...numberWords(Math.floor(n / 1000)), "thousand", ...(rest ? numberWords(rest) : [])];
+  }
+  const rest = n % 1000000;
+  return [...numberWords(Math.floor(n / 1000000)), "million", ...(rest ? numberWords(rest) : [])];
+}
+
+function ordinalWords(n) {
+  const w = numberWords(n);
+  const last = w[w.length - 1];
+  let o;
+  if (ORD[last]) o = ORD[last];
+  else if (last.endsWith("y")) o = last.slice(0, -1) + "ieth";
+  else o = last + "th";
+  return [...w.slice(0, -1), o];
+}
+
+// How a four-digit year is usually read: 2026 -> "twenty twenty six".
+function yearWords(n) {
+  if (n >= 2000 && n <= 2009) return numberWords(n);
+  const hi = Math.floor(n / 100), lo = n % 100;
+  if (lo === 0) return [...numberWords(hi), "hundred"];
+  return [...numberWords(hi), ...(lo < 10 ? ["oh", ONES[lo]] : numberWords(lo))];
+}
+
+const SYMBOLS = { "&": ["and"], "%": ["percent"], "+": ["plus"], "@": ["at"], "#": ["number"] };
+
+/**
+ * Turn one written word into spoken tokens.
+ * ctx.prev is the previous written word (lowercase, letters only), used to
+ * read "November 23" as "november twenty third".
+ * ctx.acronyms is a Set of lowercase acronyms from the script, so a heard
+ * "isd" is spelled out the same way the script's "ISD" was.
+ */
+function speak(word, ctx = {}) {
+  let w = String(word).replace(/[‘’ʼ]/g, "'").replace(/[“”]/g, '"');
+  w = w.replace(/^[^\w$&%#@+]+|[^\w%&+]+$/g, ""); // strip outer punctuation
+  if (!w) return [];
+  if (SYMBOLS[w]) return SYMBOLS[w];
+
+  // Money: $5,000 -> five thousand dollars
+  let m = w.match(/^\$(\d[\d,]*)(?:\.(\d\d))?$/);
+  if (m) {
+    const out = [...numberWords(parseInt(m[1].replace(/,/g, ""), 10)), "dollars"];
+    if (m[2] && m[2] !== "00") out.push("and", ...numberWords(parseInt(m[2], 10)), "cents");
+    return out;
+  }
+  // Percent: 42% -> forty two percent
+  m = w.match(/^(\d[\d,]*)%$/);
+  if (m) return [...numberWords(parseInt(m[1].replace(/,/g, ""), 10)), "percent"];
+  // Time: 6:30 -> six thirty, 6:00 -> six, 6:05 -> six oh five
+  m = w.match(/^(\d{1,2}):(\d\d)$/);
+  if (m) {
+    const h = numberWords(parseInt(m[1], 10)), mm = parseInt(m[2], 10);
+    if (mm === 0) return h;
+    return mm < 10 ? [...h, "oh", ONES[mm]] : [...h, ...numberWords(mm)];
+  }
+  // Ordinals: 16th -> sixteenth
+  m = w.match(/^(\d+)(st|nd|rd|th)$/i);
+  if (m) return ordinalWords(parseInt(m[1], 10));
+  // a.m. / p.m.
+  if (/^[ap]\.?m\.?$/i.test(w)) return [w[0].toLowerCase(), "m"];
+  // Plain numbers
+  m = w.match(/^\d[\d,]*$/);
+  if (m) {
+    const n = parseInt(w.replace(/,/g, ""), 10);
+    if (!w.includes(",") && w.length === 4 && n >= 1100 && n <= 2099) return yearWords(n);
+    if (ctx.prev && MONTHS.has(ctx.prev) && n >= 1 && n <= 31) return ordinalWords(n);
+    return numberWords(n);
+  }
+  // Mixed like 3pm, 10am
+  m = w.match(/^(\d{1,2})([ap])\.?m\.?$/i);
+  if (m) return [...numberWords(parseInt(m[1], 10)), m[2].toLowerCase(), "m"];
+
+  // Words joined by hyphens, slashes or dots: co-op, K-12, U.S.
+  if (/[-/–—]/.test(w)) return w.split(/[-/–—]+/).flatMap((p) => speak(p, ctx));
+  if (/^([a-z]\.){2,}[a-z]?$/i.test(w)) return w.replace(/\./g, "").toLowerCase().split("");
+
+  // Acronyms: ISD, RGN, UIL -> letters. Known script acronyms also apply to heard words.
+  if (/^[A-Z]{2,5}s?$/.test(w) && !/^[AI]$/.test(w)) {
+    const letters = w.replace(/s$/, "").toLowerCase().split("");
+    return letters;
+  }
+  const low = w.toLowerCase();
+  if (ctx.acronyms && ctx.acronyms.has(low)) return low.split("");
+
+  // CamelCase: RedWolves -> red wolves
+  if (/[a-z][A-Z]/.test(w)) return w.replace(/([a-z])([A-Z])/g, '$1\u0001$2').split('\u0001').flatMap((p) => speak(p, ctx));
+
+  // Letters and digits stuck together (K12) -> split
+  if (/\d/.test(w) && /[a-z]/i.test(w)) return w.replace(/(\d)([a-z])/gi, '$1\u0001$2').replace(/([a-z])(\d)/gi, '$1\u0001$2').split('\u0001').flatMap((p) => speak(p, ctx));
+
+  return [low.replace(/[^a-z']/g, "").replace(/^'+|'+$/g, "")].filter(Boolean);
+}
+
+/** Normalize a heard phrase from a recognizer into tokens. */
+function speakPhrase(text, ctx = {}) {
+  const out = [];
+  let prev = "";
+  for (const raw of String(text).split(/\s+/)) {
+    if (!raw) continue;
+    const toks = speak(raw, { ...ctx, prev });
+    out.push(...toks);
+    prev = raw.toLowerCase().replace(/[^a-z]/g, "");
+  }
+  return out;
+}
+
+const CUE_RE = /^(cue|roll|vo|sot|package|pkg|break|bumper)\b/i;
+
+/**
+ * Parse a script into display items and the flat token list the aligner uses.
+ *
+ * Returns {
+ *   items:  [{type:"tag"|"cue"|"para", text, words?:[{text, note, tokens:[start,end)}]}],
+ *   tokens: [{t, word, item}]   // t = spoken token, word = index into words[]
+ *   words:  [{text, note, item, tokenStart, tokenEnd}]
+ *   cueBefore: Set of token indexes that start right after a cue card
+ *   acronyms: Set
+ * }
+ */
+function parseScript(text) {
+  const items = [], tokens = [], words = [];
+  const cueBefore = new Set();
+  const acronyms = new Set();
+  const lines = String(text).replace(/\r\n?/g, "\n").split("\n");
+
+  // Collect acronyms first so heard words can be spelled the same way.
+  for (const m of String(text).matchAll(/\b[A-Z]{2,5}\b/g)) acronyms.add(m[0].toLowerCase());
+  for (const a of ["a", "i", "am", "pm"]) acronyms.delete(a);
+
+  let para = null;
+  let pendingCue = false;
+  const endPara = () => { para = null; };
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { endPara(); continue; }
+    const whole = line.match(/^\[(.+)\]$/);
+    if (whole && !line.slice(1, -1).includes("[")) {
+      endPara();
+      const inner = whole[1].trim();
+      if (CUE_RE.test(inner)) {
+        items.push({ type: "cue", text: inner });
+        pendingCue = true;
+      } else if (/^(verify|add|note|todo)\b/i.test(inner) || inner.split(/\s+/).length > 5) {
+        items.push({ type: "note", text: inner });
+      } else {
+        items.push({ type: "tag", text: inner });
+      }
+      continue;
+    }
+    if (!para) {
+      para = { type: "para", words: [] };
+      items.push(para);
+    } else {
+      para.words.push({ text: "\n", note: true, br: true, tokenStart: tokens.length, tokenEnd: tokens.length });
+    }
+    const itemIndex = items.length - 1;
+    // Split into words, keeping inline [notes] as single non-spoken chunks.
+    const parts = line.split(/(\[[^\]]*\])/).filter((p) => p !== "");
+    let prev = "";
+    for (const part of parts) {
+      if (/^\[[^\]]*\]$/.test(part)) {
+        const wi = words.length;
+        const w = { text: part, note: true, item: itemIndex, tokenStart: tokens.length, tokenEnd: tokens.length };
+        words.push(w); para.words.push(w);
+        continue;
+      }
+      // Punctuation right after an inline note ("[ANCHOR 2]. Welcome") stays
+      // with the note so it isn't shown as a word of its own.
+      const lead = part.match(/^[.,;:!?]+/);
+      if (lead && words.length && words[words.length - 1].note) {
+        words[words.length - 1].text += lead[0];
+      }
+      const rest = lead ? part.slice(lead[0].length) : part;
+      for (const wtext of rest.split(/\s+/).filter(Boolean)) {
+        const toks = speak(wtext, { prev, acronyms });
+        const w = { text: wtext, note: false, item: itemIndex, tokenStart: tokens.length, tokenEnd: tokens.length + toks.length };
+        const wi = words.length;
+        if (toks.length && pendingCue) { cueBefore.add(tokens.length); pendingCue = false; }
+        for (const t of toks) tokens.push({ t, word: wi, item: itemIndex });
+        words.push(w); para.words.push(w);
+        prev = wtext.toLowerCase().replace(/[^a-z]/g, "");
+      }
+    }
+  }
+  return { items, tokens, words, cueBefore, acronyms };
+}
+
+return { numberWords, ordinalWords, speak, speakPhrase, parseScript };
+})();
+
+const __align_js = (() => {
+// Aligner: keeps track of where the reader is in the script.
+//
+// Each time the recognizer reports words, the last few heard words are
+// matched against a window of the script around the current position using
+// local sequence alignment (Smith-Waterman). Words count as matching when
+// they are equal, sound alike, or one is a cut-off start of the other
+// (recognizers often report half a word before it's finished).
+//
+// The position only moves when the evidence is strong:
+//   - normal forward moves need 2+ matched words in order
+//   - jumps far ahead (a skipped sentence) need 4+ matched words
+//   - moving backward (a re-read) needs 4+ matched words
+//   - if the best match is ambiguous (the same phrase twice), it stays put
+// Being AHEAD of the reader is the worst failure (the line scrolls away), so
+// every rule leans toward holding still.
+
+// ------------------------------------------------------------------ similarity
+
+function phoneticKey(w) {
+  let s = w.toLowerCase().replace(/[^a-z]/g, "");
+  if (!s) return "";
+  s = s.replace(/^kn/, "n").replace(/^wr/, "r").replace(/^wh/, "w").replace(/^x/, "s")
+    .replace(/ph/g, "f").replace(/ck/g, "k").replace(/q/g, "k").replace(/x/g, "ks")
+    .replace(/dg/g, "j").replace(/gh/g, "").replace(/th/g, "t").replace(/sh/g, "s")
+    .replace(/c(?=[eiy])/g, "s").replace(/c/g, "k").replace(/z/g, "s").replace(/v/g, "f")
+    .replace(/ie?s$|es$/, "s").replace(/y$/, "i");
+  const first = s[0];
+  const rest = s.slice(1).replace(/[aeiouyhw]/g, "");
+  return (first + rest).replace(/(.)\1+/g, "$1");
+}
+
+function lev(a, b) {
+  if (a === b) return 0;
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+const keyCache = new Map();
+function key(w) {
+  let k = keyCache.get(w);
+  if (k === undefined) { k = phoneticKey(w); keyCache.set(w, k); }
+  return k;
+}
+
+// Very common short words are weak evidence on their own.
+const STOP = new Set(["a", "an", "the", "and", "of", "to", "in", "on", "at", "is", "it", "for", "with",
+  "i", "we", "you", "be", "are", "this", "that", "our", "your", "s", "m", "p", "them", "they", "then",
+  "than", "there", "their", "these", "those", "what", "was", "were", "has", "have", "had", "his", "her",
+  "him", "she", "he", "its", "it's", "here", "from", "but", "not", "all", "can", "will", "just", "one",
+  "about", "more", "so", "or", "as", "by", "if", "up", "out", "do", "did", "my", "me", "us", "no", "yes",
+  "day", "week", "make", "sure", "also", "be", "been", "who", "how", "when", "where", "which", "i'm",
+  "we're", "you're", "that's", "it's", "here's", "let's"]);
+
+const simCache = new Map();
+
+/** Similarity of a heard word to a script word, 0..1 (cached). */
+function similarity(heard, script) {
+  if (heard === script) return 1;
+  const k = heard + "\u0000" + script;
+  let v = simCache.get(k);
+  if (v === undefined) {
+    v = rawSimilarity(heard, script);
+    if (simCache.size > 200000) simCache.clear();
+    simCache.set(k, v);
+  }
+  return v;
+}
+
+function rawSimilarity(heard, script) {
+  if (!heard || !script) return 0;
+  const kh = key(heard), ks = key(script);
+  // Sound-alike: same consonant skeleton, long enough that it means something
+  // ("wolves"/"wolfs" yes, "this"/"that's" no).
+  if (kh && kh === ks && kh.length >= 3 && Math.abs(heard.length - script.length) <= 2) return 0.8;
+  const short = heard.length <= script.length ? heard : script;
+  const long = short === heard ? script : heard;
+  // A cut-off word ("conju" for "conjunto"), or a plural/ending difference.
+  if (short.length >= 4 && long.startsWith(short)) return short === heard ? 0.65 : 0.55;
+  const d = lev(heard, script);
+  const len = Math.max(heard.length, script.length);
+  // Close spelling: one letter off for 5-7 letter words, two for longer ones.
+  if (Math.min(heard.length, script.length) >= 5 && (d <= 1 || (len >= 8 && d <= 2))) return 0.55;
+  return 0;
+}
+
+// ------------------------------------------------------------------ aligner
+
+const DEFAULTS = {
+  heardWindow: 10,     // how many recent heard tokens to align
+  behind: 14,          // how far back from the position to search
+  ahead: 70,           // how far ahead to search
+  matchMin: 0.5,       // similarity below this is a mismatch
+  mismatch: -0.9,
+  gapHeard: -0.7,      // heard a word that isn't in the script (ad-lib, noise)
+  gapScript: -0.6,     // script word not heard (recognizer missed it)
+  stopWeight: 0.8,     // match weight for very common words (vs 2 for others)
+  farTokens: 16,       // a forward move beyond this counts as a jump
+  farRun: 4,           // unbroken matched words needed for a jump...
+  farContent: 2,       // ...of which this many are not common words
+  backRun: 4,          // same for moving backward (a re-read)
+  backContent: 2,
+  midRun: 3,           // a move past `freeAhead` (but not a jump) needs this run
+  aheadPenalty: 0.15,  // score lost per word beyond `freeAhead` from the expected spot
+  freeAhead: 6,
+  backPenalty: 0.15,
+  ambiguityGap: 0.8,   // if a different spot scores within this, stay put
+};
+
+class Aligner {
+  /**
+   * @param {string[]} tokens   the script's spoken tokens, in order
+   * @param {object} opts       overrides for DEFAULTS
+   */
+  constructor(tokens, opts = {}) {
+    this.s = tokens;
+    this.o = { ...DEFAULTS, ...opts };
+    this.pos = 0;            // index of the next token the reader will say
+    this.lastMove = null;    // {from, to, score, run} for the status display
+    this.heardAtMove = 0;    // heard-word counter when the position last moved
+    this.pending = null;     // a jump waiting for a second update to confirm it
+  }
+
+  setPosition(p, heardTotal = this.heardAtMove) {
+    this.pos = Math.max(0, Math.min(this.s.length, Math.round(p)));
+    this.heardAtMove = heardTotal;
+  }
+
+  /**
+   * Feed the recent heard tokens (most recent last). Returns the new position
+   * (unchanged if the evidence wasn't strong enough).
+   *
+   * heardTotal is a running count of every word heard so far. If the
+   * prompter hasn't moved while the reader kept talking, the reader is
+   * probably further along than the last confident match, so catching up to
+   * them is judged from that expected spot instead of treated as a big jump.
+   */
+  update(heard, heardTotal = null) {
+    const o = this.o;
+    const H = heard.slice(-o.heardWindow).filter((w) => w);
+    if (H.length === 0) return this.pos;
+    const drift = heardTotal === null ? 0
+      : Math.min(o.farTokens * 3, Math.max(0, Math.round((heardTotal - this.heardAtMove) * 0.8)));
+    const expected = this.pos + drift;
+    const lo = Math.max(0, this.pos - o.behind);
+    const hi = Math.min(this.s.length, expected + o.ahead);
+    const W = this.s.slice(lo, hi);
+    const n = H.length, m = W.length;
+    if (!m) return this.pos;
+
+    // DP: score[i][j] best local alignment ending at heard i, script j.
+    // R = length of the unbroken run of matches (heard and script both
+    // consecutive) ending exactly at (i, j); K = how many of those are not
+    // common words. The run at the end is the evidence for where the reader is.
+    const S = new Float64Array((n + 1) * (m + 1));
+    const R = new Int16Array((n + 1) * (m + 1));
+    const K = new Int16Array((n + 1) * (m + 1));
+    const idx = (i, j) => i * (m + 1) + j;
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= m; j++) {
+        const w = W[j - 1];
+        const sim = similarity(H[i - 1], w);
+        const isMatch = sim >= o.matchMin;
+        const stop = STOP.has(w) || w.length <= 2;
+        const weight = isMatch ? sim * (stop ? o.stopWeight : 2) : o.mismatch;
+        const diag = S[idx(i - 1, j - 1)] + weight;
+        const up = S[idx(i - 1, j)] + o.gapHeard;
+        const left = S[idx(i, j - 1)] + o.gapScript;
+        let best = 0, run = 0, content = 0;
+        if (diag > best) {
+          best = diag;
+          if (isMatch) {
+            run = R[idx(i - 1, j - 1)] + 1;
+            content = (run > 1 ? K[idx(i - 1, j - 1)] : 0) + (stop ? 0 : 1);
+          }
+        }
+        if (up > best) { best = up; run = 0; content = 0; }
+        if (left > best) { best = left; run = 0; content = 0; }
+        S[idx(i, j)] = best;
+        R[idx(i, j)] = run;
+        K[idx(i, j)] = content;
+      }
+    }
+
+    // Candidates end on a run of matches covering the newest heard word (or
+    // the one before it, since the newest is often half a word).
+    const cands = [];
+    for (const [i, pen] of [[n, 0], [n - 1, 0.6]]) {
+      if (i < 1) continue;
+      for (let j = 1; j <= m; j++) {
+        const run = R[idx(i, j)], content = K[idx(i, j)];
+        // Need 2+ matched words in a row including a meaningful one, or 3+
+        // common words in a row. "and a" alone proves nothing.
+        if (run < 2 || (run < 3 && content < 1)) continue;
+        const sc = S[idx(i, j)] - pen;
+        if (sc <= 0) continue;
+        const newPos = lo + j; // next token after the matched one
+        const d = newPos - this.pos;
+        // Anywhere between the last position and where the reader probably is
+        // now costs nothing; beyond that, or behind, costs per word.
+        const beyond = newPos - expected - o.freeAhead;
+        const adj = sc - (d < 0 ? o.backPenalty * -d : beyond > 0 ? o.aheadPenalty * beyond : 0);
+        cands.push({ newPos, score: sc, run, content, adj });
+      }
+    }
+    if (!cands.length) return this.pos;
+    cands.sort((a, b) => b.adj - a.adj);
+    const best = cands[0];
+    const delta = best.newPos - this.pos;
+    if (delta === 0 || (delta < 0 && delta >= -2)) return this.pos;
+
+    // Ambiguity: a different spot almost as good (the same phrase twice) and
+    // we'd be moving far -> hold until the reader says something unique.
+    const rival = cands.find((c) => Math.abs(c.newPos - best.newPos) > 6 && c.adj > best.adj - o.ambiguityGap);
+    if (rival && Math.abs(delta) > o.freeAhead) return this.pos;
+
+    if (delta < 0 && !(best.run >= o.backRun && best.content >= o.backContent)) return this.pos;
+    // The further past where the reader probably is, the more proof needed.
+    const past = best.newPos - expected;
+    if (past > o.farTokens && !(best.run >= o.farRun && best.content >= o.farContent)) return this.pos;
+    if (past > o.freeAhead && !(best.run >= o.midRun && best.content >= 1)) return this.pos;
+
+    // Jumps (past the expected spot, or backward) must be confirmed by the
+    // next update pointing at the same place. One wrong word lining up with a
+    // repeated phrase never survives a second look.
+    if (past > o.freeAhead || delta < 0) {
+      const p = this.pending;
+      if (!(p && Math.abs(p.newPos - best.newPos) <= 3 && p.heard !== H.join(" "))) {
+        this.pending = { newPos: best.newPos, heard: H.join(" ") };
+        return this.pos;
+      }
+    }
+    this.pending = null;
+
+    this.lastMove = { from: this.pos, to: best.newPos, score: best.score, run: best.run };
+    this.pos = best.newPos;
+    if (heardTotal !== null) this.heardAtMove = heardTotal;
+    return this.pos;
+  }
+}
+
+return { similarity, DEFAULTS, Aligner };
+})();
+
+const __motion_js = (() => {
+// Motion: turns the aligner's jumpy position into smooth movement.
+//
+// The recognizer reports in bursts, and scrolling straight to each new
+// position would jerk the text around. Instead:
+//   1. We measure the reader's pace (words per second) from recent moves.
+//   2. Between updates we keep advancing at that pace, but only a few words
+//      past the last confirmed position, never past a cue card, and only
+//      while the reader is actually talking.
+//   3. The screen follows that estimate with a critically damped spring, so
+//      it eases in and out without overshooting.
+// When a confirmed position lands behind the estimate (we predicted a bit too
+// far), the display holds still until the reader catches up instead of
+// sliding backward, unless it's a real re-read (several words back).
+
+class Pace {
+  constructor({ initial = 2.6, min = 1.2, max = 4.8, window = 6 } = {}) {
+    this.rate = initial;           // spoken tokens per second
+    this.min = min; this.max = max; this.window = window;
+    this.hist = [];                // [{t, pos}]
+  }
+  add(pos, t) {
+    this.hist.push({ t, pos });
+    while (this.hist.length > 2 && t - this.hist[0].t > this.window) this.hist.shift();
+    const a = this.hist[0], b = this.hist[this.hist.length - 1];
+    const dt = b.t - a.t, dp = b.pos - a.pos;
+    if (dt >= 1.5 && dp > 0) {
+      const r = Math.min(this.max, Math.max(this.min, dp / dt));
+      this.rate += (r - this.rate) * 0.5;
+    }
+  }
+  reset() { this.hist = []; }
+}
+
+class Motion {
+  constructor({ maxLead = 2, backHold = 3 } = {}) {
+    this.pace = new Pace();
+    this.maxLead = maxLead;   // furthest the estimate may run past the confirmed position
+    this.backHold = backHold; // a backward correction smaller than this is held, not shown
+    this.pos = 0;             // last confirmed position (tokens)
+    this.posTime = 0;
+    this.limit = Infinity;    // don't predict past this token (next cue)
+    this.speaking = false;
+    this.speakingSince = 0;
+    this.shown = 0;           // what we last returned
+  }
+
+  /** The aligner confirmed a new position. */
+  confirm(pos, t) {
+    if (pos !== this.pos) {
+      if (pos < this.pos) this.pace.reset();
+      this.pace.add(pos, t);
+      this.pos = pos;
+      this.posTime = t;
+      if (pos < this.shown - this.backHold) this.shown = pos; // real re-read: go back
+    }
+  }
+
+  /** Jump without measuring pace (manual nudge, new script). */
+  jump(pos, t) {
+    this.pos = pos; this.posTime = t; this.shown = pos; this.pace.reset();
+  }
+
+  setSpeaking(on, t) {
+    if (on && !this.speaking) this.speakingSince = t;
+    this.speaking = on;
+  }
+
+  setLimit(limit) { this.limit = limit; }
+
+  /** The position to display at time t (fractional tokens). */
+  estimate(t) {
+    let p = this.pos;
+    if (this.speaking) {
+      const since = Math.max(0, t - Math.max(this.posTime, this.speakingSince));
+      p += Math.min(this.maxLead, this.pace.rate * since);
+    }
+    p = Math.min(p, Math.max(this.pos, this.limit));
+    // Never slide backward for small corrections; wait for the reader.
+    if (p < this.shown && this.shown - p <= this.backHold) p = this.shown;
+    this.shown = p;
+    return p;
+  }
+}
+
+/** Critically damped spring, for scroll offsets in pixels. */
+class Spring {
+  constructor(omega = 7) { this.omega = omega; this.x = 0; this.v = 0; }
+  snap(x) { this.x = x; this.v = 0; }
+  step(target, dt) {
+    dt = Math.min(dt, 0.05);
+    const w = this.omega;
+    const a = w * w * (target - this.x) - 2 * w * this.v;
+    this.v += a * dt;
+    this.x += this.v * dt;
+    return this.x;
+  }
+}
+
+return { Pace, Motion, Spring };
+})();
+
+const __render_js = (() => {
+// Renders a parsed script into the prompter stage and maps word positions to
+// scroll offsets. Used by both the operator preview and the talent screen.
+
+// Notes that are instructions to the team, not part of what's said. Name
+// placeholders like [ANCHOR 2] are NOT hidden: they mark where a name goes.
+const HIDEABLE = /^\[\s*(verify|add|flagged|simplify|note|todo)\b/i;
+
+class Stage {
+  /**
+   * @param {HTMLElement} root  element with .stage-text inside
+   */
+  constructor(root) {
+    this.root = root;
+    this.text = root.querySelector(".stage-text");
+    this.wordEls = [];
+    this.lines = [];
+    this.cueEls = new Map(); // token index that follows the cue -> cue element
+    this.dimmedTo = 0;
+  }
+
+  render(script, { onWordClick, hideNotes = false } = {}) {
+    this.script = script;
+    const frag = document.createDocumentFragment();
+    this.wordEls = new Array(script.words.length);
+    this.cueEls.clear();
+    let pendingCue = null;
+    for (const item of script.items) {
+      if (item.type === "tag") {
+        const d = document.createElement("div");
+        d.className = "tag";
+        d.textContent = item.text;
+        frag.appendChild(d);
+      } else if (item.type === "cue") {
+        const d = document.createElement("div");
+        d.className = "cue";
+        d.textContent = "▶ " + item.text.toUpperCase();
+        frag.appendChild(d);
+        pendingCue = d;
+      } else if (item.type === "note") {
+        if (hideNotes && HIDEABLE.test("[" + item.text)) continue;
+        const d = document.createElement("div");
+        d.className = "note";
+        d.textContent = item.text;
+        frag.appendChild(d);
+      } else {
+        const p = document.createElement("p");
+        for (const w of item.words) {
+          if (w.br) { p.appendChild(document.createElement("br")); continue; }
+          if (w.note && hideNotes && HIDEABLE.test(w.text)) continue;
+          const span = document.createElement("span");
+          span.className = w.note ? "w note" : "w";
+          span.textContent = w.text;
+          const wi = script.words.indexOf(w);
+          span.dataset.w = wi;
+          this.wordEls[wi] = span;
+          if (pendingCue && !w.note && w.tokenEnd > w.tokenStart) {
+            this.cueEls.set(w.tokenStart, pendingCue);
+            pendingCue = null;
+          }
+          p.appendChild(span);
+          p.appendChild(document.createTextNode(" "));
+        }
+        frag.appendChild(p);
+      }
+    }
+    const end = document.createElement("div");
+    end.className = "end";
+    end.textContent = "END OF SHOW";
+    frag.appendChild(end);
+    this.endEl = end;
+    if (pendingCue) this.cueEls.set(script.tokens.length, pendingCue);
+    this.text.replaceChildren(frag);
+    this.dimmedTo = 0;
+    if (onWordClick) {
+      this.text.onclick = (e) => {
+        const el = e.target.closest(".w");
+        if (el) onWordClick(Number(el.dataset.w));
+      };
+    }
+    this.layout();
+  }
+
+  /** Recompute where each line sits. Call after render, resize or font change. */
+  layout() {
+    const s = this.script;
+    if (!s) return;
+    const lines = [];
+    let cur = null;
+    for (let wi = 0; wi < s.words.length; wi++) {
+      const w = s.words[wi];
+      const el = this.wordEls[wi];
+      if (!el || w.note || w.tokenEnd === w.tokenStart) continue;
+      const top = el.offsetTop;
+      if (!cur || Math.abs(top - cur.top) > 2) {
+        cur = { top, height: el.offsetHeight, t0: w.tokenStart, t1: w.tokenEnd };
+        lines.push(cur);
+      } else {
+        cur.t1 = w.tokenEnd;
+      }
+    }
+    // Where the eye moves after each line: the next line, or a cue card that
+    // sits in between (the prompter parks on the card during the package).
+    for (let i = 0; i < lines.length; i++) {
+      const next = lines[i + 1];
+      const cue = next ? this.cueEls.get(next.t0) : this.cueEls.get(s.tokens.length);
+      lines[i].cueTop = cue ? cue.offsetTop : null;
+      lines[i].nextTop = cue ? cue.offsetTop : next ? next.top : this.endEl.offsetTop;
+    }
+    this.lines = lines;
+  }
+
+  /** Vertical position (px, within the text) of fractional token position p. */
+  yFor(p) {
+    const L = this.lines;
+    if (!L.length) return 0;
+    if (p <= L[0].t0) return L[0].top;
+    // Binary search for the line containing token floor(p).
+    let lo = 0, hi = L.length - 1;
+    const k = Math.floor(p);
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (L[mid].t0 <= k) lo = mid; else hi = mid - 1;
+    }
+    const line = L[lo];
+    // Parked exactly at the start of a block that follows a cue: show the cue.
+    const prev = L[lo - 1];
+    if (p === line.t0 && prev && prev.cueTop !== null) return prev.cueTop;
+    const span = Math.max(1, line.t1 - line.t0);
+    const frac = Math.min(1, Math.max(0, (p - line.t0) / span));
+    return line.top + frac * (line.nextTop - line.top);
+  }
+
+  /** Dim words already read (talent preference). */
+  dim(p, on) {
+    const s = this.script;
+    if (!s) return;
+    const upto = on ? Math.floor(p) : 0;
+    if (upto === this.dimmedTo) return;
+    const lo = Math.min(upto, this.dimmedTo), hi = Math.max(upto, this.dimmedTo);
+    for (let t = lo; t < hi && t < s.tokens.length; t++) {
+      const el = this.wordEls[s.tokens[t].word];
+      if (el) el.classList.toggle("read", t < upto);
+    }
+    this.dimmedTo = upto;
+  }
+
+  /** Index of the first token on the line after/before the one holding p. */
+  lineStep(p, dir) {
+    const L = this.lines;
+    if (!L.length) return 0;
+    let i = L.findIndex((l) => l.t1 > Math.floor(p));
+    if (i < 0) i = L.length - 1;
+    const j = Math.max(0, Math.min(L.length - 1, i + dir));
+    return L[j].t0;
+  }
+}
+
+return { Stage };
+})();
+
+const __host_js = (() => {
+// Where this copy of the prompter is running:
+//   "pages"  GitHub Pages (the normal site)
+//   "claude" the claude.ai copy (build-claude.mjs)
+//   "gas"    the Google Apps Script web app (build-gas.mjs)
+const meta = typeof document !== "undefined" && document.querySelector('meta[name="rgn-host"]');
+const host = (meta && meta.content)
+  || (typeof window !== "undefined" && window.google && window.google.script ? "gas" : "pages");
+
+/** Call a function in the Apps Script project (gas/Code.gs). */
+function gasCall(fn, ...args) {
+  return new Promise((resolve, reject) => {
+    window.google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](...args);
+  });
+}
+
+return { host, gasCall };
+})();
+
+const __engines_js = (() => {
+// Speech engines. Both report the same things to the app:
+//   onWords(text, isFinal)   recognized text so far for the current phrase
+//   onLevel(level)           microphone level 0..1 (for the meter and pauses)
+//   onState(state, detail)   "loading" | "listening" | "stopped" | "error"
+//
+// VoskEngine runs entirely on this device (WebAssembly). No audio leaves it.
+// WebSpeechEngine uses the browser's built-in recognizer. In Safari and
+// Chrome that may send audio to Apple or Google, so it is opt-in.
+
+const { host, gasCall } = __host_js;
+
+const MODEL_FILE = "vosk-model-small-en-us-0.15.tar.gz";
+// On Apps Script the page can't load files from its own server, so the
+// library comes from jsDelivr and the model from GitHub's raw file server
+// (a different address from github.io). If the school network blocks those
+// too, both come through the Apps Script server instead.
+const RAW_MODEL = "https://raw.githubusercontent.com/kh84949vnj-ui/redgold-news/main/prompter/models/" + MODEL_FILE;
+const VOSK_CDN = "https://cdn.jsdelivr.net/npm/vosk-browser@0.0.8/dist/vosk.js";
+const MODEL_URL = host === "gas" ? RAW_MODEL : new URL("../models/" + MODEL_FILE, location.href).href;
+
+function addScript(attrs) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    Object.assign(s, attrs);
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("load failed"));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureVosk() {
+  if (window.Vosk) return;
+  if (host !== "gas") throw new Error("The speech library didn't load.");
+  try { await addScript({ src: VOSK_CDN }); } catch (e) { /* try the server */ }
+  if (window.Vosk) return;
+  const code = await gasCall("getVosk");
+  await addScript({ src: URL.createObjectURL(new Blob([code], { type: "text/javascript" })) });
+  if (!window.Vosk) throw new Error("The speech library didn't load.");
+}
+
+/** The model through the Apps Script server, in pieces (it is 40 MB). */
+async function modelViaServer(onProgress) {
+  const size = await gasCall("getModelSize");
+  const step = 4 * 1024 * 1024;
+  const parts = [];
+  for (let at = 0; at < size; at += step) {
+    if (onProgress) onProgress(Math.round((at / size) * 100));
+    const b64 = await gasCall("getModelChunk", at, Math.min(step, size - at));
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    parts.push(bytes);
+  }
+  return URL.createObjectURL(new Blob(parts, { type: "application/gzip" }));
+}
+
+let modelPromise = null;
+function loadModel(onProgress) {
+  if (!modelPromise) {
+    modelPromise = (async () => {
+      await ensureVosk();
+      try {
+        return await window.Vosk.createModel(MODEL_URL);
+      } catch (e) {
+        if (host !== "gas") throw e;
+        return window.Vosk.createModel(await modelViaServer(onProgress));
+      }
+    })();
+    modelPromise.catch(() => { modelPromise = null; });
+  }
+  return modelPromise;
+}
+
+async function openMic(deviceId) {
+  return navigator.mediaDevices.getUserMedia({
+    video: false,
+    audio: {
+      deviceId: deviceId ? { exact: deviceId } : undefined,
+      channelCount: 1,
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    },
+  });
+}
+
+function rms(buf) {
+  let s = 0;
+  for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
+  return Math.sqrt(s / buf.length);
+}
+
+class VoskEngine {
+  constructor(handlers) {
+    this.h = handlers;
+    this.label = "On this device (Vosk)";
+    this.private = true;
+  }
+
+  /** words: the script's vocabulary, used to limit recognition (null = open). */
+  async start({ words = null, deviceId = null } = {}) {
+    this.h.onState("loading", "Loading the speech model (about 40 MB, first time only)…");
+    const model = await loadModel((pct) => this.h.onState("loading", `Loading the speech model through Google (${pct}%)…`));
+    this.stream = await openMic(deviceId);
+    if (this.h.onMic) this.h.onMic();
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new Ctx();
+    if (this.ctx.state === "suspended") await this.ctx.resume();
+    const grammar = words && words.length ? JSON.stringify([...words, "[unk]"]) : undefined;
+    this.rec = new model.KaldiRecognizer(this.ctx.sampleRate, grammar);
+    this.rec.on("partialresult", (m) => this.h.onWords(m.result.partial || "", false));
+    this.rec.on("result", (m) => this.h.onWords(m.result.text || "", true));
+    this.rec.on("error", (m) => this.h.onState("error", m.error || "Recognizer error"));
+    this.src = this.ctx.createMediaStreamSource(this.stream);
+    // ScriptProcessor is old but is the one audio tap that works the same in
+    // Safari on Mac, iPad and iPhone. 2048 frames is ~43 ms at 48 kHz.
+    this.node = this.ctx.createScriptProcessor(2048, 1, 1);
+    this.node.onaudioprocess = (e) => {
+      const buf = e.inputBuffer;
+      this.h.onLevel(rms(buf.getChannelData(0)));
+      try { this.rec.acceptWaveform(buf); } catch (err) { /* dropped chunk */ }
+    };
+    this.src.connect(this.node);
+    // Some browsers only run the processor when it's connected to the output.
+    this.mute = this.ctx.createGain();
+    this.mute.gain.value = 0;
+    this.node.connect(this.mute);
+    this.mute.connect(this.ctx.destination);
+    this.h.onState("listening", "Listening on this device. No audio leaves it.");
+  }
+
+  stop() {
+    try { this.node && this.node.disconnect(); } catch (e) {}
+    try { this.src && this.src.disconnect(); } catch (e) {}
+    try { this.rec && this.rec.remove && this.rec.remove(); } catch (e) {}
+    if (this.stream) this.stream.getTracks().forEach((t) => t.stop());
+    if (this.ctx) this.ctx.close().catch(() => {});
+    this.node = this.src = this.rec = this.stream = this.ctx = null;
+    this.h.onState("stopped", "");
+  }
+}
+
+class WebSpeechEngine {
+  constructor(handlers) {
+    this.h = handlers;
+    this.label = "Browser speech (Safari/Chrome)";
+    this.private = false;
+  }
+
+  static available() {
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  }
+
+  async start({ deviceId = null } = {}) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) throw new Error("This browser has no built-in speech recognition.");
+    this.on = true;
+    // A level meter needs its own mic tap; if the browser refuses a second
+    // one, the meter just stays flat.
+    try {
+      this.stream = await openMic(deviceId);
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new Ctx();
+      const src = this.ctx.createMediaStreamSource(this.stream);
+      this.an = this.ctx.createAnalyser();
+      this.an.fftSize = 1024;
+      src.connect(this.an);
+      const buf = new Float32Array(this.an.fftSize);
+      const tick = () => {
+        if (!this.on) return;
+        this.an.getFloatTimeDomainData(buf);
+        this.h.onLevel(rms(buf));
+        this.raf = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch (e) { /* meter unavailable */ }
+
+    const begin = () => {
+      const r = new SR();
+      r.lang = "en-US";
+      r.continuous = true;
+      r.interimResults = true;
+      r.maxAlternatives = 1;
+      let finalCount = 0;
+      r.onresult = (e) => {
+        // Report each result once as final, and the newest unfinished one as partial.
+        for (let i = finalCount; i < e.results.length; i++) {
+          const res = e.results[i];
+          if (res.isFinal) { this.h.onWords(res[0].transcript, true); finalCount = i + 1; }
+          else { this.h.onWords(res[0].transcript, false); break; }
+        }
+      };
+      r.onerror = (e) => {
+        if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+          this.on = false;
+          this.h.onState("error", "Speech recognition was blocked. Check the browser's microphone permission.");
+        }
+      };
+      // Browsers end recognition after silence; restart while we're on.
+      r.onend = () => { if (this.on) setTimeout(() => this.on && begin(), 150); };
+      r.start();
+      this.r = r;
+    };
+    begin();
+    this.h.onState("listening", "Listening with the browser's speech service. Audio may be sent to Apple or Google.");
+  }
+
+  stop() {
+    this.on = false;
+    try { this.r && this.r.abort(); } catch (e) {}
+    cancelAnimationFrame(this.raf);
+    if (this.stream) this.stream.getTracks().forEach((t) => t.stop());
+    if (this.ctx) this.ctx.close().catch(() => {});
+    this.r = this.stream = this.ctx = null;
+    this.h.onState("stopped", "");
+  }
+}
+
+// On claude.ai the page can't open the microphone itself. The platform's
+// dictation listens instead and hands the page text (it uses Anthropic's
+// speech service, so audio does leave the device). Chrome only.
+const onClaude = host === "claude";
+let dictation = null;
+if (onClaude && window.claude && window.claude.use) {
+  window.claude.use("dictation").then((d) => { dictation = d; }).catch(() => {});
+}
+
+class DictationEngine {
+  constructor(handlers) {
+    this.h = handlers;
+    this.label = "claude.ai dictation";
+    this.private = false;
+  }
+
+  static available() { return !!dictation; }
+
+  /** Must run straight from the click: start() is called before any await. */
+  start() {
+    const d = dictation;
+    if (!d) return Promise.reject(new Error("Voice following here needs Chrome. You can still scroll by hand."));
+    // No microphone level here: treat each new word as "speaking now".
+    const bump = () => { this.h.onLevel(0.2); clearTimeout(this.quiet); this.quiet = setTimeout(() => this.h.onLevel(0), 300); };
+    // onWords wants the words of the current phrase; finals arrive as pieces.
+    let phrase = "";
+    this.off = [
+      d.onPartial(({ text }) => { if (text) { bump(); this.h.onWords((phrase + " " + text).trim(), false); } }),
+      d.onFinal(({ text }) => { bump(); phrase = (phrase + " " + text).trim(); this.h.onWords(phrase, true); phrase = ""; }),
+      d.onState(({ state, reason }) => {
+        if (state === "listening") this.h.onState("listening", "Listening with claude.ai dictation.");
+        else if (state === "idle" && reason && reason !== "stopped") {
+          const why = reason === "not_granted" ? "Dictation is turned off for this page. Turn it on in the page's Permissions menu."
+            : reason === "hidden" ? "Listening stopped because the page was hidden. Press Listen again."
+            : reason === "viewer_stopped" ? "Listening stopped." : "Dictation stopped (" + reason + "). Press Listen again.";
+          this.h.onState("error", why);
+        }
+      }),
+    ];
+    this.h.onState("loading", "Starting dictation…");
+    const p = d.start({ language: "en" });
+    return p.catch((e) => {
+      this.cleanup();
+      const m = e && e.code === "not_granted" ? "Dictation was not allowed for this page."
+        : e && e.code === "unavailable" ? "Dictation isn't available here. Use Chrome, or scroll by hand."
+        : "Couldn't start dictation" + (e && e.code ? " (" + e.code + ")" : "") + ".";
+      throw new Error(m);
+    });
+  }
+
+  cleanup() {
+    (this.off || []).forEach((u) => { try { u(); } catch (e) {} });
+    this.off = null;
+    clearTimeout(this.quiet);
+  }
+
+  stop() {
+    this.cleanup();
+    if (dictation) dictation.stop().catch(() => {});
+    this.h.onState("stopped", "");
+  }
+}
+
+return { VoskEngine, WebSpeechEngine, onClaude, DictationEngine };
+})();
+
+const __segments_js = (() => {
+// Split a script into rundown blocks for the editor, and join it back.
+//
+// A script in the weekly doc format is text broken up by cue lines:
+//   anchor open / [CUE INTRO SEQUENCE] / news / [CUE BUMPER] / [WEATHER] ... /
+//   [CUE BUMPER] / [CUE STUDENT VOICES] / [CUE MENU] / close / [CUE OUTRO]
+// Each run of text between cue lines is one editable block; each cue line is a
+// fixed block. Joining the blocks gives back the same script text.
+
+const CUE_LINE = /^\s*\[\s*(cue|roll)\b[^\]]*\]\s*$/i;
+
+/** -> [{type:"text", text} | {type:"cue", text}] in order */
+function splitScript(text) {
+  const lines = String(text || "").replace(/\r\n?/g, "\n").split("\n");
+  const out = [];
+  let buf = [];
+  const flush = () => {
+    const t = buf.join("\n").replace(/^\n+|\n+$/g, "");
+    if (t.trim()) out.push({ type: "text", text: t });
+    buf = [];
+  };
+  for (const line of lines) {
+    if (CUE_LINE.test(line)) {
+      flush();
+      out.push({ type: "cue", text: line.trim().slice(1, -1).trim() });
+    } else buf.push(line);
+  }
+  flush();
+  return out;
+}
+
+function joinScript(blocks) {
+  return blocks
+    .map((b) => (b.type === "cue" ? `[${b.text}]` : b.text.replace(/^\n+|\n+$/g, "")))
+    .filter((s) => s.trim())
+    .join("\n\n") + "\n";
+}
+
+/** Friendly names for blocks, based on where they sit relative to the cues. */
+function nameBlocks(blocks) {
+  let seenIntro = false, seenMenu = false, firstText = true, newsNamed = false, lastCue = "";
+  return blocks.map((b) => {
+    if (b.type === "cue") {
+      const t = b.text.toUpperCase();
+      lastCue = t;
+      if (t.includes("INTRO")) seenIntro = true;
+      if (t.includes("MENU")) seenMenu = true;
+      return { ...b, name: titleCase(b.text.replace(/^(cue|roll)\s*/i, "")) || "Cue" };
+    }
+    let name = "Script";
+    if (/^\s*\[WEATHER\]/i.test(b.text)) name = "Weather";
+    else if (lastCue.includes("VOICES") && !seenMenu) name = "Student voices notes";
+    else if (seenMenu) name = "Anchor close";
+    else if (firstText && !seenIntro && blocks.some((x) => x.type === "cue")) name = "Anchor open";
+    else if (seenIntro && !newsNamed) { name = "News block"; newsNamed = true; }
+    firstText = false;
+    return { ...b, name };
+  });
+}
+
+function titleCase(s) {
+  return s.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase()).replace(/\(Voiceover\)/i, "(voiceover)");
+}
+
+/** Things still to fill in: inline [ANCHOR 1] placeholders, [VERIFY …], [ADD …], [FLAGGED …]. */
+function todos(blocks) {
+  const out = [];
+  blocks.forEach((b, bi) => {
+    if (b.type !== "text") return;
+    for (const m of b.text.matchAll(/\[([^\]]+)\]/g)) {
+      const inner = m[1].trim();
+      const lineStart = b.text.lastIndexOf("\n", m.index) + 1;
+      const lineEnd = b.text.indexOf("\n", m.index);
+      const line = b.text.slice(lineStart, lineEnd < 0 ? undefined : lineEnd).trim();
+      const wholeLine = line === m[0];
+      let kind = null;
+      if (/^(verify|add|flagged)\b/i.test(inner)) kind = inner.split(/[:\s]/)[0].toUpperCase();
+      else if (!wholeLine && /^(anchor\s*\d|weather reporter)$/i.test(inner)) kind = "NAME";
+      if (kind) out.push({ block: bi, index: m.index, length: m[0].length, kind, text: inner });
+    }
+  });
+  return out;
+}
+
+/**
+ * The scripts the landing page offers, carved out of the weekly draft:
+ *   news:    the anchors' rundown; the weather read becomes a [CUE WEATHER] card
+ *            because the weather reporter reads it separately
+ *   weather: just the weather read
+ */
+function deriveDoc(doc, draftText) {
+  const blocks = splitScript(draftText);
+  const isWeather = (b) => b.type === "text" && /^\s*\[WEATHER\]/i.test(b.text);
+  if (doc === "weather") {
+    const w = blocks.find(isWeather);
+    return w ? w.text.replace(/^\n+|\n+$/g, "") + "\n" : "";
+  }
+  if (doc === "news") {
+    return joinScript(blocks.map((b) => (isWeather(b) ? { type: "cue", text: "CUE WEATHER" } : b)));
+  }
+  return "";
+}
+
+/**
+ * Rewrite a two-anchor script for one anchor: [ANCHOR 2] and [BOTH] parts go
+ * to [ANCHOR 1], handoffs between anchors ("Thanks, [ANCHOR 1].") and the
+ * second introduction ("And I'm [ANCHOR 2].") are dropped, and a speaker tag
+ * that repeats the one before it is removed so the read flows.
+ */
+function oneAnchor(text) {
+  let t = String(text || "");
+  t = t.replace(/^[ \t]*\[(BOTH|ANCHOR[ \t]*2)\][ \t]*$/gim, "[ANCHOR 1]");
+  t = t.replace(/(Thanks|That's right|Thank you),?[ \t]*\[ANCHOR[ \t]*\d\][.!][ \t]*/gi, "");
+  t = t.replace(/And I'm \[ANCHOR[ \t]*2\][.!][ \t]*/g, "");      // "And I'm [ANCHOR 2]. It's..."
+  t = t.replace(/[ \t]*and I'm \[ANCHOR[ \t]*2\]/g, "");          // "I'm [ANCHOR 1] and I'm [ANCHOR 2]."
+  // Drop speaker tags that repeat the previous speaker.
+  const lines = t.split("\n");
+  const out = [];
+  let speaker = null;
+  for (const line of lines) {
+    const tag = line.trim().match(/^\[(ANCHOR\s*\d|BOTH)\]$/i);
+    if (tag) {
+      const who = tag[1].toUpperCase().replace(/\s+/g, " ");
+      if (who === speaker) continue;
+      speaker = who;
+    } else if (/^\s*\[(cue|roll)\b/i.test(line) || /^\s*\[WEATHER\]/i.test(line)) {
+      speaker = null; // a cue or segment change resets the speaker
+    }
+    out.push(line);
+  }
+  return out.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+/**
+ * Put real names in place of [ANCHOR 1], [ANCHOR 2] and [WEATHER REPORTER]
+ * for the prompter and copies. A placeholder on its own line is a speaker tag
+ * and stays a tag ("[Sam]"); inside a sentence it becomes the name.
+ * Names left blank keep their placeholder.
+ */
+function fillNames(text, names = {}) {
+  const map = [["ANCHOR\\s*1", names.a1], ["ANCHOR\\s*2", names.a2], ["WEATHER REPORTER", names.wx]];
+  let t = String(text || "");
+  for (const [pat, name] of map) {
+    const n = String(name || "").trim().replace(/[[\]]/g, "");
+    if (!n) continue;
+    t = t.replace(new RegExp(`^([ \\t]*)\\[${pat}\\]([ \\t]*)$`, "gim"), `$1[${n}]$2`);
+    t = t.replace(new RegExp(`\\[${pat}\\]`, "gi"), n);
+  }
+  return t;
+}
+
+return { splitScript, joinScript, nameBlocks, todos, deriveDoc, oneAnchor, fillNames };
+})();
+
+const __editor_js = (() => {
+// Edit view: the whole script in one box. Cues stay in the text as their own
+// lines ([CUE BUMPER]); speakers are [ANCHOR 1] lines; notes like
+// [VERIFY: location] sit inside sentences and are never read.
+const { todos } = __segments_js;
+
+const WPM = 150;
+const spokenWords = (t) =>
+  (t.replace(/\[[^\]]*\]/g, " ").match(/[A-Za-z0-9][\w'’.-]*/g) || []).length;
+const mmss = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, "0")}`;
+const TAG = /^\s*\[(ANCHOR\s*\d|BOTH)\]\s*\n/i;
+
+class Editor {
+  /**
+   * @param {HTMLElement} root  the editor section (.script-box textarea, .todo, .total inside)
+   * @param {object} opts  { onChange(text), names() -> {a1, a2, wx} }
+   */
+  constructor(root, { onChange, names } = {}) {
+    this.root = root;
+    this.ta = root.querySelector(".script-box");
+    this.todoEl = root.querySelector(".todo");
+    this.totalEl = root.querySelector(".total");
+    this.onChange = onChange || (() => {});
+    this.names = names || (() => ({}));
+    this.timer = null;
+    this.ta.addEventListener("input", () => {
+      this.grow();
+      this.updateCounts();
+      this.changed();
+    });
+    window.addEventListener("resize", () => this.grow());
+  }
+
+  setText(text) {
+    this.ta.value = String(text || "").replace(/\n+$/, "");
+    this.grow();
+    this.updateCounts();
+  }
+
+  getText() { return this.ta.value.replace(/\s+$/, "") + "\n"; }
+
+  // ---------------------------------------------------------------- paragraphs
+  paras() { return this.ta.value.split(/\n{2,}/); }
+
+  setParas(paras) {
+    this.ta.value = paras.join("\n\n");
+    this.grow();
+    this.updateCounts();
+    this.changed(true);
+  }
+
+  /**
+   * Add a paragraph before the first one matching `before` (or, failing that,
+   * before the first [CUE BUMPER], which ends the news). Uses the other anchor
+   * from whoever read just before, or [ANCHOR 1] with one anchor.
+   */
+  insertParagraph(body, before, single = false) {
+    const paras = this.paras();
+    let at = paras.findIndex((p) => before && before.test(p));
+    if (at < 0) at = paras.findIndex((p) => /^\s*\[CUE BUMPER\]/i.test(p));
+    if (at < 0) at = paras.length;
+    const prevTag = paras.slice(0, at).reverse().join("\n").match(/\[ANCHOR (\d)\]/i);
+    const anchor = single ? 1 : prevTag && prevTag[1] === "1" ? 2 : 1;
+    paras.splice(at, 0, `[ANCHOR ${anchor}]\n${body}`);
+    this.setParas(paras);
+    return anchor;
+  }
+
+  /** Remove the paragraph whose spoken text is exactly `body`. False if it was edited. */
+  removeParagraph(body) {
+    const paras = this.paras();
+    const i = paras.findIndex((p) => p.replace(TAG, "").trim() === body.trim());
+    if (i < 0) return false;
+    paras.splice(i, 1);
+    this.setParas(paras);
+    return true;
+  }
+
+  /** Swap one paragraph's spoken text for another, keeping its speaker tag. */
+  replaceParagraph(oldBody, newBody) {
+    const paras = this.paras();
+    const i = paras.findIndex((p) => p.replace(TAG, "").trim() === oldBody.trim());
+    if (i < 0) return false;
+    const tag = paras[i].match(TAG);
+    paras[i] = (tag ? tag[0] : "") + newBody;
+    this.setParas(paras);
+    return true;
+  }
+
+  // ---------------------------------------------------------------- display
+  grow() {
+    this.ta.style.height = "auto";
+    this.ta.style.height = this.ta.scrollHeight + 2 + "px";
+  }
+
+  updateCounts() {
+    const w = spokenWords(this.ta.value);
+    this.totalEl.textContent = w ? `${w} words · about ${mmss((w / WPM) * 60)} on camera` : "Empty";
+    this.renderTodos();
+  }
+
+  /** Re-check the list after names change. */
+  refresh() { this.renderTodos(); }
+
+  /** How many things are still open (for the heads-up in Prompt). */
+  openItems() {
+    return this.todoList();
+  }
+
+  todoList() {
+    const n = this.names();
+    const named = { "ANCHOR 1": n.a1, "ANCHOR 2": n.a2, "WEATHER REPORTER": n.wx };
+    const items = todos([{ type: "text", text: this.ta.value }])
+      .filter((t) => !(t.kind === "NAME" && named[t.text.toUpperCase().replace(/\s+/g, " ")]));
+    // One entry per missing name, not one per mention.
+    const seen = new Set();
+    return items.filter((t) => {
+      const k = t.kind === "NAME" ? "NAME:" + t.text.toUpperCase() : t.kind + t.index;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }
+
+  renderTodos() {
+    const list = this.todoList();
+    this.todoEl.replaceChildren();
+    if (!list.length) {
+      const p = document.createElement("p");
+      p.className = "todo-done";
+      p.textContent = this.ta.value.trim() ? "Nothing left to fill in." : "";
+      this.todoEl.appendChild(p);
+      return;
+    }
+    const h = document.createElement("p");
+    h.className = "todo-head";
+    h.textContent = `${list.length} thing${list.length === 1 ? "" : "s"} to fill in before recording`;
+    this.todoEl.appendChild(h);
+    const ul = document.createElement("ul");
+    for (const t of list) {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = t.kind === "NAME" ? `Who is ${titleCase(t.text)}?` : t.text;
+      btn.className = "todo-item todo-" + t.kind.toLowerCase();
+      btn.onclick = () => (t.kind === "NAME"
+        ? this.root.dispatchEvent(new CustomEvent("need-names", { bubbles: true }))
+        : this.reveal(`[${t.text}]`));
+      li.appendChild(btn);
+      ul.appendChild(li);
+    }
+    this.todoEl.appendChild(ul);
+  }
+
+  /** Select `needle` in the box and scroll so it's in view. */
+  reveal(needle) {
+    const at = this.ta.value.indexOf(needle);
+    if (at < 0) return;
+    this.ta.focus({ preventScroll: true });
+    this.ta.setSelectionRange(at, at + needle.length);
+    // Measure where that text sits inside the tall box with a hidden copy.
+    const cs = getComputedStyle(this.ta);
+    const m = document.createElement("div");
+    for (const p of ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "paddingTop",
+      "paddingRight", "paddingBottom", "paddingLeft", "borderTopWidth", "borderLeftWidth", "borderRightWidth", "boxSizing"]) {
+      m.style[p] = cs[p];
+    }
+    Object.assign(m.style, { position: "absolute", visibility: "hidden", whiteSpace: "pre-wrap",
+      overflowWrap: "break-word", width: this.ta.offsetWidth + "px", borderStyle: "solid" });
+    m.textContent = this.ta.value.slice(0, at);
+    const mark = document.createElement("span");
+    mark.textContent = "|";
+    m.appendChild(mark);
+    document.body.appendChild(m);
+    const y = mark.offsetTop;
+    m.remove();
+    const scroller = this.root;
+    const top = this.ta.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+    scroller.scrollTo({ top: Math.max(0, top + y - scroller.clientHeight / 3), behavior: "smooth" });
+  }
+
+  changed(now = false) {
+    clearTimeout(this.timer);
+    const fire = () => this.onChange(this.getText());
+    if (now) fire();
+    else this.timer = setTimeout(fire, 400);
+  }
+}
+
+function titleCase(s) {
+  return s.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
+}
+
+return { Editor };
+})();
+
+const __board_js = (() => {
+// Board agenda items -> lines an anchor can read.
+//
+// Agenda titles are written for the record ("Approval of Purchase for Dual
+// Enrollment Textbooks for the Spring 2027 Semester for Jimmy Carter ECHS,
+// presented by …"). This turns them into a plain phrase and a sentence, and
+// adds a [SIMPLIFY] note when the phrase is still long.
+
+const PREFIXES = [
+  [/^consider and take (possible )?action (to|on) /i, "whether to "],
+  [/^approval to /i, "whether to "],
+  [/^approval of /i, "whether to approve "],
+  [/^recognition of /i, "a recognition of "],
+  [/^report on /i, "a report on "],
+  [/^announcement of /i, "an announcement of "],
+  [/^discussion (of|on) /i, "a discussion of "],
+  [/^discuss /i, "a discussion of "],
+  [/^update on /i, "an update on "],
+];
+
+/** "Approval of Purchase for X, presented by Y" -> "whether to approve the purchase for X" */
+function plainItem(text) {
+  let t = String(text)
+    .replace(/,?\s*(presented by|item lead:).*/i, "")       // who presents it
+    .replace(/\s*\((texas )?government code[^)]*\)/gi, "")  // legal citations
+    .replace(/\s*\([^)]*\)\s*$/, "")                         // trailing (dates)
+    .replace(/[\s.:-]+$/, "")
+    .trim();
+  for (const [re, lead] of PREFIXES) {
+    if (re.test(t)) {
+      let rest = t.replace(re, "");
+      if (lead.endsWith("approve ") && /^(purchase|memorandum|change order|agreement|contract|report|renewal|policy|budget|donation)/i.test(rest)) {
+        rest = "the " + rest;
+      }
+      return lead + plainCase(rest);
+    }
+  }
+  return "the " + plainCase(t.replace(/^the\s+/i, ""));
+}
+
+// Record-keeping words that agendas capitalize but people don't say that way.
+// Names, acronyms (SAT, TELPAS, ECHS) and anything else stay as written.
+const COMMON = new Set(("purchase purchases approval books book recommended library report reports renewal " +
+  "license licenses order change memorandum understanding project services service replacement renovation " +
+  "renovations field plan plans semester year exam textbooks program programs support professional development " +
+  "instructional additional district-wide districtwide exterior door doors gate numbering signage window film " +
+  "resistant quotation through purchasing cooperative cooperatives contract contracts agreement policy update " +
+  "budget transfer amendments open period tax collectors' recognition observance improvement campus targeted " +
+  "goals benchmark aligned action recommendations time use tracker self-assessment instrument architectural " +
+  "entry hardening key cores cooling tower crew cab passenger van sports complex baseball users user special " +
+  "education department's department appraiser called meeting recognitions student students school").split(" "));
+
+function plainCase(s) {
+  // A common word right after a name-like capitalized word is part of the
+  // name ("National School Psychologist Week"), so it keeps its capital.
+  const words = s.split(" ");
+  const isName = (w) => /^[A-Z][a-z'-]*$/.test(w) && !COMMON.has(w.toLowerCase());
+  return words.map((w, i) => (COMMON.has(w.toLowerCase()) && /^[A-Z][a-z'-]*$/.test(w) && !(i > 0 && isName(words[i - 1]))
+    ? w.toLowerCase() : w)).join(" ");
+}
+
+function sayTime(t) {
+  const m = String(t || "").match(/(\d{1,2}):(\d\d) ([AP])M/i);
+  if (!m) return t;
+  return `${m[1]}${m[2] === "00" ? "" : ":" + m[2]} ${m[3].toLowerCase()}.m.`;
+}
+
+/** "Wednesday, November 18, 6:00 PM" -> {day: "Wednesday", time: "6 p.m."} */
+function meetingWhen(when) {
+  const day = String(when).split(",")[0].trim();
+  const time = sayTime(String(when).split(",").pop().trim());
+  return { day, time };
+}
+
+function meetingIntro(meeting) {
+  const { day, time } = meetingWhen(meeting.when);
+  const end = time.endsWith(".") ? "" : ".";
+  const title = String(meeting.title || "").trim();
+  if (/^(regular|special|called)/i.test(title) || /workshop/i.test(title)) {
+    return `The school board meets ${day} at ${time}${end}`;
+  }
+  return `The school board's ${title.replace(/\s*meeting$/i, "").toLowerCase()} meets ${day} at ${time}${end}`;
+}
+
+/**
+ * The sentence(s) for one checked item. `first` = no other item from this
+ * meeting is in the script yet, so this one opens with the meeting time.
+ * item === null means "just mention the meeting" (agenda not posted).
+ */
+function boardLine(meeting, item, first) {
+  if (!item) return `${meetingIntro(meeting)} The agenda will be posted on BoardBook.`;
+  const phrase = plainItem(item.text);
+  const long = phrase.split(/\s+/).length > 16 ? " [SIMPLIFY: put this in your own words]" : "";
+  return first
+    ? `${meetingIntro(meeting)} One thing on the agenda is ${phrase}.${long}`
+    : `The board will also look at ${phrase}.${long}`;
+}
+
+/** Stable key for a checkbox. */
+function itemKey(meeting, item) {
+  return `${meeting.url}#${item ? item.number : "meeting"}`;
+}
+
+return { plainItem, meetingWhen, boardLine, itemKey };
+})();
+
+const __board_panel_js = (() => {
+// News rundown: the week's school board agenda, with a checkbox per item.
+// Checking adds a plain-English line to the script; unchecking takes it out.
+// Choices are kept with the news script (meta.board: key -> the added text).
+const { boardLine, itemKey } = __board_js;
+
+/**
+ * @param {object} app  what the panel needs from the page:
+ *   box            the panel element
+ *   meetings()     this week's board meetings (or [])
+ *   picked()       {key: text} already added
+ *   setPicked(m)   save {key: text}
+ *   editor         the script editor (insert/remove/replaceParagraph)
+ *   oneAnchor()    true when the script has one anchor
+ *   note(text)     show a short message
+ *   changed()      refresh the rest of the page
+ */
+function boardPanel(app) {
+  let studentOnly = true;
+
+  function render() {
+    const box = app.box;
+    const meetings = app.meetings();
+    box.hidden = !meetings.length;
+    if (!meetings.length) { box.replaceChildren(); return; }
+    const picked = app.picked();
+    const wasOpen = box.querySelector("details")?.open;
+    const det = document.createElement("details");
+    det.open = wasOpen ?? Object.keys(picked).length > 0;
+    const sum = document.createElement("summary");
+    const n = Object.keys(picked).length;
+    const count = meetings.reduce((a, m) => a + m.items.length, 0);
+    sum.append("School board this week ");
+    const sub = document.createElement("span");
+    sub.className = "sub";
+    sub.textContent = `· ${count ? count + " agenda items" : "agenda not posted yet"}${n ? ` · ${n} added to the script` : ""}`;
+    sum.appendChild(sub);
+    det.appendChild(sum);
+    const body = document.createElement("div");
+    body.className = "board-body";
+    const tip = document.createElement("p");
+    tip.className = "fine";
+    tip.textContent = "Check an item to add a line about it to the script. Uncheck to take it out. Flagged items need the adviser first.";
+    body.appendChild(tip);
+    if (count) {
+      const tools = document.createElement("label");
+      tools.className = "board-tools";
+      const only = document.createElement("input");
+      only.type = "checkbox"; only.checked = studentOnly; only.id = "boardOnly";
+      only.onchange = () => { studentOnly = only.checked; render(); };
+      tools.append(only, " Show only items marked student interest");
+      body.appendChild(tools);
+    }
+    for (const m of meetings) {
+      const head = document.createElement("p");
+      head.className = "fine";
+      head.append(`${m.title}, ${m.when} · `);
+      const a = document.createElement("a");
+      a.href = m.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Full agenda";
+      head.appendChild(a);
+      body.appendChild(head);
+      const ul = document.createElement("ul");
+      ul.className = "board-list";
+      for (const it of (m.items.length ? m.items : [null])) {
+        const key = itemKey(m, it);
+        if (it && studentOnly && !it.student_interest && !picked[key]) continue;
+        const li = document.createElement("li");
+        const lab = document.createElement("label");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!picked[key];
+        cb.disabled = !!(it && it.flagged);
+        if (cb.disabled) lab.className = "off";
+        cb.onchange = () => toggle(m, it, cb.checked);
+        const num = document.createElement("span");
+        num.className = "num";
+        num.textContent = it ? it.number : "";
+        const txt = document.createElement("span");
+        txt.textContent = it ? it.text.replace(/,?\s*(presented by|item lead:).*/i, "") : "Mention the meeting (the agenda isn't posted yet)";
+        if (it && it.student_interest) { const b = document.createElement("span"); b.className = "si"; b.textContent = "student interest"; txt.appendChild(b); }
+        if (it && it.flagged) { const b = document.createElement("span"); b.className = "flag"; b.textContent = "see adviser"; txt.appendChild(b); }
+        lab.append(cb, num, txt);
+        li.appendChild(lab);
+        ul.appendChild(li);
+      }
+      body.appendChild(ul);
+    }
+    det.appendChild(body);
+    box.replaceChildren(det);
+  }
+
+  function toggle(meeting, item, on) {
+    const picked = { ...app.picked() };
+    const key = itemKey(meeting, item);
+    const sameMeeting = (k) => k.startsWith(meeting.url + "#");
+    if (on) {
+      const text = boardLine(meeting, item, !Object.keys(picked).some(sameMeeting));
+      picked[key] = text;
+      app.setPicked(picked);
+      app.editor.insertParagraph(text, /ADD CAMPUS STORY/, app.oneAnchor());
+      app.note("Added to the script.");
+    } else {
+      const text = picked[key];
+      delete picked[key];
+      // If this line opened with the meeting time, the next item takes over.
+      const nextKey = text && text.startsWith("The school board") && Object.keys(picked).find(sameMeeting);
+      if (nextKey) {
+        const nextItem = meeting.items.find((it) => itemKey(meeting, it) === nextKey) || null;
+        const fresh = boardLine(meeting, nextItem, true);
+        if (app.editor.replaceParagraph(picked[nextKey], fresh)) picked[nextKey] = fresh;
+      }
+      app.setPicked(picked);
+      if (text && app.editor.removeParagraph(text)) app.note("Taken out of the script.");
+      else app.note("That line was edited, so it's still in the script. Delete it there if you don't want it.");
+    }
+    app.changed();
+  }
+
+  return { render };
+}
+
+return { boardPanel };
+})();
+
+const __store_js = (() => {
+// Everything the prompter remembers lives in this browser only (scripts,
+// names, settings). Nothing here is sent anywhere.
+const store = {
+  get(k, d) {
+    try { const v = localStorage.getItem("rgn-prompter-" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; }
+  },
+  set(k, v) {
+    try { localStorage.setItem("rgn-prompter-" + k, JSON.stringify(v)); } catch (e) { /* private mode: not saved */ }
+  },
+};
+
+return { store };
+})();
+
+const __app_js = (() => {
+// RGN Prompter app: wires speech -> aligner -> motion -> stage.
+const { parseScript, speakPhrase } = __text_js;
+const { Aligner } = __align_js;
+const { Motion, Spring } = __motion_js;
+const { Stage } = __render_js;
+const { VoskEngine, WebSpeechEngine, DictationEngine, onClaude } = __engines_js;
+const { Editor } = __editor_js;
+const { deriveDoc, oneAnchor, fillNames } = __segments_js;
+const { boardPanel } = __board_panel_js;
+const { store } = __store_js;
+const { host, gasCall } = __host_js;
+
+const $ = (id) => document.getElementById(id);
+// Apps Script passes ?view= in a meta tag (the page runs in a Google frame).
+const metaView = document.querySelector('meta[name="rgn-view"]');
+const TALENT = new URLSearchParams(location.search).get("view") === "talent" || (metaView && metaView.content === "talent");
+if (TALENT) document.body.classList.add("talent");
+// iPads and phones can't drive a second screen, so Sidecar-only controls hide.
+const TOUCH = /iPad|iPhone|Android/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+if (TOUCH) document.body.classList.add("touch");
+
+// ------------------------------------------------------------------ settings
+const DEFAULT_SETTINGS = { size: 56, width: 30, eye: 33, speed: 4, mirror: false, caps: false, dim: true,
+  engine: "vosk", grammar: true, mic: "", notes: false };
+let settings = { ...DEFAULT_SETTINGS, ...store.get("settings", {}) };
+// Who's on air, kept on this device only (never published).
+const getNames = () => store.get("names", { a1: "", a2: "", wx: "" });
+
+// ------------------------------------------------------------------ state
+const stageEl = $("stage");
+const stage = new Stage(stageEl);
+let editor = null;            // created below (operator page only)
+let board = null;             // school board panel (News rundown)
+let doc = null;               // "news" | "weather" | "custom" (null on the start page)
+let stageStale = false;       // editor changed since the stage was last built
+const spring = new Spring(7);
+let script = null, aligner = null;
+const motion = new Motion();
+let mode = "voice";          // "voice" | "manual"
+let paused = false;          // Space toggles
+let manualPos = 0;
+let engine = null, listening = false;
+let finals = [], partial = [], finalsTotal = 0, heardTotal = 0, lastWordsAt = -10, lastMoveAt = -10;
+let levelAvg = 0, noiseFloor = 0.01, loudAt = -10;
+let cueStarts = [];          // sorted token indexes that follow a cue card
+const chan = "BroadcastChannel" in window ? new BroadcastChannel("rgn-prompter") : null;
+let remotePos = 0;           // talent view: position from the operator
+let lastShown = "";          // the text the stage is showing (names filled in)
+
+// Exposed for testing and troubleshooting from the console.
+window.RGN = { get pos() { return aligner ? aligner.pos : 0; }, get shown() { return motion.shown; }, log: [] };
+
+// ------------------------------------------------------------------ settings UI
+function applySettings() {
+  const r = document.documentElement.style;
+  r.setProperty("--size", settings.size + "px");
+  r.setProperty("--width", settings.width + "ch");
+  r.setProperty("--eye", settings.eye + "%");
+  stageEl.classList.toggle("mirror", !!settings.mirror);
+  stageEl.classList.toggle("caps", !!settings.caps);
+  if (!TALENT) {
+    $("setSize").value = settings.size; $("outSize").textContent = settings.size + "px";
+    $("setWidth").value = settings.width; $("outWidth").textContent = settings.width + "ch";
+    $("setEye").value = settings.eye; $("outEye").textContent = settings.eye + "%";
+    $("setSpeed").value = settings.speed; $("outSpeed").textContent = settings.speed;
+    $("setMirror").checked = !!settings.mirror;
+    $("setCaps").checked = !!settings.caps;
+    $("setDim").checked = !!settings.dim;
+    $("setNotes").checked = !!settings.notes;
+    $("setEngine").value = settings.engine;
+    $("setGrammar").checked = !!settings.grammar;
+    $("setGrammar").disabled = settings.engine !== "vosk";
+  }
+  if (!settings.dim) stage.dim(0, false);
+  requestAnimationFrame(() => stage.layout());
+}
+function saveSettings() {
+  store.set("settings", settings);
+  applySettings();
+  if (chan && !TALENT) chan.postMessage({ type: "settings", settings });
+}
+
+// ------------------------------------------------------------------ script
+function loadScript(text, { keepPos = false, fromEditor = false } = {}) {
+  if (editor && !fromEditor) editor.setText(text || "");
+  stageStale = false;
+  // The prompter shows real names and (unless asked) no notes; the saved
+  // script keeps its placeholders.
+  const shown = TALENT ? (text || "") : fillNames(text || "", getNames());
+  lastShown = shown;
+  script = parseScript(shown);
+  aligner = new Aligner(script.tokens.map((t) => t.t));
+  cueStarts = [...script.cueBefore].sort((a, b) => a - b);
+  stage.render(script, { onWordClick: TALENT ? null : jumpToWord, hideNotes: !settings.notes });
+  $("empty") && ($("empty").hidden = script.tokens.length > 0);
+  const p = keepPos ? Math.min(motion.pos, script.tokens.length) : 0;
+  aligner.setPosition(p, heardTotal);
+  motion.jump(p, now());
+  manualPos = p;
+  spring.snap(targetOffset(p));
+  if (!TALENT) {
+    if (doc) store.set("script-" + doc, text);
+    if (chan) chan.postMessage({ type: "script", text: shown });
+  }
+}
+
+function cueLimit(pos) {
+  for (const c of cueStarts) if (c >= pos) return c;
+  return script ? script.tokens.length : Infinity;
+}
+
+function jumpToWord(wi) {
+  const w = script.words[wi];
+  if (!w) return;
+  setPosition(w.tokenStart);
+}
+
+function setPosition(p) {
+  p = Math.max(0, Math.min(script.tokens.length, p));
+  aligner.setPosition(p, heardTotal);
+  motion.jump(p, now());
+  motion.setLimit(cueLimit(p));
+  manualPos = p;
+  lastMoveAt = now();
+}
+
+// ------------------------------------------------------------------ speech
+function now() { return performance.now() / 1000; }
+
+const handlers = {
+  onMic() { window.RGN.micAt = now(); },
+  onWords(text, isFinal) {
+    const toks = speakPhrase(text, { acronyms: script ? script.acronyms : null });
+    if (isFinal) {
+      finals.push(...toks); finalsTotal += toks.length; partial = [];
+      if (finals.length > 200) finals = finals.slice(-60);
+    } else partial = toks;
+    if (toks.length) lastWordsAt = now();
+    heardTotal = finalsTotal + partial.length;
+    const heard = finals.slice(-20).concat(partial);
+    $("heard") && ($("heard").textContent = heard.slice(-14).join(" "));
+    if (!script || mode !== "voice" || paused) return;
+    const before = aligner.pos;
+    const p = aligner.update(heard, heardTotal);
+    if (p !== before) {
+      const t = now();
+      motion.confirm(p, t);
+      motion.setLimit(cueLimit(p));
+      lastMoveAt = t;
+      window.RGN.log.push({ t, pos: p, heard: heard.slice(-6).join(" ") });
+    }
+  },
+  onLevel(level) {
+    levelAvg = levelAvg * 0.6 + level * 0.4;
+    // Track the room's noise floor slowly; speech is well above it.
+    noiseFloor = levelAvg < noiseFloor ? noiseFloor * 0.9 + levelAvg * 0.1 : noiseFloor * 0.999 + levelAvg * 0.001;
+    if (levelAvg > Math.max(0.01, noiseFloor * 2.5)) loudAt = now();
+  },
+  onState(state, detail) {
+    if (state === "error") { setPill("error", "Mic problem"); setStatus(detail); listening = false; updateListenButton(); }
+    else if (state === "loading") { setPill("loading", "Loading…"); setStatus(detail); }
+    else if (state === "listening") { setStatus(detail); }
+  },
+};
+
+async function startListening() {
+  if (listening) return;
+  if (!script || !script.tokens.length) { openScriptDialog(); return; }
+  const useWeb = settings.engine === "web" && WebSpeechEngine.available();
+  engine = onClaude ? new DictationEngine(handlers) : useWeb ? new WebSpeechEngine(handlers) : new VoskEngine(handlers);
+  listening = true;
+  updateListenButton();
+  try {
+    const words = settings.grammar && !useWeb && !onClaude ? [...new Set(script.tokens.map((t) => t.t))] : null;
+    await engine.start({ words, deviceId: settings.mic || null });
+    fillMicList();
+  } catch (err) {
+    listening = false;
+    updateListenButton();
+    setPill("error", "Mic problem");
+    setStatus(friendlyError(err));
+    try { engine.stop(); } catch (e) {}
+    engine = null;
+  }
+}
+
+function stopListening() {
+  if (engine) engine.stop();
+  engine = null;
+  listening = false;
+  partial = [];
+  updateListenButton();
+  setPill("idle", "Not listening");
+}
+
+function friendlyError(err) {
+  const m = String(err && (err.message || err.name) || err);
+  if (/NotAllowed|denied|Permission/i.test(m)) return "The microphone is blocked. Allow it in the browser's site settings, then try again.";
+  if (/NotFound|Requested device/i.test(m)) return "No microphone found. Plug one in or pick another in Settings.";
+  if (/secure|https/i.test(m)) return "The microphone only works on an https address.";
+  return "Couldn't start listening: " + m;
+}
+
+async function fillMicList() {
+  try {
+    const sel = $("setMic");
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "audioinput");
+    sel.replaceChildren(new Option("Default microphone", ""), ...devs.map((d, i) => new Option(d.label || `Microphone ${i + 1}`, d.deviceId)));
+    sel.value = settings.mic || "";
+  } catch (e) {}
+}
+
+// ------------------------------------------------------------------ status
+function setPill(state, text) { const p = $("pill"); if (!p) return; p.dataset.state = state; p.textContent = text; }
+function setStatus(text) { const s = $("status"); if (s) s.textContent = text || ""; }
+function updateListenButton() {
+  const b = $("btnListen");
+  if (!b) return;
+  b.textContent = listening ? "Stop listening" : "Start listening";
+  b.classList.toggle("primary", !listening);
+  document.body.classList.toggle("listening", listening);
+}
+
+function updateStatus(t) {
+  if (TALENT) return;
+  const m = $("meter");
+  if (m) m.style.width = Math.min(100, Math.round(levelAvg * 900)) + "%";
+  if (!listening) return;
+  if ($("pill").dataset.state === "error") return;
+  if (mode === "manual") setPill("idle", paused ? "Paused" : "Steady scroll");
+  else if (paused) setPill("idle", "Paused (Space)");
+  else if (t - lastMoveAt < 2.5) setPill("following", "Following");
+  else if (t - lastWordsAt < 2) setPill("holding", "Listening, not sure where");
+  else setPill("idle", "Waiting for speech");
+}
+
+// ------------------------------------------------------------------ frame loop
+function targetOffset(p) {
+  const eye = stageEl.clientHeight * (settings.eye / 100);
+  const line = parseFloat(getComputedStyle(stage.text).lineHeight) || settings.size * 1.32;
+  return stage.yFor(p) - eye + line * 0.5;
+}
+
+let lastFrame = now(), lastSend = 0;
+function frame() {
+  const t = now();
+  const dt = t - lastFrame;
+  lastFrame = t;
+  let p = 0;
+  if (script) {
+    if (TALENT) p = remotePos;
+    else if (mode === "manual") {
+      if (!paused) manualPos = Math.min(script.tokens.length, manualPos + dt * (0.6 + settings.speed * 0.4));
+      p = manualPos;
+    } else {
+      const speaking = !paused && (t - lastWordsAt < 0.9 || t - loudAt < 0.4);
+      motion.setSpeaking(speaking, t);
+      p = motion.estimate(t);
+    }
+    const y = spring.step(targetOffset(p), dt);
+    stage.text.style.transform = `translate3d(0, ${-y.toFixed(1)}px, 0)`;
+    stage.dim(p, settings.dim);
+    if (chan && !TALENT && t - lastSend > 1 / 30) { chan.postMessage({ type: "pos", p }); lastSend = t; }
+  }
+  updateStatus(t);
+  requestAnimationFrame(frame);
+}
+
+// ------------------------------------------------------------------ talent sync
+if (chan) {
+  chan.onmessage = (e) => {
+    const m = e.data || {};
+    if (TALENT) {
+      if (m.type === "script") loadScript(m.text);
+      else if (m.type === "settings") {
+        const notesChanged = !!m.settings.notes !== !!settings.notes;
+        settings = { ...settings, ...m.settings };
+        applySettings();
+        if (notesChanged) loadScript(lastShown, { keepPos: true });
+      }
+      else if (m.type === "pos") remotePos = m.p;
+    } else if (m.type === "hello") {
+      chan.postMessage({ type: "settings", settings });
+      chan.postMessage({ type: "script", text: lastShown });
+    }
+  };
+}
+
+// ------------------------------------------------------------------ controls
+function openScriptDialog() {
+  $("scriptText").value = editor ? editor.getText().trim() : "";
+  $("btnWeekly").hidden = !(doc && DOCS[doc].draft);
+  $("dlgScript").showModal();
+}
+
+function toggleFullscreen() {
+  const el = document.documentElement;
+  const fs = document.fullscreenElement || document.webkitFullscreenElement;
+  if (fs) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  else if (el.requestFullscreen) el.requestFullscreen().catch(() => document.body.classList.toggle("solo"));
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else document.body.classList.toggle("solo");
+}
+
+function setMode(m) {
+  mode = m;
+  if (!TALENT) {
+    $("modeVoice").setAttribute("aria-pressed", String(m === "voice"));
+    $("modeManual").setAttribute("aria-pressed", String(m === "manual"));
+  }
+  const p = m === "manual" ? motion.shown : manualPos;
+  if (script) setPosition(Math.round(p));
+}
+
+function step(dir) {
+  if (!script) return;
+  const cur = mode === "manual" ? manualPos : motion.shown;
+  setPosition(stage.lineStep(cur, dir));
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest("textarea, input, select, dialog")) return;
+  if (!TALENT && document.body.dataset.view !== "prompt") return;
+  const k = e.key;
+  if (k === " " || k === "Spacebar") { e.preventDefault(); paused = !paused; }
+  else if (k === "ArrowDown" || k === "PageDown" || k === "ArrowRight") { e.preventDefault(); step(1); }
+  else if (k === "ArrowUp" || k === "PageUp" || k === "ArrowLeft") { e.preventDefault(); step(-1); }
+  else if (k === "Home") { e.preventDefault(); setPosition(0); }
+  else if (k === "m" || k === "M") { settings.mirror = !settings.mirror; saveSettings(); }
+  else if (k === "+" || k === "=") { settings.size = Math.min(120, settings.size + 4); saveSettings(); }
+  else if (k === "-" || k === "_") { settings.size = Math.max(28, settings.size - 4); saveSettings(); }
+  else if (k === "f" || k === "F") toggleFullscreen();
+});
+
+if (TALENT) {
+  stageEl.addEventListener("dblclick", toggleFullscreen);
+} else {
+  $("btnListen").onclick = () => (listening ? stopListening() : startListening());
+  $("modeVoice").onclick = () => setMode("voice");
+  $("modeManual").onclick = () => setMode("manual");
+  $("btnPaste").onclick = openScriptDialog;
+  // One or two anchors (News rundown). An untouched draft simply reloads in
+  // the new setup; an edited script is converted to one anchor keeping the
+  // edits (going back to two needs the draft, since names and lines differ).
+  $("twoAnchors").onchange = (e) => {
+    anchors = e.target.checked ? 2 : 1;
+    store.set("anchors", anchors);
+    const meta = getMeta();
+    const text = (store.get("script-" + doc, "") || "").trim();
+    if (published && (!text || meta.source === "published")) {
+      usePublished();
+      note(anchors === 1 ? "Switched to one anchor." : "Switched to two anchors.");
+    } else if (anchors === 1) {
+      loadScript(oneAnchor(editor.getText()));
+      onEdited(editor.getText());
+      note("Switched to one anchor. Your edits are kept.");
+    } else {
+      note("Your edited script still has one anchor. Click “Start over from this week's draft” for the two-anchor version.");
+    }
+    refreshDocUI();
+  };
+  $("viewEdit").onclick = () => setView("edit");
+  $("viewPrompt").onclick = () => setView("prompt");
+  $("btnCopy").onclick = async () => {
+    const b = $("btnCopy");
+    try { await navigator.clipboard.writeText(fillNames(editor.getText(), getNames())); b.textContent = "Copied"; }
+    catch (e) { b.textContent = "Copy blocked; use Download"; }
+    setTimeout(() => { b.textContent = "Copy for Google Doc"; }, 2000);
+  };
+  $("btnDownload").onclick = () => {
+    const meta = getMeta();
+    const blob = new Blob([fillNames(editor.getText(), getNames())], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `RGN ${DOCS[doc].title}${meta.label ? " " + meta.label.replace(/,/g, "") : ""}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  // Starting over throws away edits on this device, so it asks twice.
+  let resetArmed = null;
+  $("btnReset").onclick = async () => {
+    const b = $("btnReset");
+    const label = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
+    if (!resetArmed) {
+      b.textContent = DOCS[doc].draft ? "Click again to replace your edits" : "Click again to clear";
+      resetArmed = setTimeout(() => { resetArmed = null; b.textContent = label; }, 4000);
+      return;
+    }
+    clearTimeout(resetArmed); resetArmed = null;
+    b.textContent = label;
+    if (!DOCS[doc].draft) { loadScript(""); setMeta({}); note("Cleared."); refreshDocUI(); return; }
+    const pub = await fetchPublished();
+    if (pub) { published = pub; usePublished(); note("Started over from this week's draft."); }
+    else note("This week's draft isn't published yet.");
+  };
+  $("btnFull").onclick = toggleFullscreen;
+  const execMeta = document.querySelector('meta[name="rgn-exec"]');
+  const talentUrl = (execMeta && execMeta.content ? execMeta.content : location.pathname) + "?view=talent";
+  $("btnTalent").onclick = () => window.open(talentUrl, "rgn-talent", "popup,width=1024,height=768");
+  $("btnSettings").onclick = () => {
+    const p = $("panel");
+    p.hidden = !p.hidden;
+    $("btnSettings").setAttribute("aria-expanded", String(!p.hidden));
+  };
+  $("dlgScript").addEventListener("close", () => {
+    if ($("dlgScript").returnValue === "ok") {
+      loadScript($("scriptText").value);
+      setMeta({ source: "manual" });
+      refreshDocUI();
+    }
+  });
+  $("btnWeekly").onclick = async () => {
+    const pub = await fetchPublished();
+    if (pub) { published = pub; $("dlgScript").close("cancel"); usePublished(); }
+    else $("weeklyNote").textContent = "This week's script isn't published yet.";
+  };
+  // Newer draft banner: load it, or keep this version (asked again only when
+  // another, newer draft comes out).
+  $("draftLoad").onclick = async () => {
+    const pub = await fetchPublished();
+    if (pub) { published = pub; usePublished(); note(`Loaded the draft from ${pub.generated_label}.`); }
+  };
+  $("draftKeep").onclick = () => {
+    setMeta({ ...getMeta(), dismissed: published && published.generated });
+    refreshDocUI();
+  };
+  $("openEdit").onclick = () => setView("edit");
+  // On claude.ai the draft is updated by asking Claude, not by this button.
+  if (onClaude) document.querySelectorAll(".update-btn").forEach((b) => { b.hidden = true; });
+  $("btnUpdate").onclick = requestUpdate;
+  $("btnUpdate2").onclick = requestUpdate;
+  // Who's on air
+  const nameIds = { a1: "nameA1", a2: "nameA2", wx: "nameWx" };
+  for (const [k, id] of Object.entries(nameIds)) {
+    $(id).value = getNames()[k] || "";
+    $(id).addEventListener("input", (e) => {
+      store.set("names", { ...getNames(), [k]: e.target.value.trim() });
+      stageStale = true;
+      editor.refresh();
+      updateOpenBar();
+    });
+  }
+  $("editor").addEventListener("need-names", () => {
+    const box = $("names");
+    box.classList.add("flash");
+    setTimeout(() => box.classList.remove("flash"), 1200);
+    const empty = [...box.querySelectorAll("label:not([hidden]) input")].find((i) => !i.value.trim());
+    (empty || box.querySelector("input")).focus();
+  });
+  // Close the More menu after choosing something.
+  $("moreMenu").addEventListener("click", (e) => { if (e.target.closest("button") && e.target.id !== "btnReset") $("moreMenu").open = false; });
+  $("scriptFile").onchange = async (e) => {
+    const f = e.target.files[0];
+    if (f) $("scriptText").value = await f.text();
+  };
+  document.addEventListener("dragover", (e) => e.preventDefault());
+  document.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    if (f && doc) { loadScript(await f.text()); setMeta({ source: "manual" }); refreshDocUI(); }
+  });
+  // iPad alone: in "solo" mode the controls hide; tap the top edge to show them.
+  stageEl.addEventListener("click", (e) => {
+    if (document.body.classList.contains("solo") && e.clientY < 80) document.body.classList.toggle("show-chrome");
+  });
+  const bind = (id, key, num = true) => {
+    $(id).addEventListener("input", (e) => {
+      const el = e.target;
+      settings[key] = el.type === "checkbox" ? el.checked : num ? Number(el.value) : el.value;
+      saveSettings();
+    });
+  };
+  bind("setSize", "size"); bind("setWidth", "width"); bind("setEye", "eye"); bind("setSpeed", "speed");
+  bind("setMirror", "mirror"); bind("setCaps", "caps"); bind("setDim", "dim"); bind("setNotes", "notes");
+  $("setNotes").addEventListener("input", () => { if (editor && doc) loadScript(editor.getText(), { keepPos: true, fromEditor: true }); });
+  bind("setEngine", "engine", false); bind("setGrammar", "grammar"); bind("setMic", "mic", false);
+  if (!WebSpeechEngine.available()) $("setEngine").querySelector('option[value="web"]').disabled = true;
+}
+
+window.addEventListener("resize", () => stage.layout());
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => stage.layout());
+
+// ------------------------------------------------------------------ the three scripts
+// The start page offers three scripts, each saved separately on this device:
+//   news     the anchors' rundown, drafted weekly (weather becomes a cue card)
+//   weather  the forecast read, drafted weekly
+//   custom   blank, for anything else
+// News and weather come from the weekly prep run (scripts/current.json). A
+// newer draft loads by itself unless someone edited; then a button offers it.
+const DOCS = {
+  news: { title: "News rundown", draft: true },
+  weather: { title: "Weather", draft: true },
+  custom: { title: "Custom", draft: false },
+};
+let published = null;
+let anchors = store.get("anchors", 2); // News rundown: 1 or 2 anchors (remembered)
+
+/** This week's draft for a script, in the chosen anchor setup. */
+function deriveFor(d) {
+  const t = deriveDoc(d, published.text);
+  return d === "news" && anchors === 1 ? oneAnchor(t) : t;
+}
+
+async function fetchPublished() {
+  try {
+    let d;
+    if (host === "gas") d = JSON.parse(await gasCall("getDraft"));
+    else {
+      const r = await fetch("scripts/current.json", { cache: "no-store" });
+      if (!r.ok) return null;
+      d = await r.json();
+    }
+    return d && typeof d.text === "string" && d.text.trim() ? d : null;
+  } catch (e) { return null; }
+}
+function getMeta(d = doc) { return store.get("meta-" + d, {}); }
+function setMeta(m, d = doc) { store.set("meta-" + d, m); }
+function note(text) { const n = $("edNote"); if (n) n.textContent = text || ""; }
+
+// "Update this week's draft": opens the GitHub page that runs the weekly
+// update (click "Run workflow" there), then watches for the new draft for a
+// few minutes so it shows up here without reloading.
+const UPDATE_URL = "https://github.com/kh84949vnj-ui/redgold-news/actions/workflows/weekly.yml";
+let watchTimer = null;
+function updateNote(text) {
+  $("updateNote").textContent = text || "";
+  if (text) note(text);
+}
+function requestUpdate() {
+  window.open(UPDATE_URL, "_blank", "noopener");
+  const before = published && published.generated;
+  const until = Date.now() + 6 * 60 * 1000;
+  updateNote("On GitHub, click “Run workflow”. The new draft shows up here in about 2 minutes.");
+  clearInterval(watchTimer);
+  watchTimer = setInterval(async () => {
+    const pub = await fetchPublished();
+    if (pub && pub.generated !== before) {
+      clearInterval(watchTimer);
+      published = pub;
+      if (doc) reconcile(); else refreshDocUI();
+      updateNote(`Updated: draft from ${pub.generated_label}.`);
+    } else if (Date.now() > until) {
+      clearInterval(watchTimer);
+      updateNote("No new draft yet. Check that the run finished on GitHub, then reload this page.");
+    }
+  }, 20000);
+}
+
+/** Load this week's draft into the current script (news or weather). */
+function usePublished() {
+  if (!published || !doc || !DOCS[doc].draft) return;
+  const text = deriveFor(doc);
+  loadScript(text);
+  const meta = { source: "published", base: text, generated: published.generated, label: published.episode_label };
+  // Board items picked on the Story Desk are already in the news draft; show them checked.
+  if (doc === "news") meta.board = { ...(published.board_picks || {}) };
+  setMeta(meta);
+  refreshDocUI();
+}
+
+/** On opening a script, bring in a newer draft if nobody has edited. */
+function reconcile() {
+  if (!published || !doc || !DOCS[doc].draft) return refreshDocUI();
+  const meta = getMeta();
+  const text = deriveFor(doc);
+  const local = (store.get("script-" + doc, "") || "").trim();
+  if (meta.base === text) {
+    if (meta.generated !== published.generated) setMeta({ ...meta, generated: published.generated });
+  } else if ((!local || meta.source === "published") && !listening) {
+    usePublished();
+    if (local) note(`Loaded the newer draft (updated ${published.generated_label}).`);
+  }
+  refreshDocUI();
+}
+
+function onEdited(text) {
+  if (!doc) return;
+  store.set("script-" + doc, text);
+  const meta = getMeta();
+  if (meta.source === "published") setMeta({ ...meta, source: "edited" });
+  stageStale = true;
+  refreshDocUI();
+}
+
+function docStatus(d) {
+  const meta = getMeta(d);
+  const text = (store.get("script-" + d, "") || "").trim();
+  if (d === "custom") {
+    const words = (text.replace(/\[[^\]]*\]/g, " ").match(/\S+/g) || []).length;
+    return text ? `${words} words saved` : "Empty";
+  }
+  if (!text) return published ? `Draft ready for ${published.episode_label}` : "No draft published yet";
+  const stale = published && meta.base !== deriveFor(d);
+  if (meta.source === "edited") return `Edited${meta.label ? " · " + meta.label : ""}${stale ? " · newer draft available" : ""}`;
+  if (meta.source === "manual") return "Pasted script";
+  return `Ready · ${meta.label || ""}`;
+}
+
+function refreshDocUI() {
+  if (TALENT) return;
+  $("homeEp").textContent = published ? `This week: episode of ${published.episode_label}.` : "";
+  $("stNews").textContent = docStatus("news");
+  $("stWeather").textContent = docStatus("weather");
+  $("stCustom").textContent = docStatus("custom");
+  if (!doc) { $("docLabel").textContent = ""; $("epLabel").textContent = ""; $("draftBanner").hidden = true; return; }
+  const meta = getMeta();
+  $("docLabel").textContent = DOCS[doc].title;
+  $("epLabel").textContent = meta.label ? meta.label + (meta.source === "edited" ? " (edited)" : "") : meta.source === "manual" ? "Pasted" : "";
+  $("edTitle").textContent = DOCS[doc].title + (meta.label ? ` · ${meta.label}` : "");
+  // Which names this script needs.
+  $("nameA1Row").hidden = doc === "weather";
+  $("nameA2Row").hidden = doc === "weather" || (doc === "news" && anchors === 1);
+  $("nameWxRow").hidden = doc === "news" && !/\[WEATHER REPORTER\]/i.test(editor.getText());
+  $("btnReset").textContent = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
+  board.render();
+  $("anchorsOpt").hidden = doc !== "news";
+  $("twoAnchors").checked = anchors === 2;
+  const newer = !!(DOCS[doc].draft && published && meta.base !== deriveFor(doc) &&
+    (store.get("script-" + doc, "") || "").trim() && meta.dismissed !== published.generated);
+  $("draftBanner").hidden = !newer;
+  if (newer) {
+    $("draftText").textContent = `A newer ${DOCS[doc].title.toLowerCase()} draft is ready (updated ${published.generated_label}).` +
+      (meta.source === "edited" || meta.source === "manual" ? " Loading it replaces your edits." : "");
+  }
+  updateOpenBar();
+}
+
+/** In Prompt: a heads-up when the script still has things to fill in. */
+function updateOpenBar() {
+  if (TALENT || !editor) return;
+  const items = doc ? editor.openItems() : [];
+  const bar = $("openBar");
+  bar.hidden = !items.length || document.body.dataset.view !== "prompt";
+  if (!items.length) return;
+  const names = items.map((t) => (t.kind === "NAME" ? `name for ${t.text.toLowerCase()}` : t.text.split(":")[0].toLowerCase()));
+  $("openText").textContent = `${items.length} thing${items.length === 1 ? "" : "s"} still open: ${[...new Set(names)].slice(0, 3).join(", ")}${items.length > 3 ? "…" : ""}`;
+}
+
+function setView(v) {
+  if (TALENT) return;
+  document.body.dataset.view = v;
+  if (doc) store.set("view-" + doc, v);
+  $("viewEdit").setAttribute("aria-pressed", String(v === "edit"));
+  $("viewPrompt").setAttribute("aria-pressed", String(v === "prompt"));
+  if (v === "prompt") {
+    if (stageStale) loadScript(editor.getText(), { keepPos: true, fromEditor: true });
+    requestAnimationFrame(() => { stage.layout(); spring.snap(targetOffset(mode === "manual" ? manualPos : motion.shown)); });
+  }
+  updateOpenBar();
+}
+
+/** Route: "" = start page, "#news" / "#weather" / "#custom" = that script. */
+function route() {
+  const want = location.hash.replace("#", "");
+  const next = DOCS[want] ? want : null;
+  if (next !== doc && listening) stopListening();
+  if (!next) {
+    doc = null;
+    document.body.dataset.view = "home";
+    note("");
+    refreshDocUI();
+    return;
+  }
+  if (next !== doc) {
+    doc = next;
+    note("");
+    loadScript(store.get("script-" + doc, ""));
+    reconcile();
+  }
+  setView(store.get("view-" + doc, "edit"));
+}
+
+// ------------------------------------------------------------------ start
+applySettings();
+if (TALENT) {
+  loadScript("");
+  if (chan) chan.postMessage({ type: "hello" });
+} else {
+  editor = new Editor($("editor"), { onChange: onEdited, names: getNames });
+  board = boardPanel({
+    box: $("boardPick"),
+    meetings: () => (doc === "news" && published && published.board) || [],
+    picked: () => getMeta().board || {},
+    setPicked: (picked) => setMeta({ ...getMeta(), board: picked }),
+    editor,
+    oneAnchor: () => anchors === 1,
+    note,
+    changed: refreshDocUI,
+  });
+  setPill("idle", "Not listening");
+  window.addEventListener("hashchange", route);
+  route();
+  fetchPublished().then((pub) => {
+    published = pub;
+    if (doc) reconcile(); else refreshDocUI();
+  });
+}
+requestAnimationFrame(frame);
+
+if (host === "pages" && "serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
+// If the site can't be reached, the offline copy loads silently. Say so, so
+// nobody thinks the old draft is the newest one. (A URL with a fresh query
+// string is never in the offline cache, so it fails when the site is down.)
+async function checkOnline() {
+  let ok = false;
+  try { ok = (await fetch("scripts/current.json?check=" + Date.now(), { cache: "no-store" })).ok; } catch (e) {}
+  $("offBar").hidden = ok;
+}
+if (host === "pages" && location.protocol === "https:") {
+  checkOnline();
+  setInterval(checkOnline, 60 * 1000);
+}
+
+return {  };
+})();
+</script>
+</body>
+</html>

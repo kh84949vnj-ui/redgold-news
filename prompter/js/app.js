@@ -8,9 +8,12 @@ import { Editor } from "./editor.js";
 import { deriveDoc, oneAnchor, fillNames } from "./segments.js";
 import { boardPanel } from "./board-panel.js";
 import { store } from "./store.js";
+import { host, gasCall } from "./host.js";
 
 const $ = (id) => document.getElementById(id);
-const TALENT = new URLSearchParams(location.search).get("view") === "talent";
+// Apps Script passes ?view= in a meta tag (the page runs in a Google frame).
+const metaView = document.querySelector('meta[name="rgn-view"]');
+const TALENT = new URLSearchParams(location.search).get("view") === "talent" || (metaView && metaView.content === "talent");
 if (TALENT) document.body.classList.add("talent");
 // iPads and phones can't drive a second screen, so Sidecar-only controls hide.
 const TOUCH = /iPad|iPhone|Android/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -391,7 +394,9 @@ if (TALENT) {
     else note("This week's draft isn't published yet.");
   };
   $("btnFull").onclick = toggleFullscreen;
-  $("btnTalent").onclick = () => window.open(location.pathname + "?view=talent", "rgn-talent", "popup,width=1024,height=768");
+  const execMeta = document.querySelector('meta[name="rgn-exec"]');
+  const talentUrl = (execMeta && execMeta.content ? execMeta.content : location.pathname) + "?view=talent";
+  $("btnTalent").onclick = () => window.open(talentUrl, "rgn-talent", "popup,width=1024,height=768");
   $("btnSettings").onclick = () => {
     const p = $("panel");
     p.hidden = !p.hidden;
@@ -498,9 +503,13 @@ function deriveFor(d) {
 
 async function fetchPublished() {
   try {
-    const r = await fetch("scripts/current.json", { cache: "no-store" });
-    if (!r.ok) return null;
-    const d = await r.json();
+    let d;
+    if (host === "gas") d = JSON.parse(await gasCall("getDraft"));
+    else {
+      const r = await fetch("scripts/current.json", { cache: "no-store" });
+      if (!r.ok) return null;
+      d = await r.json();
+    }
     return d && typeof d.text === "string" && d.text.trim() ? d : null;
   } catch (e) { return null; }
 }
@@ -688,7 +697,7 @@ if (TALENT) {
 }
 requestAnimationFrame(frame);
 
-if (!onClaude && "serviceWorker" in navigator && location.protocol === "https:") {
+if (host === "pages" && "serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
@@ -700,7 +709,7 @@ async function checkOnline() {
   try { ok = (await fetch("scripts/current.json?check=" + Date.now(), { cache: "no-store" })).ok; } catch (e) {}
   $("offBar").hidden = ok;
 }
-if (!onClaude && location.protocol === "https:") {
+if (host === "pages" && location.protocol === "https:") {
   checkOnline();
   setInterval(checkOnline, 60 * 1000);
 }

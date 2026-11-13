@@ -21,3 +21,6 @@ jobs:
       - name: Prompter tests (word matching, motion, editor helpers)
         working-directory: prompter
         run: node --test tests/*.test.js
+      - name: Apps Script copy is up to date (run node build-gas.mjs if this fails)
+        working-directory: prompter
+        run: node build-gas.mjs --check

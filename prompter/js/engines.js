@@ -7,13 +7,65 @@
 // WebSpeechEngine uses the browser's built-in recognizer. In Safari and
 // Chrome that may send audio to Apple or Google, so it is opt-in.
 
-const MODEL_URL = new URL("../models/vosk-model-small-en-us-0.15.tar.gz", import.meta.url).href;
+import { host, gasCall } from "./host.js";
+
+const MODEL_FILE = "vosk-model-small-en-us-0.15.tar.gz";
+// On Apps Script the page can't load files from its own server, so the
+// library comes from jsDelivr and the model from GitHub's raw file server
+// (a different address from github.io). If the school network blocks those
+// too, both come through the Apps Script server instead.
+const RAW_MODEL = "https://raw.githubusercontent.com/kh84949vnj-ui/redgold-news/main/prompter/models/" + MODEL_FILE;
+const VOSK_CDN = "https://cdn.jsdelivr.net/npm/vosk-browser@0.0.8/dist/vosk.js";
+const MODEL_URL = host === "gas" ? RAW_MODEL : new URL("../models/" + MODEL_FILE, import.meta.url).href;
+
+function addScript(attrs) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    Object.assign(s, attrs);
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("load failed"));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureVosk() {
+  if (window.Vosk) return;
+  if (host !== "gas") throw new Error("The speech library didn't load.");
+  try { await addScript({ src: VOSK_CDN }); } catch (e) { /* try the server */ }
+  if (window.Vosk) return;
+  const code = await gasCall("getVosk");
+  await addScript({ src: URL.createObjectURL(new Blob([code], { type: "text/javascript" })) });
+  if (!window.Vosk) throw new Error("The speech library didn't load.");
+}
+
+/** The model through the Apps Script server, in pieces (it is 40 MB). */
+async function modelViaServer(onProgress) {
+  const size = await gasCall("getModelSize");
+  const step = 4 * 1024 * 1024;
+  const parts = [];
+  for (let at = 0; at < size; at += step) {
+    if (onProgress) onProgress(Math.round((at / size) * 100));
+    const b64 = await gasCall("getModelChunk", at, Math.min(step, size - at));
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    parts.push(bytes);
+  }
+  return URL.createObjectURL(new Blob(parts, { type: "application/gzip" }));
+}
 
 let modelPromise = null;
-function loadModel() {
+function loadModel(onProgress) {
   if (!modelPromise) {
-    if (!window.Vosk) return Promise.reject(new Error("The speech library didn't load."));
-    modelPromise = window.Vosk.createModel(MODEL_URL);
+    modelPromise = (async () => {
+      await ensureVosk();
+      try {
+        return await window.Vosk.createModel(MODEL_URL);
+      } catch (e) {
+        if (host !== "gas") throw e;
+        return window.Vosk.createModel(await modelViaServer(onProgress));
+      }
+    })();
     modelPromise.catch(() => { modelPromise = null; });
   }
   return modelPromise;
@@ -48,7 +100,7 @@ export class VoskEngine {
   /** words: the script's vocabulary, used to limit recognition (null = open). */
   async start({ words = null, deviceId = null } = {}) {
     this.h.onState("loading", "Loading the speech model (about 40 MB, first time only)…");
-    const model = await loadModel();
+    const model = await loadModel((pct) => this.h.onState("loading", `Loading the speech model through Google (${pct}%)…`));
     this.stream = await openMic(deviceId);
     if (this.h.onMic) this.h.onMic();
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -167,7 +219,7 @@ export class WebSpeechEngine {
 // On claude.ai the page can't open the microphone itself. The platform's
 // dictation listens instead and hands the page text (it uses Anthropic's
 // speech service, so audio does leave the device). Chrome only.
-export const onClaude = !!document.querySelector('meta[name="rgn-host"][content="claude"]');
+export const onClaude = host === "claude";
 let dictation = null;
 if (onClaude && window.claude && window.claude.use) {
   window.claude.use("dictation").then((d) => { dictation = d; }).catch(() => {});
