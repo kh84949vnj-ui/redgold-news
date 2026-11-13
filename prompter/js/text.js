@@ -116,10 +116,10 @@ export function speak(word, ctx = {}) {
   if (ctx.acronyms && ctx.acronyms.has(low)) return low.split("");
 
   // CamelCase: RedWolves -> red wolves
-  if (/[a-z][A-Z]/.test(w)) return w.split(/(?<=[a-z])(?=[A-Z])/).flatMap((p) => speak(p, ctx));
+  if (/[a-z][A-Z]/.test(w)) return w.replace(/([a-z])([A-Z])/g, '$1\u0001$2').split('\u0001').flatMap((p) => speak(p, ctx));
 
   // Letters and digits stuck together (K12) -> split
-  if (/\d/.test(w) && /[a-z]/i.test(w)) return w.split(/(?<=\d)(?=[a-z])|(?<=[a-z])(?=\d)/i).flatMap((p) => speak(p, ctx));
+  if (/\d/.test(w) && /[a-z]/i.test(w)) return w.replace(/(\d)([a-z])/gi, '$1\u0001$2').replace(/([a-z])(\d)/gi, '$1\u0001$2').split('\u0001').flatMap((p) => speak(p, ctx));
 
   return [low.replace(/[^a-z']/g, "").replace(/^'+|'+$/g, "")].filter(Boolean);
 }
