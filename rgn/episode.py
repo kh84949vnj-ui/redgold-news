@@ -121,7 +121,8 @@ def news_items(week: dict) -> list[dict]:
             continue
         day = DAY[_d(first["date"]).weekday()]
         if not first.get("time"):  # an all-day observance
-            items.append({"kind": "read", "fact": f"{day} is {key}.", "context": _observance_line(key), "verify": ""})
+            items.append({"kind": "read", "fact": f"{day} is {key}.", "context": _observance_line(key), "verify": "",
+                          "day": day, "date": first["date"], "name": key, "time": ""})
             continue
         name = key if key.lower().startswith("the ") else "the " + key
         times = [f"{DAY[_d(l['date']).weekday()]} at {_say_time(l['time'])}" for l in group]
@@ -131,8 +132,38 @@ def news_items(week: dict) -> list[dict]:
         else:
             fact = f"{name[0].upper() + name[1:]} is {times[0]}"
             fact = fact if fact.endswith(".") else fact + "."
-        items.append({"kind": "read", "fact": fact, "context": _event_line(key), "verify": "VERIFY: location"})
+        items.append({"kind": "read", "fact": fact, "context": _event_line(key), "verify": "VERIFY: location",
+                      "day": day, "date": first["date"], "name": name, "time": _say_time(first["time"]),
+                      "pm": first["time"].endswith("PM"), "multi": len(group) > 1})
     return items
+
+
+def linked_fact(it: dict, prev: dict | None, last: bool) -> str:
+    """The story's fact, worded to follow the one before it so a run of
+    stories reads as one paragraph ("Then on Thursday, it's ...")."""
+    day, name = it.get("day"), it.get("name")
+    if not day or it.get("multi"):
+        return it["fact"]
+    same_day = prev is not None and prev.get("date") == it.get("date")
+    later = prev is not None and prev.get("date", "") < it.get("date", "")
+    end = lambda t: t if t.endswith(".") else t + "."
+    if it["time"]:  # an event with a start time
+        cap = name[0].upper() + name[1:]
+        if same_day and it.get("pm"):
+            return end(f"And that night, {name} starts at {it['time']}")
+        if same_day:
+            return end(f"That same day, {name} is at {it['time']}")
+        if later:
+            return end(f"Then on {day}, {name} starts at {it['time']}")
+        return end(f"{cap} is {day} at {it['time']}")
+    # an all-day observance
+    if same_day:
+        return f"{day} is also {name}."
+    if later and last and day == "Friday":
+        return f"And to close out the week, Friday is {name}."
+    if later:
+        return f"Then on {day}, it's {name}."
+    return f"{day} is {name}."
 
 
 # Kept for older callers: flat (kind, text) pairs.
@@ -188,8 +219,8 @@ PREVIEWS = [
 NEWS_STARTS = ["Let's get into the news.", "Let's start with what's happening this week.", "First up, here's what's going on."]
 HANDOFFS = ["Thanks, [ANCHOR {other}].", "Thanks, [ANCHOR {other}].", "That's right, [ANCHOR {other}]."]
 WEATHER_TOSS = [
-    "After the break, [WEATHER REPORTER] has your forecast. Stick around.",
-    "Stay with us. [WEATHER REPORTER] has the weather after the break.",
+    "Stick around. [WEATHER REPORTER] has your forecast up next.",
+    "Stay with us. [WEATHER REPORTER] has the weather next.",
     "Up next, [WEATHER REPORTER] with the weather. Don't go anywhere.",
 ]
 SIGN_OFFS = ["Have a great week, and go RedWolves!", "Have a great week, RedWolves!", "Make it a great week, RedWolves!"]
@@ -243,23 +274,30 @@ def build_script(week: dict, board_picks=None) -> str:
     add("[CUE INTRO SEQUENCE]")
     add("")
 
-    # ---- News: each story is a fact plus one plain line about why it matters.
-    anchor = 1
-    first = True
-    reads = [it for it in items if it["kind"] == "read"]
+    # ---- News: two flowing runs instead of one line per anchor. Anchor 1
+    # reads the first half of the stories as one paragraph, hands off once,
+    # and anchor 2 reads the rest. Each story is the calendar fact (linked to
+    # the one before it) plus one plain line about why it matters.
     for it in items:
         if it["kind"] == "flag":
             add(f"[{it['fact']}]")
             add("")
+    reads = [it for it in items if it["kind"] == "read"]
+    half = (len(reads) + 1) // 2 if len(reads) > 2 else len(reads)
+    runs = [reads[:half], reads[half:]]
+    anchor = 1
+    prev = None
+    for ri, run in enumerate(runs):
+        if not run:
             continue
-        lead = pick(NEWS_STARTS) if first else ""
-        hand = ""
-        if not first and it is reads[min(2, len(reads) - 1)]:
-            hand = pick(HANDOFFS).format(other=1 if anchor == 2 else 2)  # one handoff mid-block
-        fact = it["fact"] + (f" [{it['verify']}]" if it["verify"] else "")
-        say(anchor, hand, lead, fact, it["context"])
+        parts = [pick(NEWS_STARTS)] if ri == 0 else [pick(HANDOFFS).format(other=1)]
+        for it in run:
+            last = it is reads[-1]
+            fact = linked_fact(it, prev, last) + (f" [{it['verify']}]" if it["verify"] else "")
+            parts += [fact, it["context"]]
+            prev = it
+        say(anchor, *parts)
         anchor = 2 if anchor == 1 else 1
-        first = False
 
     if (cl := closures_line(week)):
         say(anchor, cl)
@@ -273,11 +311,11 @@ def build_script(week: dict, board_picks=None) -> str:
     for line in board_pick_lines(week, board_picks).values():
         say(anchor, line)
         anchor = 2 if anchor == 1 else 1
+    # The anchor with the campus story also tosses to the weather.
     add(f"[ANCHOR {anchor}]")
     add("[ADD CAMPUS STORY: Jimmy Carter news or an RGN package]")
+    add(pick(WEATHER_TOSS))
     add("")
-    anchor = 2 if anchor == 1 else 1
-    say(anchor, pick(WEATHER_TOSS))
 
     add("[CUE BUMPER]")
     add("")

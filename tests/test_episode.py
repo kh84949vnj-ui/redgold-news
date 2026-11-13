@@ -75,6 +75,13 @@ class EpisodeScript(unittest.TestCase):
                        "tonight", "today", "morning", "afternoon"]:
             self.assertNotIn(phrase, spoken)
 
+    def test_news_flows_in_runs(self):
+        # Stories are read in two linked runs, not one short line per anchor.
+        news = self.script.split("[CUE INTRO SEQUENCE]")[1].split("[CUE BUMPER]")[0]
+        turns = news.count("[ANCHOR 1]\n") + news.count("[ANCHOR 2]\n")
+        self.assertLessEqual(turns, 4, news)
+        self.assertIn("Then on Thursday", news)
+
     def test_has_the_rundown(self):
         for cue in ["[CUE INTRO SEQUENCE]", "[CUE BUMPER]", "[WEATHER]", "[CUE STUDENT VOICES]", "[CUE MENU]", "[CUE OUTRO]"]:
             self.assertIn(cue, self.script)
