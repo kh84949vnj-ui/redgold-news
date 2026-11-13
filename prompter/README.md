@@ -53,6 +53,17 @@ available). Direct links work too: `…/prompter/#news`, `#weather`, `#custom`.
    Weather script. **Start over from this week's draft** (or **Clear** for
    Custom) throws away edits; it asks twice.
 
+### One or two anchors (News rundown)
+
+The **Two anchors** checkbox at the top of the News rundown editor switches
+the script between two anchors (the default) and one. With one anchor, every
+`[ANCHOR 2]` and `[BOTH]` part goes to `[ANCHOR 1]`, the handoffs ("Thanks,
+[ANCHOR 1].") and the second introduction are dropped, and the stories read as
+one continuous run. The choice is remembered on the device, so next week's
+draft arrives the same way. An untouched draft switches back and forth
+cleanly; an edited script can go to one anchor with the edits kept, but going
+back to two needs **Start over from this week's draft**.
+
 ### School board items (News rundown)
 
 When the school board meets during the episode week, the News rundown editor

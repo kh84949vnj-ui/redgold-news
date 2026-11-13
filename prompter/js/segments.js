@@ -99,3 +99,33 @@ export function deriveDoc(doc, draftText) {
   }
   return "";
 }
+
+/**
+ * Rewrite a two-anchor script for one anchor: [ANCHOR 2] and [BOTH] parts go
+ * to [ANCHOR 1], handoffs between anchors ("Thanks, [ANCHOR 1].") and the
+ * second introduction ("And I'm [ANCHOR 2].") are dropped, and a speaker tag
+ * that repeats the one before it is removed so the read flows.
+ */
+export function oneAnchor(text) {
+  let t = String(text || "");
+  t = t.replace(/^[ \t]*\[(BOTH|ANCHOR[ \t]*2)\][ \t]*$/gim, "[ANCHOR 1]");
+  t = t.replace(/(Thanks|That's right|Thank you),?[ \t]*\[ANCHOR[ \t]*\d\][.!][ \t]*/gi, "");
+  t = t.replace(/And I'm \[ANCHOR[ \t]*2\][.!][ \t]*/g, "");      // "And I'm [ANCHOR 2]. It's..."
+  t = t.replace(/[ \t]*and I'm \[ANCHOR[ \t]*2\]/g, "");          // "I'm [ANCHOR 1] and I'm [ANCHOR 2]."
+  // Drop speaker tags that repeat the previous speaker.
+  const lines = t.split("\n");
+  const out = [];
+  let speaker = null;
+  for (const line of lines) {
+    const tag = line.trim().match(/^\[(ANCHOR\s*\d|BOTH)\]$/i);
+    if (tag) {
+      const who = tag[1].toUpperCase().replace(/\s+/g, " ");
+      if (who === speaker) continue;
+      speaker = who;
+    } else if (/^\s*\[(cue|roll)\b/i.test(line) || /^\s*\[WEATHER\]/i.test(line)) {
+      speaker = null; // a cue or segment change resets the speaker
+    }
+    out.push(line);
+  }
+  return out.join("\n").replace(/\n{3,}/g, "\n\n");
+}

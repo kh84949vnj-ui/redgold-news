@@ -5,7 +5,7 @@ import { Motion, Spring } from "./motion.js";
 import { Stage } from "./render.js";
 import { VoskEngine, WebSpeechEngine } from "./engines.js";
 import { Editor } from "./editor.js";
-import { deriveDoc } from "./segments.js";
+import { deriveDoc, oneAnchor } from "./segments.js";
 import { boardLine, itemKey } from "./board.js";
 
 const $ = (id) => document.getElementById(id);
@@ -321,6 +321,26 @@ if (TALENT) {
   $("modeVoice").onclick = () => setMode("voice");
   $("modeManual").onclick = () => setMode("manual");
   $("btnPaste").onclick = openScriptDialog;
+  // One or two anchors (News rundown). An untouched draft simply reloads in
+  // the new setup; an edited script is converted to one anchor keeping the
+  // edits (going back to two needs the draft, since names and lines differ).
+  $("twoAnchors").onchange = (e) => {
+    anchors = e.target.checked ? 2 : 1;
+    store.set("anchors", anchors);
+    const meta = getMeta();
+    const text = (store.get("script-" + doc, "") || "").trim();
+    if (published && (!text || meta.source === "published")) {
+      usePublished();
+      note(anchors === 1 ? "Switched to one anchor." : "Switched to two anchors.");
+    } else if (anchors === 1) {
+      loadScript(oneAnchor(editor.getText()));
+      onEdited(editor.getText());
+      note("Switched to one anchor. Your edits are kept.");
+    } else {
+      note("Your edited script still has one anchor. Click “Start over from this week's draft” for the two-anchor version.");
+    }
+    refreshDocUI();
+  };
   $("viewEdit").onclick = () => setView("edit");
   $("viewPrompt").onclick = () => setView("prompt");
   $("btnCopy").onclick = async () => {
@@ -421,6 +441,13 @@ const DOCS = {
   custom: { title: "Custom", draft: false },
 };
 let published = null;
+let anchors = store.get("anchors", 2); // News rundown: 1 or 2 anchors (remembered)
+
+/** This week's draft for a script, in the chosen anchor setup. */
+function deriveFor(d) {
+  const t = deriveDoc(d, published.text);
+  return d === "news" && anchors === 1 ? oneAnchor(t) : t;
+}
 
 async function fetchPublished() {
   try {
@@ -437,7 +464,7 @@ function note(text) { const n = $("edNote"); if (n) n.textContent = text || ""; 
 /** Load this week's draft into the current script (news or weather). */
 function usePublished() {
   if (!published || !doc || !DOCS[doc].draft) return;
-  const text = deriveDoc(doc, published.text);
+  const text = deriveFor(doc);
   loadScript(text);
   const meta = { source: "published", base: text, generated: published.generated, label: published.episode_label };
   // Board items picked on the Story Desk are already in the news draft; show them checked.
@@ -450,7 +477,7 @@ function usePublished() {
 function reconcile() {
   if (!published || !doc || !DOCS[doc].draft) return refreshDocUI();
   const meta = getMeta();
-  const text = deriveDoc(doc, published.text);
+  const text = deriveFor(doc);
   const local = (store.get("script-" + doc, "") || "").trim();
   if (meta.base === text) {
     if (meta.generated !== published.generated) setMeta({ ...meta, generated: published.generated });
@@ -478,7 +505,7 @@ function docStatus(d) {
     return text ? `${words} words saved` : "Empty";
   }
   if (!text) return published ? `Draft ready for ${published.episode_label}` : "No draft published yet";
-  const stale = published && meta.base !== deriveDoc(d, published.text);
+  const stale = published && meta.base !== deriveFor(d);
   if (meta.source === "edited") return `Edited${meta.label ? " · " + meta.label : ""}${stale ? " · newer draft available" : ""}`;
   if (meta.source === "manual") return "Pasted script";
   return `Ready · ${meta.label || ""}`;
@@ -498,7 +525,9 @@ function refreshDocUI() {
   $("btnReset").textContent = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
   renderBoard();
   const btn = $("btnNewScript");
-  const newer = !!(DOCS[doc].draft && published && meta.base !== deriveDoc(doc, published.text) &&
+  $("anchorsOpt").hidden = doc !== "news";
+  $("twoAnchors").checked = anchors === 2;
+  const newer = !!(DOCS[doc].draft && published && meta.base !== deriveFor(doc) &&
     (store.get("script-" + doc, "") || "").trim());
   btn.hidden = !newer;
   if (newer) btn.textContent = meta.source === "published" ? "Load the newer draft" : "Load the newer draft (replaces your edits)";
@@ -591,7 +620,7 @@ function toggleBoardItem(meeting, item, on) {
     const text = boardLine(meeting, item, first);
     picked[key] = text;
     setMeta({ ...meta, board: picked });
-    editor.insertParagraph("News block", text, /ADD CAMPUS STORY/);
+    editor.insertParagraph("News block", text, /ADD CAMPUS STORY/, anchors === 1);
     note("Added to the news block.");
   } else {
     const text = picked[key];

@@ -127,6 +127,8 @@ body:not([data-view="home"]) .home, body.talent .home { display: none !important
 .ed-title h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
 .ed-title .total { margin: 4px 0 0; color: var(--muted); font: 13px var(--mono); }
 .ed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.anchors-opt { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; min-height: 36px; border: 1px solid var(--gold); border-radius: 8px; background: var(--chrome-2); font-weight: 600; cursor: pointer; }
+.anchors-opt input { width: 18px; height: 18px; accent-color: var(--gold); }
 .ed-note { margin: 10px 0 0; color: var(--gold); font-size: 14px; min-height: 0; }
 .ed-note:empty { display: none; }
 .todo { margin: 16px 0 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); }

@@ -34,7 +34,7 @@ export class Editor {
    * (or before the block's last paragraph, which is usually a toss).
    * Returns the anchor number used, so the caller can remember the text.
    */
-  insertParagraph(name, body, before) {
+  insertParagraph(name, body, before, single = false) {
     const b = this.blocks.find((x) => x.name === name);
     if (!b) return false;
     const paras = b.text.split(/\n{2,}/);
@@ -42,7 +42,7 @@ export class Editor {
     if (at < 0) at = paras.length > 1 ? paras.length - 1 : paras.length;
     // Use the other anchor from the one who read just before this spot.
     const prevTag = paras.slice(0, at).reverse().join("\n").match(/\[ANCHOR (\d)\]/i);
-    const anchor = prevTag && prevTag[1] === "1" ? 2 : 1;
+    const anchor = single ? 1 : prevTag && prevTag[1] === "1" ? 2 : 1;
     paras.splice(at, 0, `[ANCHOR ${anchor}]\n${body}`);
     b.text = paras.join("\n\n");
     this.render();

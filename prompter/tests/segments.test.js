@@ -44,3 +44,30 @@ test("news and weather scripts come out of the weekly draft", () => {
 test("a script with no cues is not called the anchor open", () => {
   assert.equal(nameBlocks(splitScript("Welcome to Student Voices."))[0].name, "Script");
 });
+
+test("one anchor: tags, handoffs and the second intro are rewritten", async () => {
+  const { oneAnchor } = await import("../js/segments.js");
+  const two = `[ANCHOR 1]
+Hey, RedWolves! I'm [ANCHOR 1].
+
+[ANCHOR 2]
+And I'm [ANCHOR 2]. It's a busy week.
+
+[CUE INTRO SEQUENCE]
+
+[ANCHOR 1]
+First up, Wednesday is a big day.
+
+[ANCHOR 2]
+Thanks, [ANCHOR 1]. Then on Thursday, it's a show.
+
+[BOTH]
+See you next week!`;
+  const one = oneAnchor(two);
+  assert.ok(!/ANCHOR 2|BOTH|Thanks,/.test(one), one);
+  assert.match(one, /Hey, RedWolves! I'm \[ANCHOR 1\]\.\n\nIt's a busy week\./);
+  assert.match(one, /First up, Wednesday is a big day\.\n\nThen on Thursday/);
+  // Each run under one speaker has a single tag.
+  assert.equal((one.split("[CUE INTRO SEQUENCE]")[1].match(/\[ANCHOR 1\]/g) || []).length, 1);
+  assert.equal(oneAnchor("[BOTH]\nHello RedWolves, I'm [ANCHOR 1] and I'm [ANCHOR 2]."), "[ANCHOR 1]\nHello RedWolves, I'm [ANCHOR 1].");
+});
