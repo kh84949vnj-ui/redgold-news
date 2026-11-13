@@ -79,7 +79,11 @@ class EpisodeScript(unittest.TestCase):
         # Stories are read in two linked runs, not one short line per anchor.
         news = self.script.split("[CUE INTRO SEQUENCE]")[1].split("[CUE BUMPER]")[0]
         turns = news.count("[ANCHOR 1]\n") + news.count("[ANCHOR 2]\n")
-        self.assertLessEqual(turns, 4, news)
+        self.assertLessEqual(turns, 8, news)
+        # A little co-anchor banter, but no more than two quick reactions.
+        reactions = [p for p in news.split("\n\n") if p.strip().startswith("[ANCHOR") and len(p.split()) <= 12]
+        self.assertGreaterEqual(len(reactions), 1, news)
+        self.assertLessEqual(len(reactions), 2, news)
         self.assertIn("Then on Thursday", news)
 
     def test_has_the_rundown(self):

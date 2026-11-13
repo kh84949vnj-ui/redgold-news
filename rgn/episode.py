@@ -207,6 +207,28 @@ def next_break(week: dict) -> dict | None:
     return {"reason": reason, "first": first, "last": last, "back": back}
 
 
+# Short reactions the other anchor can toss in after a story. Cheers and
+# thanks only, never a new fact. At most two per episode so it stays light.
+REACTIONS = [
+    (r"education support|custodian|bus driver|cafeteria|nutrition", ["Shout out to everyone who keeps our campuses running.", "They really do keep everything going."]),
+    (r"substitute", ["Subs, we see you. Thank you!", "Big thanks to all our subs."]),
+    (r"parent|famil", ["Thanks for everything you do, families.", "We appreciate you, families."]),
+    (r"veteran", ["Thank you for your service."]),
+    (r"musical|theat|play\b", ["I've heard great things about this one.", "Break a leg, everyone!"]),
+    (r"concert|choir|band|orchestra|mariachi|folkl[oó]rico|conjunto|music", ["That's going to sound amazing.", "Can't wait to hear it."]),
+    (r"\bvs\.?\b|game|tournament", ["Let's go, RedWolves!"]),
+    (r"stem|steam|science", ["Calling all future scientists."]),
+]
+
+
+def _reaction(it: dict, pick) -> str:
+    text = f"{it.get('name', '')} {it['fact']}"
+    for pat, lines in REACTIONS:
+        if re.search(pat, text, re.I):
+            return pick(lines)
+    return ""
+
+
 # Phrase banks. One is picked per episode from the episode date, so reruns in
 # the same week give the same words and each week sounds a little different.
 # No "good morning" or other time-of-day words: episodes air at different times.
@@ -287,16 +309,27 @@ def build_script(week: dict, board_picks=None) -> str:
     runs = [reads[:half], reads[half:]]
     anchor = 1
     prev = None
+    reacted = 0
     for ri, run in enumerate(runs):
         if not run:
             continue
         parts = [pick(NEWS_STARTS)] if ri == 0 else [pick(HANDOFFS).format(other=1)]
-        for it in run:
+        for k, it in enumerate(run):
             last = it is reads[-1]
             fact = linked_fact(it, prev, last) + (f" [{it['verify']}]" if it["verify"] else "")
             parts += [fact, it["context"]]
             prev = it
-        say(anchor, *parts)
+            # One quick reaction from the co-anchor per run (two per episode),
+            # after a story in the middle of a run, then the reader goes on.
+            other = 2 if anchor == 1 else 1
+            line = _reaction(it, pick) if reacted < 2 and k < len(run) - 1 and k == 0 else ""
+            if line:
+                say(anchor, *parts)
+                say(other, line)
+                parts = []
+                reacted += 1
+        if parts:
+            say(anchor, *parts)
         anchor = 2 if anchor == 1 else 1
 
     if (cl := closures_line(week)):
