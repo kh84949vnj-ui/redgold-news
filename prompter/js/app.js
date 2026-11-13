@@ -537,10 +537,24 @@ function deriveFor(d) {
   return d === "news" && anchors === 1 ? oneAnchor(t) : t;
 }
 
+// On Apps Script the draft comes from the server; if that call fails or
+// hangs, use the copy built into the page (updated with each weekly run).
+async function draftViaGoogle() {
+  const built = window.RGN_DRAFT || null;
+  try {
+    const live = await Promise.race([
+      gasCall("getDraft").then((t) => JSON.parse(t)),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)),
+    ]);
+    if (!built || (live && live.generated && live.generated >= (built.generated || ""))) return live;
+  } catch (e) { /* use the built-in copy */ }
+  return built;
+}
+
 async function fetchPublished() {
   try {
     let d;
-    if (viaGoogle) d = JSON.parse(await gasCall("getDraft"));
+    if (viaGoogle) d = await draftViaGoogle();
     else {
       const r = await fetch("scripts/current.json", { cache: "no-store" });
       if (!r.ok) return null;

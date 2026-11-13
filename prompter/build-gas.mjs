@@ -44,7 +44,7 @@ const LAUNCHER_JS = `(function () {
   document.getElementById("launchOpen").onclick = function () {
     var w = window.open(URL.createObjectURL(new Blob([app], { type: "text/html" })), "_blank");
     msg.textContent = w
-      ? "The prompter is open in a new window or tab. Keep this tab open while you use it: it brings in the weekly draft."
+      ? "The prompter is open in a new window or tab. Keep this tab open while you use it."
       : "The browser blocked the new window. Allow pop-ups for this site, then press the button again.";
   };
   document.getElementById("launchHere").onclick = function () {
@@ -100,12 +100,23 @@ ${read("css/prompter.css").trim()}
 <body>
 ${body}
 <script>
+// This week's draft, built in so it shows even if the page can't reach the
+// Apps Script server (several Google accounts signed in, Safari, etc.).
+window.RGN_DRAFT = ${draftJson()};
+</script>
+<script>
 "use strict";
 ${js}
 </script>
 </body>
 </html>
 `;
+}
+
+function draftJson() {
+  let d = null;
+  try { d = JSON.parse(read("scripts/current.json")); } catch (e) { /* none yet */ }
+  return JSON.stringify(d).replace(/<\//g, "<\\/");
 }
 
 export function build() {

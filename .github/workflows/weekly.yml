@@ -28,11 +28,17 @@ jobs:
         run: pip install -r requirements.txt
       - name: Draft this week's scripts
         run: python -m rgn.weekly
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build the draft into the Apps Script page
+        working-directory: prompter
+        run: node build-gas.mjs
       - name: Publish the drafts
         run: |
           git config user.name "Red Gold News"
           git config user.email "noreply@users.noreply.github.com"
-          git add prompter/scripts/current.json site/week.json
+          git add prompter/scripts/current.json prompter/gas/App.html site/week.json
           if git diff --cached --quiet; then
             echo "Nothing changed since the last draft."
           else
