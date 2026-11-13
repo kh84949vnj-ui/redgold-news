@@ -39,7 +39,7 @@ class MenuRead(unittest.TestCase):
 
     def test_menu_block_sits_where_the_menu_airs(self):
         s = build_script({**WEEK, "menu": {"script": self.lines}})
-        self.assertIn("[MENU]\nHey, RedWolves! I'm [MENU REPORTER]", s)
+        self.assertIn("[MENU]\nHey, RedWolves! Here's what's cookin' this week.", s)
         self.assertLess(s.index("[CUE STUDENT VOICES]"), s.index("[MENU]"))
         self.assertNotIn("[CUE MENU]", s)
 

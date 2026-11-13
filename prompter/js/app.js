@@ -666,7 +666,7 @@ function refreshDocUI() {
   $("nameA1Row").hidden = solo;
   $("nameA2Row").hidden = solo || (doc === "news" && anchors === 1);
   $("nameWxRow").hidden = doc === "menu" || (doc === "news" && !mentions(/\[WEATHER REPORTER\]/i));
-  $("nameMnRow").hidden = doc === "weather" || (doc !== "menu" && !mentions(/\[MENU REPORTER\]/i));
+  $("nameMnRow").hidden = !mentions(/\[MENU REPORTER\]/i);
   $("btnReset").textContent = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
   board.render();
   $("anchorsOpt").hidden = doc !== "news";

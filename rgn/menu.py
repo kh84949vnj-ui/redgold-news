@@ -53,7 +53,7 @@ def and_list(items: list[str]) -> str:
 
 def script(school_days: list[dt.date], menus: dict[str, dict]) -> tuple[list[str], list[str]]:
     """(lines to read, notes). One line per school day: breakfast, then lunch."""
-    lines = ["Hey, RedWolves! I'm [MENU REPORTER], and here's what's on the menu this week."]
+    lines = ["Hey, RedWolves! Here's what's cookin' this week."]
     notes = []
     for d in school_days:
         day = c.DAY_NAMES[d.weekday()]
