@@ -5,7 +5,7 @@ import { Motion, Spring } from "./motion.js";
 import { Stage } from "./render.js";
 import { VoskEngine, WebSpeechEngine } from "./engines.js";
 import { Editor } from "./editor.js";
-import { splitScript, nameBlocks } from "./segments.js";
+import { deriveDoc } from "./segments.js";
 
 const $ = (id) => document.getElementById(id);
 const TALENT = new URLSearchParams(location.search).get("view") === "talent";
@@ -24,6 +24,7 @@ let settings = { ...DEFAULT_SETTINGS, ...store.get("settings", {}) };
 const stageEl = $("stage");
 const stage = new Stage(stageEl);
 let editor = null;            // created below (operator page only)
+let doc = null;               // "news" | "weather" | "custom" (null on the start page)
 let stageStale = false;       // editor changed since the stage was last built
 const spring = new Spring(7);
 let script = null, aligner = null;
@@ -85,7 +86,7 @@ function loadScript(text, { keepPos = false, fromEditor = false } = {}) {
   manualPos = p;
   spring.snap(targetOffset(p));
   if (!TALENT) {
-    store.set("script", text);
+    if (doc) store.set("script-" + doc, text);
     if (chan) chan.postMessage({ type: "script", text });
   }
 }
@@ -261,14 +262,15 @@ if (chan) {
       else if (m.type === "pos") remotePos = m.p;
     } else if (m.type === "hello") {
       chan.postMessage({ type: "settings", settings });
-      chan.postMessage({ type: "script", text: store.get("script", "") });
+      chan.postMessage({ type: "script", text: doc ? store.get("script-" + doc, "") : "" });
     }
   };
 }
 
 // ------------------------------------------------------------------ controls
 function openScriptDialog() {
-  $("scriptText").value = store.get("script", "");
+  $("scriptText").value = editor ? editor.getText().trim() : "";
+  $("btnWeekly").hidden = !(doc && DOCS[doc].draft);
   $("dlgScript").showModal();
 }
 
@@ -327,38 +329,30 @@ if (TALENT) {
     setTimeout(() => { b.textContent = "Copy for Google Doc"; }, 2000);
   };
   $("btnDownload").onclick = () => {
-    const meta = store.get("script-meta", {});
+    const meta = getMeta();
     const blob = new Blob([editor.getText()], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `RGN Script ${(meta.label || "episode").replace(/,/g, "")}.txt`;
+    a.download = `RGN ${DOCS[doc].title}${meta.label ? " " + meta.label.replace(/,/g, "") : ""}.txt`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
-  // Starting over replaces everyone's edits on this device, so it asks twice.
+  // Starting over throws away edits on this device, so it asks twice.
   let resetArmed = null;
   $("btnReset").onclick = async () => {
     const b = $("btnReset");
+    const label = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
     if (!resetArmed) {
-      b.textContent = "Click again to replace your edits";
-      resetArmed = setTimeout(() => { resetArmed = null; b.textContent = "Start over from this week's draft"; }, 4000);
+      b.textContent = DOCS[doc].draft ? "Click again to replace your edits" : "Click again to clear";
+      resetArmed = setTimeout(() => { resetArmed = null; b.textContent = label; }, 4000);
       return;
     }
     clearTimeout(resetArmed); resetArmed = null;
-    b.textContent = "Start over from this week's draft";
+    b.textContent = label;
+    if (!DOCS[doc].draft) { loadScript(""); setMeta({}); note("Cleared."); refreshDocUI(); return; }
     const pub = await fetchPublished();
-    if (pub) { published = pub; usePublished(pub); note("Started over from this week's draft."); }
+    if (pub) { published = pub; usePublished(); note("Started over from this week's draft."); }
     else note("This week's draft isn't published yet.");
-  };
-  $("btnWeather").onclick = () => {
-    if (!published) return;
-    const w = nameBlocks(splitScript(published.text)).find((b) => b.name === "Weather");
-    if (w && editor.replaceBlock("Weather", w.text)) {
-      const meta = store.get("script-meta", {});
-      store.set("script-meta", { ...meta, generated: published.generated });
-      note(`Weather updated to the forecast from ${published.generated_label}. Your other edits are kept.`);
-      showPublished();
-    }
   };
   $("btnFull").onclick = toggleFullscreen;
   $("btnTalent").onclick = () => window.open(location.pathname + "?view=talent", "rgn-talent", "popup,width=1024,height=768");
@@ -370,16 +364,19 @@ if (TALENT) {
   $("dlgScript").addEventListener("close", () => {
     if ($("dlgScript").returnValue === "ok") {
       loadScript($("scriptText").value);
-      store.set("script-meta", { source: "manual" });
-      showPublished();
+      setMeta({ source: "manual" });
+      refreshDocUI();
     }
   });
   $("btnWeekly").onclick = async () => {
     const pub = await fetchPublished();
-    if (pub) { $("dlgScript").close("cancel"); usePublished(pub); }
+    if (pub) { published = pub; $("dlgScript").close("cancel"); usePublished(); }
     else $("weeklyNote").textContent = "This week's script isn't published yet.";
   };
-  $("btnNewScript").onclick = async () => { const pub = await fetchPublished(); if (pub) usePublished(pub); };
+  $("btnNewScript").onclick = async () => {
+    const pub = await fetchPublished();
+    if (pub) { published = pub; usePublished(); note(`Loaded the newer draft (updated ${pub.generated_label}).`); }
+  };
   $("scriptFile").onchange = async (e) => {
     const f = e.target.files[0];
     if (f) $("scriptText").value = await f.text();
@@ -388,7 +385,7 @@ if (TALENT) {
   document.addEventListener("drop", async (e) => {
     e.preventDefault();
     const f = e.dataTransfer.files[0];
-    if (f) { loadScript(await f.text()); store.set("script-meta", { source: "manual" }); showPublished(); }
+    if (f && doc) { loadScript(await f.text()); setMeta({ source: "manual" }); refreshDocUI(); }
   });
   // iPad alone: in "solo" mode the controls hide; tap the top edge to show them.
   stageEl.addEventListener("click", (e) => {
@@ -410,11 +407,20 @@ if (TALENT) {
 window.addEventListener("resize", () => stage.layout());
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => stage.layout());
 
-// ------------------------------------------------------------------ weekly script
-// The weekly prep run publishes the episode script next to the prompter
-// (scripts/current.json). It loads automatically unless someone pasted their
-// own script; then a button offers the new one instead of overwriting.
+// ------------------------------------------------------------------ the three scripts
+// The start page offers three scripts, each saved separately on this device:
+//   news     the anchors' rundown, drafted weekly (weather becomes a cue card)
+//   weather  the forecast read, drafted weekly
+//   custom   blank, for anything else
+// News and weather come from the weekly prep run (scripts/current.json). A
+// newer draft loads by itself unless someone edited; then a button offers it.
+const DOCS = {
+  news: { title: "News rundown", draft: true },
+  weather: { title: "Weather", draft: true },
+  custom: { title: "Custom", draft: false },
+};
 let published = null;
+
 async function fetchPublished() {
   try {
     const r = await fetch("scripts/current.json", { cache: "no-store" });
@@ -423,12 +429,80 @@ async function fetchPublished() {
     return d && typeof d.text === "string" && d.text.trim() ? d : null;
   } catch (e) { return null; }
 }
+function getMeta(d = doc) { return store.get("meta-" + d, {}); }
+function setMeta(m, d = doc) { store.set("meta-" + d, m); }
 function note(text) { const n = $("edNote"); if (n) n.textContent = text || ""; }
+
+/** Load this week's draft into the current script (news or weather). */
+function usePublished() {
+  if (!published || !doc || !DOCS[doc].draft) return;
+  const text = deriveDoc(doc, published.text);
+  loadScript(text);
+  setMeta({ source: "published", base: text, generated: published.generated, label: published.episode_label });
+  refreshDocUI();
+}
+
+/** On opening a script, bring in a newer draft if nobody has edited. */
+function reconcile() {
+  if (!published || !doc || !DOCS[doc].draft) return refreshDocUI();
+  const meta = getMeta();
+  const text = deriveDoc(doc, published.text);
+  const local = (store.get("script-" + doc, "") || "").trim();
+  if (meta.base === text) {
+    if (meta.generated !== published.generated) setMeta({ ...meta, generated: published.generated });
+  } else if ((!local || meta.source === "published") && !listening) {
+    usePublished();
+    if (local) note(`Loaded the newer draft (updated ${published.generated_label}).`);
+  }
+  refreshDocUI();
+}
+
+function onEdited(text) {
+  if (!doc) return;
+  store.set("script-" + doc, text);
+  const meta = getMeta();
+  if (meta.source === "published") setMeta({ ...meta, source: "edited" });
+  stageStale = true;
+  refreshDocUI();
+}
+
+function docStatus(d) {
+  const meta = getMeta(d);
+  const text = (store.get("script-" + d, "") || "").trim();
+  if (d === "custom") {
+    const words = (text.replace(/\[[^\]]*\]/g, " ").match(/\S+/g) || []).length;
+    return text ? `${words} words saved` : "Empty";
+  }
+  if (!text) return published ? `Draft ready for ${published.episode_label}` : "No draft published yet";
+  const stale = published && meta.base !== deriveDoc(d, published.text);
+  if (meta.source === "edited") return `Edited${meta.label ? " · " + meta.label : ""}${stale ? " · newer draft available" : ""}`;
+  if (meta.source === "manual") return "Pasted script";
+  return `Ready · ${meta.label || ""}`;
+}
+
+function refreshDocUI() {
+  if (TALENT) return;
+  $("homeEp").textContent = published ? `This week: episode of ${published.episode_label}.` : "";
+  $("stNews").textContent = docStatus("news");
+  $("stWeather").textContent = docStatus("weather");
+  $("stCustom").textContent = docStatus("custom");
+  if (!doc) { $("docLabel").textContent = ""; $("epLabel").textContent = ""; $("btnNewScript").hidden = true; return; }
+  const meta = getMeta();
+  $("docLabel").textContent = DOCS[doc].title;
+  $("epLabel").textContent = meta.label ? meta.label + (meta.source === "edited" ? " (edited)" : "") : meta.source === "manual" ? "Pasted" : "";
+  $("edTitle").textContent = DOCS[doc].title + (meta.label ? ` · ${meta.label}` : "");
+  $("btnReset").textContent = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
+  const btn = $("btnNewScript");
+  const newer = !!(DOCS[doc].draft && published && meta.base !== deriveDoc(doc, published.text) &&
+    (store.get("script-" + doc, "") || "").trim());
+  btn.hidden = !newer;
+  if (newer) btn.textContent = meta.source === "published" ? "Load the newer draft" : "Load the newer draft (replaces your edits)";
+}
 
 function setView(v) {
   if (TALENT) return;
   document.body.dataset.view = v;
-  store.set("view", v);
+  if (doc) store.set("view-" + doc, v);
   $("viewEdit").setAttribute("aria-pressed", String(v === "edit"));
   $("viewPrompt").setAttribute("aria-pressed", String(v === "prompt"));
   if (v === "prompt") {
@@ -437,62 +511,40 @@ function setView(v) {
   }
 }
 
-function onEdited(text) {
-  store.set("script", text);
-  const meta = store.get("script-meta", {});
-  if (meta.source === "published") store.set("script-meta", { ...meta, source: "edited" });
-  stageStale = true;
-  showPublished();
-}
-
-function usePublished(pub) {
-  loadScript(pub.text);
-  store.set("script-meta", { source: "published", generated: pub.generated, label: pub.episode_label });
-  showPublished();
-  setStatus(`Loaded the script for ${pub.episode_label} (updated ${pub.generated_label}).`);
-}
-function showPublished() {
-  if (TALENT) return;
-  const meta = store.get("script-meta", {});
-  const ep = $("epLabel");
-  ep.textContent = meta.source === "published" ? meta.label
-    : meta.source === "edited" ? `${meta.label} (edited)` : meta.source === "manual" ? "Pasted script" : "";
-  $("edTitle").textContent = meta.label ? `Episode of ${meta.label}` : "Episode script";
-  const btn = $("btnNewScript"), wx = $("btnWeather");
-  btn.hidden = true; wx.hidden = true;
-  if (!published || meta.generated === published.generated) return;
-  const sameEpisode = meta.label && meta.label === published.episode_label;
-  if (sameEpisode && meta.source === "edited") {
-    // Same episode, re-run (usually a fresher forecast): offer just the weather.
-    wx.hidden = false;
-    wx.textContent = `Update weather (forecast from ${published.generated_label})`;
-  } else {
-    btn.hidden = false;
-    btn.textContent = meta.source === "published" || !meta.source
-      ? `Load the script for ${published.episode_label}`
-      : `Load the script for ${published.episode_label} (replaces yours)`;
+/** Route: "" = start page, "#news" / "#weather" / "#custom" = that script. */
+function route() {
+  const want = location.hash.replace("#", "");
+  const next = DOCS[want] ? want : null;
+  if (next !== doc && listening) stopListening();
+  if (!next) {
+    doc = null;
+    document.body.dataset.view = "home";
+    note("");
+    refreshDocUI();
+    return;
   }
+  if (next !== doc) {
+    doc = next;
+    note("");
+    loadScript(store.get("script-" + doc, ""));
+    reconcile();
+  }
+  setView(store.get("view-" + doc, "edit"));
 }
 
 // ------------------------------------------------------------------ start
-if (!TALENT) {
-  editor = new Editor($("editor"), { onChange: onEdited });
-  setView(store.get("view", "edit"));
-}
 applySettings();
 if (TALENT) {
   loadScript("");
   if (chan) chan.postMessage({ type: "hello" });
 } else {
-  loadScript(store.get("script", ""));
+  editor = new Editor($("editor"), { onChange: onEdited });
   setPill("idle", "Not listening");
+  window.addEventListener("hashchange", route);
+  route();
   fetchPublished().then((pub) => {
     published = pub;
-    const meta = store.get("script-meta", {});
-    const hasLocal = !!(store.get("script", "") || "").trim();
-    const untouched = !hasLocal || meta.source === "published" || !meta.source;
-    if (pub && untouched && meta.generated !== pub.generated && !listening) usePublished(pub);
-    else showPublished();
+    if (doc) reconcile(); else refreshDocUI();
   });
 }
 requestAnimationFrame(frame);

@@ -50,7 +50,7 @@ export function nameBlocks(blocks) {
     if (/^\s*\[WEATHER\]/i.test(b.text)) name = "Weather";
     else if (lastCue.includes("VOICES") && !seenMenu) name = "Student voices notes";
     else if (seenMenu) name = "Anchor close";
-    else if (firstText && !seenIntro) name = "Anchor open";
+    else if (firstText && !seenIntro && blocks.some((x) => x.type === "cue")) name = "Anchor open";
     else if (seenIntro && !newsNamed) { name = "News block"; newsNamed = true; }
     firstText = false;
     return { ...b, name };
@@ -79,4 +79,23 @@ export function todos(blocks) {
     }
   });
   return out;
+}
+
+/**
+ * The scripts the landing page offers, carved out of the weekly draft:
+ *   news:    the anchors' rundown; the weather read becomes a [CUE WEATHER] card
+ *            because the weather reporter reads it separately
+ *   weather: just the weather read
+ */
+export function deriveDoc(doc, draftText) {
+  const blocks = splitScript(draftText);
+  const isWeather = (b) => b.type === "text" && /^\s*\[WEATHER\]/i.test(b.text);
+  if (doc === "weather") {
+    const w = blocks.find(isWeather);
+    return w ? w.text.replace(/^\n+|\n+$/g, "") + "\n" : "";
+  }
+  if (doc === "news") {
+    return joinScript(blocks.map((b) => (isWeather(b) ? { type: "cue", text: "CUE WEATHER" } : b)));
+  }
+  return "";
 }

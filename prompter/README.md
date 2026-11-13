@@ -19,7 +19,19 @@ the district has approved that.
 
 ## Using it
 
-The site has two views, switched at the top: **Edit** and **Prompt**.
+The start page asks **What are you recording?** and offers three scripts.
+Each is saved separately on the device and has its own **Edit** and
+**Prompt** views (tap **RGN Prompter** at the top to go back to the start):
+
+- **News rundown**: the anchors' script (open, school news, close), drafted
+  each week. Weather appears in it only as a `[CUE WEATHER]` card.
+- **Weather**: just the forecast read for the weather reporter, drafted each
+  week.
+- **Custom**: starts blank for anything else (student voices intros, promos,
+  standalone segments).
+
+The start page shows each one's state (draft ready, edited, newer draft
+available). Direct links work too: `…/prompter/#news`, `#weather`, `#custom`.
 
 ### Edit
 
@@ -34,11 +46,12 @@ The site has two views, switched at the top: **Edit** and **Prompt**.
    the adviser. Click one to jump to it.
 4. Edits save on that device as you type. **Copy for Google Doc** and
    **Download .txt** take the finished script anywhere else.
-5. If the prep run is done again for the same episode (for a fresher
-   forecast), an **Update weather** button swaps in the new weather read and
-   keeps every other edit. A new week's draft shows a **Load the script for…**
-   button instead of replacing your work. **Start over from this week's draft**
-   throws away your edits (it asks twice).
+5. When the prep run publishes a newer draft (next week's, or a fresher
+   forecast), a script nobody has edited updates by itself. An edited one
+   shows a **Load the newer draft** button instead of replacing the work.
+   Because news and weather are separate, a new forecast only touches the
+   Weather script. **Start over from this week's draft** (or **Clear** for
+   Custom) throws away edits; it asks twice.
 
 ### Prompt
 

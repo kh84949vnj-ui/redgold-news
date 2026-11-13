@@ -22,6 +22,8 @@ export class Editor {
 
   setText(text) {
     this.blocks = nameBlocks(splitScript(text));
+    // A blank script still gets one box to type in.
+    if (!this.blocks.length) this.blocks = [{ type: "text", text: "", name: "Your script" }];
     this.render();
   }
 
@@ -72,6 +74,7 @@ export class Editor {
         ta.spellcheck = true;
         ta.value = b.text;
         ta.setAttribute("aria-label", b.name);
+        if (!b.text) ta.placeholder = "Type or paste your script here. Put a speaker on its own line in brackets, like [ANCHOR 1], and a cue like [CUE PACKAGE].";
         ta.addEventListener("input", () => {
           b.text = ta.value;
           this.grow(ta);

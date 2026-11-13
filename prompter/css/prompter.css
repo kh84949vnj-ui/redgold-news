@@ -34,7 +34,9 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 
 /* Top bar */
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: calc(8px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); background: var(--chrome); border-bottom: 1px solid var(--line); }
-.brand { font-weight: 800; letter-spacing: .08em; color: var(--gold); }
+.brand { font-weight: 800; letter-spacing: .08em; color: var(--gold); text-decoration: none; }
+.doc-label { font-weight: 700; }
+.doc-label:empty { display: none; }
 .brand span { color: var(--ink); font-weight: 600; letter-spacing: .02em; }
 .brand .ep { color: var(--muted); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-size: 13px; }
 .bar-main, .bar-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -99,9 +101,24 @@ dialog::backdrop { background: rgba(0,0,0,.6); }
 .file { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
 .file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-/* Views: Edit shows the rundown editor, Prompt shows the stage. */
+/* Views: Home picks a script, Edit shows the rundown editor, Prompt the stage. */
 body[data-view="edit"] .stage, body[data-view="edit"] .prompt-only, body[data-view="edit"] .panel { display: none !important; }
 body[data-view="prompt"] .editor, body.talent .editor { display: none !important; }
+body[data-view="home"] .stage, body[data-view="home"] .editor, body[data-view="home"] .prompt-only,
+body[data-view="home"] .panel, body[data-view="home"] .views, body[data-view="home"] #btnNewScript { display: none !important; }
+body:not([data-view="home"]) .home, body.talent .home { display: none !important; }
+
+.home { flex: 1; min-height: 0; overflow-y: auto; }
+.home-wrap { max-width: 980px; margin: 0 auto; padding: 40px max(16px, env(safe-area-inset-right, 0px)) 60px max(16px, env(safe-area-inset-left, 0px)); }
+.home h1 { margin: 0; font-size: clamp(28px, 4vw, 40px); letter-spacing: -.01em; }
+.home-ep { margin: 6px 0 0; color: var(--muted); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 26px 0 18px; }
+.card { display: flex; flex-direction: column; gap: 10px; padding: 22px 20px; min-height: 190px; border: 1px solid var(--line); border-radius: 14px; background: var(--chrome); color: var(--ink); text-decoration: none; }
+.card:hover { border-color: var(--gold); }
+.card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.card-k { font-size: 24px; font-weight: 800; }
+.card-d { color: var(--muted); flex: 1; }
+.card-s { font: 600 12px var(--mono); color: var(--gold); }
 .views button { min-width: 72px; }
 
 .editor { flex: 1; min-height: 0; overflow-y: auto; background: var(--bg); -webkit-overflow-scrolling: touch; }

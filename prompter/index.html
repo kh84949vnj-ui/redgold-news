@@ -12,7 +12,9 @@
 </head>
 <body>
 <header class="bar" id="bar">
-  <div class="brand">RGN <span>Prompter</span> <small id="epLabel" class="ep"></small></div>
+  <a class="brand" href="#" title="Back to the start page">RGN <span>Prompter</span></a>
+  <span id="docLabel" class="doc-label"></span>
+  <small id="epLabel" class="ep"></small>
   <div class="seg views" role="group" aria-label="View">
     <button type="button" id="viewEdit" aria-pressed="false">Edit</button>
     <button type="button" id="viewPrompt" aria-pressed="false">Prompt</button>
@@ -47,6 +49,31 @@
   </div>
 </main>
 
+<section class="home" id="home">
+  <div class="home-wrap">
+    <h1>What are you recording?</h1>
+    <p class="home-ep" id="homeEp"></p>
+    <div class="cards">
+      <a class="card" href="#news">
+        <span class="card-k">News rundown</span>
+        <span class="card-d">The anchors' script: open, school news, close. Drafted each week from the district calendar.</span>
+        <span class="card-s" id="stNews"></span>
+      </a>
+      <a class="card" href="#weather">
+        <span class="card-k">Weather</span>
+        <span class="card-d">The forecast read for the weather reporter. Drafted each week from the National Weather Service.</span>
+        <span class="card-s" id="stWeather"></span>
+      </a>
+      <a class="card" href="#custom">
+        <span class="card-k">Custom</span>
+        <span class="card-d">Start blank and type or paste anything: student voices intros, a promo, a standalone segment.</span>
+        <span class="card-s" id="stCustom"></span>
+      </a>
+    </div>
+    <p class="fine">Each one keeps its own script on this device, with an Edit view to finish it and a Prompt view that follows your voice.</p>
+  </div>
+</section>
+
 <section class="editor" id="editor">
   <div class="ed-wrap">
     <div class="ed-top">
@@ -55,7 +82,6 @@
         <p class="total"></p>
       </div>
       <div class="ed-actions">
-        <button type="button" id="btnWeather" class="primary" hidden>Update weather</button>
         <button type="button" id="btnCopy">Copy for Google Doc</button>
         <button type="button" id="btnDownload">Download .txt</button>
         <button type="button" id="btnPaste">Paste a script</button>

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { splitScript, joinScript, nameBlocks, todos } from "../js/segments.js";
+import { splitScript, joinScript, nameBlocks, todos, deriveDoc } from "../js/segments.js";
 
 const sample = readFileSync(new URL("./fixtures/sample-script.txt", import.meta.url), "utf8");
 
@@ -27,4 +27,20 @@ test("a script without cues is one block", () => {
 test("finds things to fill in", () => {
   const t = todos(splitScript("[BOTH]\nHello, I'm [ANCHOR 1] and I'm [ANCHOR 2].\n\n[ANCHOR 1]\nShowcase at 6:30. [VERIFY: location]\n[ADD CAMPUS STORY: something]"));
   assert.deepEqual(t.map((x) => x.kind), ["NAME", "NAME", "VERIFY", "ADD"]);
+});
+
+test("news and weather scripts come out of the weekly draft", () => {
+  const news = deriveDoc("news", sample);
+  const weather = deriveDoc("weather", sample);
+  assert.ok(news.includes("[CUE WEATHER]"));
+  assert.ok(!/high of/i.test(news), "no forecast text in the news rundown");
+  assert.ok(weather.startsWith("[WEATHER]"));
+  assert.ok(/high of/i.test(weather));
+  assert.ok(!/CUE/.test(weather));
+  const names = nameBlocks(splitScript(news)).map((b) => b.name);
+  assert.ok(names.includes("Weather") && names.includes("Anchor close"));
+});
+
+test("a script with no cues is not called the anchor open", () => {
+  assert.equal(nameBlocks(splitScript("Welcome to Student Voices."))[0].name, "Script");
 });
