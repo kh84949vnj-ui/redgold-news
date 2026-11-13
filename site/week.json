@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-13T15:19-06:00",
-  "generated_label": "Friday, November 13 at 3:19 PM",
+  "generated": "2026-11-13T15:24-06:00",
+  "generated_label": "Friday, November 13 at 3:24 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -111,7 +111,7 @@
         "extended": true
       }
     ],
-    "updated": "Friday, November 13 at 3:15 PM",
+    "updated": "Friday, November 13 at 3:18 PM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": [
@@ -120,7 +120,7 @@
   },
   "menu": {
     "script": [
-      "Hey, RedWolves! I'm [MENU REPORTER], and here's what's on the menu this week.",
+      "Hey, RedWolves! Here's what's cookin' this week.",
       "On Monday, breakfast is Hawaiian Sandwich. For lunch, it's Pulled Pork Burger, plus Ranch Style Beans, Onion Rings and Burger Salad.",
       "On Tuesday, breakfast is Kolache. For lunch, it's Cherry Blossom Chicken with Fried Rice and Egg Roll, plus Carrot Coins and Broccoli with Queso.",
       "On Wednesday, breakfast is Buttery Maple Waffle. For lunch, it's VIP Turkey with Dinner Roll, plus Mashed Potato with Gravy and Golden Corn.",
