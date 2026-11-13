@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-13T10:25-06:00",
-  "generated_label": "Friday, November 13 at 10:25 AM",
+  "generated": "2026-11-13T12:13-06:00",
+  "generated_label": "Friday, November 13 at 12:13 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -111,7 +111,7 @@
         "extended": true
       }
     ],
-    "updated": "Friday, November 13 at 10:18 AM",
+    "updated": "Friday, November 13 at 12:00 PM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": [
