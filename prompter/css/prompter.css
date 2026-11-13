@@ -178,6 +178,7 @@ body.solo.show-chrome .bar, body.solo.show-chrome .heard { display: flex; }
 .banner { background: var(--gold); color: #1a1405; }
 .banner button { background: rgba(0,0,0,.12); border-color: rgba(0,0,0,.35); color: #1a1405; min-height: 32px; }
 .banner button.primary { background: #1a1405; color: var(--gold); border-color: #1a1405; }
+.offbar { padding: 8px max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); background: #7a1010; color: #fff; font-weight: 600; font-size: 14px; }
 .openbar { background: var(--chrome-2); color: var(--warn); border-bottom: 1px solid var(--line); font-size: 14px; }
 .openbar button { min-height: 30px; font-size: 13px; }
 

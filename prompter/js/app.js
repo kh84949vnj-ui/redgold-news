@@ -689,3 +689,16 @@ requestAnimationFrame(frame);
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
+
+// If the site can't be reached, the offline copy loads silently. Say so, so
+// nobody thinks the old draft is the newest one. (A URL with a fresh query
+// string is never in the offline cache, so it fails when the site is down.)
+async function checkOnline() {
+  let ok = false;
+  try { ok = (await fetch("scripts/current.json?check=" + Date.now(), { cache: "no-store" })).ok; } catch (e) {}
+  $("offBar").hidden = ok;
+}
+if (location.protocol === "https:") {
+  checkOnline();
+  setInterval(checkOnline, 60 * 1000);
+}
