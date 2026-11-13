@@ -67,6 +67,14 @@ class EpisodeScript(unittest.TestCase):
         self.assertIn("[FLAGGED: Suicide Prevention Awareness Day.", script)
         self.assertNotIn("Wednesday is Suicide", script)
 
+    def test_no_time_of_day(self):
+        # Episodes air at different times, so nothing says morning, today, etc.
+        # ("a morning low of 65" in the forecast is a weather term and is fine).
+        spoken = " ".join(spoken_sentences(self.script)).lower().replace("morning low", "")
+        for phrase in ["good morning", "good afternoon", "good evening", "this morning", "this afternoon",
+                       "tonight", "today", "morning", "afternoon"]:
+            self.assertNotIn(phrase, spoken)
+
     def test_has_the_rundown(self):
         for cue in ["[CUE INTRO SEQUENCE]", "[CUE BUMPER]", "[WEATHER]", "[CUE STUDENT VOICES]", "[CUE MENU]", "[CUE OUTRO]"]:
             self.assertIn(cue, self.script)

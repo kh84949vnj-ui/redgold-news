@@ -178,10 +178,11 @@ def next_break(week: dict) -> dict | None:
 
 # Phrase banks. One is picked per episode from the episode date, so reruns in
 # the same week give the same words and each week sounds a little different.
-GREETINGS = ["Good morning, RedWolves!", "Good morning, and welcome to the RGN!", "Hey, RedWolves, good morning!"]
+# No "good morning" or other time-of-day words: episodes air at different times.
+GREETINGS = ["Hey, RedWolves!", "Welcome to the RGN, RedWolves!", "What's up, RedWolves!"]
 PREVIEWS = [
     "Coming up, we've got school news, your weather, and Student Voices.",
-    "Today we have school news, the forecast, and Student Voices.",
+    "This week we have school news, the forecast, and Student Voices.",
     "Stick with us for school news, the weather, and Student Voices.",
 ]
 NEWS_STARTS = ["Let's get into the news.", "Let's start with what's happening this week.", "First up, here's what's going on."]
@@ -286,7 +287,7 @@ def build_script(week: dict, board_picks=None) -> str:
     wx = (week.get("weather") or {}).get("script") or []
     if wx:
         # The reporter's name goes in front of the forecast's own opener.
-        add("Good morning, RedWolves! I'm [WEATHER REPORTER]. " + wx[0])
+        add("Hey, RedWolves! I'm [WEATHER REPORTER]. " + wx[0])
         out.extend(wx[1:])
     else:
         add("[ADD: weather read]")
