@@ -1,6 +1,10 @@
 // Renders a parsed script into the prompter stage and maps word positions to
 // scroll offsets. Used by both the operator preview and the talent screen.
 
+// Notes that are instructions to the team, not part of what's said. Name
+// placeholders like [ANCHOR 2] are NOT hidden: they mark where a name goes.
+const HIDEABLE = /^\[\s*(verify|add|flagged|simplify|note|todo)\b/i;
+
 export class Stage {
   /**
    * @param {HTMLElement} root  element with .stage-text inside
@@ -14,7 +18,7 @@ export class Stage {
     this.dimmedTo = 0;
   }
 
-  render(script, { onWordClick } = {}) {
+  render(script, { onWordClick, hideNotes = false } = {}) {
     this.script = script;
     const frag = document.createDocumentFragment();
     this.wordEls = new Array(script.words.length);
@@ -33,6 +37,7 @@ export class Stage {
         frag.appendChild(d);
         pendingCue = d;
       } else if (item.type === "note") {
+        if (hideNotes && HIDEABLE.test("[" + item.text)) continue;
         const d = document.createElement("div");
         d.className = "note";
         d.textContent = item.text;
@@ -41,6 +46,7 @@ export class Stage {
         const p = document.createElement("p");
         for (const w of item.words) {
           if (w.br) { p.appendChild(document.createElement("br")); continue; }
+          if (w.note && hideNotes && HIDEABLE.test(w.text)) continue;
           const span = document.createElement("span");
           span.className = w.note ? "w note" : "w";
           span.textContent = w.text;

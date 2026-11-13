@@ -21,20 +21,24 @@
   </div>
   <div class="bar-main prompt-only">
     <button type="button" id="btnListen" class="primary">Start listening</button>
-    <div class="seg" role="group" aria-label="Scrolling mode">
-      <button type="button" id="modeVoice" aria-pressed="true">Follow voice</button>
-      <button type="button" id="modeManual" aria-pressed="false">Steady scroll</button>
-    </div>
     <span class="pill" id="pill" data-state="idle">Not listening</span>
     <div class="meter" aria-hidden="true"><i id="meter"></i></div>
   </div>
-  <div class="bar-side">
-    <button type="button" id="btnNewScript" class="primary" hidden>Load this week's script</button>
-    <button type="button" id="btnTalent" class="prompt-only" title="Open the talent screen in its own window (drag it to the iPad with Sidecar)">Talent screen</button>
-    <button type="button" id="btnFull" class="prompt-only" title="Full screen (F)">Full screen</button>
-    <button type="button" id="btnSettings" class="prompt-only" aria-expanded="false">Settings</button>
+  <div class="bar-side prompt-only">
+    <button type="button" id="btnSettings" aria-expanded="false">Settings</button>
   </div>
 </header>
+
+<div class="banner" id="draftBanner" hidden>
+  <span id="draftText"></span>
+  <button type="button" id="draftLoad" class="primary">Load it</button>
+  <button type="button" id="draftKeep">Keep mine</button>
+</div>
+
+<div class="openbar prompt-only" id="openBar" hidden>
+  <span id="openText"></span>
+  <button type="button" id="openEdit">Back to Edit</button>
+</div>
 
 <div class="heard prompt-only" id="heardRow"><span class="heard-label">Heard</span><span id="heard" class="heard-text"></span><span id="status" class="status-text"></span></div>
 
@@ -78,27 +82,48 @@
   <div class="ed-wrap">
     <div class="ed-top">
       <div class="ed-title">
-        <h1 id="edTitle">Episode script</h1>
+        <h1 id="edTitle">Script</h1>
         <p class="total"></p>
       </div>
       <div class="ed-actions">
         <label class="anchors-opt" id="anchorsOpt" hidden><input type="checkbox" id="twoAnchors" checked> Two anchors</label>
-        <button type="button" id="btnCopy">Copy for Google Doc</button>
-        <button type="button" id="btnDownload">Download .txt</button>
-        <button type="button" id="btnPaste">Paste a script</button>
-        <button type="button" id="btnReset">Start over from this week's draft</button>
+        <details class="more" id="moreMenu">
+          <summary>More</summary>
+          <div class="menu">
+            <button type="button" id="btnCopy">Copy for Google Doc</button>
+            <button type="button" id="btnDownload">Download .txt</button>
+            <button type="button" id="btnPaste">Paste a script</button>
+            <button type="button" id="btnReset">Start over from this week's draft</button>
+          </div>
+        </details>
       </div>
     </div>
     <p class="ed-note" id="edNote"></p>
+    <div class="names" id="names">
+      <span class="names-k">Who's on air</span>
+      <label id="nameA1Row">Anchor 1 <input type="text" id="nameA1" autocomplete="off" placeholder="Name"></label>
+      <label id="nameA2Row">Anchor 2 <input type="text" id="nameA2" autocomplete="off" placeholder="Name"></label>
+      <label id="nameWxRow">Weather <input type="text" id="nameWx" autocomplete="off" placeholder="Name"></label>
+    </div>
     <div class="todo"></div>
     <div class="board" id="boardPick" hidden></div>
-    <ol class="rundown"></ol>
-    <p class="fine">Edits save on this device as you type. Lines like <code>[ANCHOR 1]</code> are speaker tags, <code>[VERIFY: …]</code> and <code>[ADD: …]</code> notes show on the prompter but are never read. When it's ready, switch to <b>Prompt</b>.</p>
+    <textarea class="script-box" id="scriptBox" spellcheck="true" aria-label="Script"
+      placeholder="Type or paste your script. Put each speaker on their own line in brackets, like [ANCHOR 1], and cues like [CUE BUMPER] on their own line."></textarea>
+    <p class="fine">Saves on this device as you type. <code>[ANCHOR 1]</code> lines are speakers and <code>[CUE …]</code> lines are cues. Notes like <code>[VERIFY: …]</code> are never read and stay off the prompter. Names fill in on the prompter and in copies; the script keeps the placeholders. When it's ready, switch to <b>Prompt</b>.</p>
   </div>
 </section>
 
 <aside class="panel" id="panel" hidden>
-  <h2>Settings</h2>
+  <h2>Scrolling</h2>
+  <div class="seg" role="group" aria-label="Scrolling mode">
+    <button type="button" id="modeVoice" aria-pressed="true">Follow voice</button>
+    <button type="button" id="modeManual" aria-pressed="false">Steady scroll</button>
+  </div>
+  <div class="panel-row">
+    <button type="button" id="btnTalent" title="Opens just the script in its own window. Drag it to the iPad with Sidecar.">Open talent screen</button>
+    <button type="button" id="btnFull" title="Full screen (F)">Full screen</button>
+  </div>
+  <h2>Display</h2>
   <label class="row">Text size <input type="range" id="setSize" min="28" max="120" step="2"><output id="outSize"></output></label>
   <label class="row">Line width <input type="range" id="setWidth" min="18" max="48" step="1"><output id="outWidth"></output></label>
   <label class="row">Eye line <input type="range" id="setEye" min="15" max="55" step="1"><output id="outEye"></output></label>
@@ -106,6 +131,7 @@
   <label class="check"><input type="checkbox" id="setMirror"> Mirror (for beam-splitter glass)</label>
   <label class="check"><input type="checkbox" id="setCaps"> ALL CAPS</label>
   <label class="check"><input type="checkbox" id="setDim"> Dim words already read</label>
+  <label class="check"><input type="checkbox" id="setNotes"> Show notes like [VERIFY] on the prompter</label>
   <h2>Listening</h2>
   <label class="row col">Speech engine
     <select id="setEngine">

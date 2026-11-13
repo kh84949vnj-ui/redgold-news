@@ -66,14 +66,7 @@ copy button. Flagged items show "See adviser" and have no copy button. The page
 reads `site/week.json`, so updating it each week is a re-publish of that one file
 after `python -m rgn.weekly`.
 
-`site-script/index.html` is the Episode Script page: all 10 rundown blocks in order.
-Students write the anchor open, news block and anchor close right on the page
-(saved and shared, with "last edited by"). Weather starts from the generated
-read and can be edited or reset. The menu (block 8) is only a `[CUE MENU]` cue,
-since that segment comes from the separate video project. "Open prompter" shows only the
-on-camera reads, white on black, with cue cards for each package
-(Space play/pause, arrows for speed, +/- for size, M to mirror for a beam-splitter
-glass). It reads the same `week.json`; students need Contributor access to edit.
+`site-script/index.html` was the Episode Script page; it now points to the prompter, where scripts are written and read.
 
 Weather timing: NWS's 7-day text forecast often stops at Thursday when you prep
 the week before. Friday then comes from NWS grid data (marked "Early outlook"),

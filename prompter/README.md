@@ -35,23 +35,22 @@ available). Direct links work too: `…/prompter/#news`, `#weather`, `#custom`.
 
 ### Edit
 
-1. Open the prompter page in **Safari** (Mac or iPad). This week's script is
-   already there: the weekly prep run (`python -m rgn.weekly --publish`)
-   publishes the draft, and the page loads it.
-2. The script is laid out as the episode rundown: anchor open, intro cue,
-   news block, bumper, weather, bumper, student voices, menu, close, outro.
-   Each written block is a text box with its reading time; cues are cards.
-3. The box at the top lists what still needs filling in: anchor names
-   (`[ANCHOR 1]`), `[VERIFY: …]` and `[ADD: …]` notes, and flagged topics for
-   the adviser. Click one to jump to it.
-4. Edits save on that device as you type. **Copy for Google Doc** and
-   **Download .txt** take the finished script anywhere else.
-5. When the prep run publishes a newer draft (next week's, or a fresher
-   forecast), a script nobody has edited updates by itself. An edited one
-   shows a **Load the newer draft** button instead of replacing the work.
-   Because news and weather are separate, a new forecast only touches the
-   Weather script. **Start over from this week's draft** (or **Clear** for
-   Custom) throws away edits; it asks twice.
+1. Open the prompter in **Safari** (Mac or iPad) and pick a script. This
+   week's draft is already there; the weekly run
+   (`python -m rgn.weekly --publish`) publishes it and the page loads it.
+2. The whole script is one box. `[ANCHOR 1]` lines are speakers, `[CUE …]`
+   lines are cues, and notes like `[VERIFY: location]` sit inside sentences.
+   The top shows the word count and about how long it reads on camera.
+3. **Who's on air**: type the anchors' (and weather reporter's) names once.
+   They fill in on the prompter and in copies; the script keeps the
+   placeholders, and the names stay on that device (they're never published).
+4. The checklist lists what's still open: names, `[VERIFY]`, `[ADD]`,
+   `[SIMPLIFY]` and flagged topics. Click one to jump to it in the script.
+5. Edits save on the device as you type. **More** has Copy for Google Doc,
+   Download .txt, Paste a script and Start over from this week's draft.
+6. When a newer draft comes out, a script nobody edited updates by itself.
+   An edited one shows a gold banner: **Load it** (replaces your edits) or
+   **Keep mine**.
 
 ### One or two anchors (News rundown)
 
@@ -77,6 +76,11 @@ get a `[SIMPLIFY]` note so a student puts them in their own words. If the
 agenda isn't posted yet, there's an option to just mention the meeting.
 
 ### Prompt
+
+The prompter shows real names and hides notes like `[VERIFY]` (turn them on
+under **Settings → Show notes**). If anything is still open, a bar says so with
+a **Back to Edit** button. Follow voice / Steady scroll, the talent screen
+(Mac only, for Sidecar) and Full screen are in **Settings**.
 
 1. Click **Start listening** and allow the microphone. The first time, the
    speech model (about 40 MB) takes a few seconds to load.

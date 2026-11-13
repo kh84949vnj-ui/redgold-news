@@ -5,21 +5,26 @@ import { Motion, Spring } from "./motion.js";
 import { Stage } from "./render.js";
 import { VoskEngine, WebSpeechEngine } from "./engines.js";
 import { Editor } from "./editor.js";
-import { deriveDoc, oneAnchor } from "./segments.js";
+import { deriveDoc, oneAnchor, fillNames } from "./segments.js";
 import { boardLine, itemKey } from "./board.js";
 
 const $ = (id) => document.getElementById(id);
 const TALENT = new URLSearchParams(location.search).get("view") === "talent";
 if (TALENT) document.body.classList.add("talent");
+// iPads and phones can't drive a second screen, so Sidecar-only controls hide.
+const TOUCH = /iPad|iPhone|Android/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+if (TOUCH) document.body.classList.add("touch");
 
 // ------------------------------------------------------------------ settings
 const DEFAULT_SETTINGS = { size: 56, width: 30, eye: 33, speed: 4, mirror: false, caps: false, dim: true,
-  engine: "vosk", grammar: true, mic: "" };
+  engine: "vosk", grammar: true, mic: "", notes: false };
 const store = {
   get(k, d) { try { const v = localStorage.getItem("rgn-prompter-" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem("rgn-prompter-" + k, JSON.stringify(v)); } catch (e) {} },
 };
 let settings = { ...DEFAULT_SETTINGS, ...store.get("settings", {}) };
+// Who's on air, kept on this device only (never published).
+const getNames = () => store.get("names", { a1: "", a2: "", wx: "" });
 
 // ------------------------------------------------------------------ state
 const stageEl = $("stage");
@@ -39,6 +44,7 @@ let levelAvg = 0, noiseFloor = 0.01, loudAt = -10;
 let cueStarts = [];          // sorted token indexes that follow a cue card
 const chan = "BroadcastChannel" in window ? new BroadcastChannel("rgn-prompter") : null;
 let remotePos = 0;           // talent view: position from the operator
+let lastShown = "";          // the text the stage is showing (names filled in)
 
 // Exposed for testing and troubleshooting from the console.
 window.RGN = { get pos() { return aligner ? aligner.pos : 0; }, get shown() { return motion.shown; }, log: [] };
@@ -59,6 +65,7 @@ function applySettings() {
     $("setMirror").checked = !!settings.mirror;
     $("setCaps").checked = !!settings.caps;
     $("setDim").checked = !!settings.dim;
+    $("setNotes").checked = !!settings.notes;
     $("setEngine").value = settings.engine;
     $("setGrammar").checked = !!settings.grammar;
     $("setGrammar").disabled = settings.engine !== "vosk";
@@ -76,10 +83,14 @@ function saveSettings() {
 function loadScript(text, { keepPos = false, fromEditor = false } = {}) {
   if (editor && !fromEditor) editor.setText(text || "");
   stageStale = false;
-  script = parseScript(text || "");
+  // The prompter shows real names and (unless asked) no notes; the saved
+  // script keeps its placeholders.
+  const shown = TALENT ? (text || "") : fillNames(text || "", getNames());
+  lastShown = shown;
+  script = parseScript(shown);
   aligner = new Aligner(script.tokens.map((t) => t.t));
   cueStarts = [...script.cueBefore].sort((a, b) => a - b);
-  stage.render(script, { onWordClick: TALENT ? null : jumpToWord });
+  stage.render(script, { onWordClick: TALENT ? null : jumpToWord, hideNotes: !settings.notes });
   $("empty") && ($("empty").hidden = script.tokens.length > 0);
   const p = keepPos ? Math.min(motion.pos, script.tokens.length) : 0;
   aligner.setPosition(p, heardTotal);
@@ -88,7 +99,7 @@ function loadScript(text, { keepPos = false, fromEditor = false } = {}) {
   spring.snap(targetOffset(p));
   if (!TALENT) {
     if (doc) store.set("script-" + doc, text);
-    if (chan) chan.postMessage({ type: "script", text });
+    if (chan) chan.postMessage({ type: "script", text: shown });
   }
 }
 
@@ -206,6 +217,7 @@ function updateListenButton() {
   if (!b) return;
   b.textContent = listening ? "Stop listening" : "Start listening";
   b.classList.toggle("primary", !listening);
+  document.body.classList.toggle("listening", listening);
 }
 
 function updateStatus(t) {
@@ -259,11 +271,16 @@ if (chan) {
     const m = e.data || {};
     if (TALENT) {
       if (m.type === "script") loadScript(m.text);
-      else if (m.type === "settings") { settings = { ...settings, ...m.settings }; applySettings(); }
+      else if (m.type === "settings") {
+        const notesChanged = !!m.settings.notes !== !!settings.notes;
+        settings = { ...settings, ...m.settings };
+        applySettings();
+        if (notesChanged) loadScript(lastShown, { keepPos: true });
+      }
       else if (m.type === "pos") remotePos = m.p;
     } else if (m.type === "hello") {
       chan.postMessage({ type: "settings", settings });
-      chan.postMessage({ type: "script", text: doc ? store.get("script-" + doc, "") : "" });
+      chan.postMessage({ type: "script", text: lastShown });
     }
   };
 }
@@ -345,13 +362,13 @@ if (TALENT) {
   $("viewPrompt").onclick = () => setView("prompt");
   $("btnCopy").onclick = async () => {
     const b = $("btnCopy");
-    try { await navigator.clipboard.writeText(editor.getText()); b.textContent = "Copied"; }
+    try { await navigator.clipboard.writeText(fillNames(editor.getText(), getNames())); b.textContent = "Copied"; }
     catch (e) { b.textContent = "Copy blocked; use Download"; }
     setTimeout(() => { b.textContent = "Copy for Google Doc"; }, 2000);
   };
   $("btnDownload").onclick = () => {
     const meta = getMeta();
-    const blob = new Blob([editor.getText()], { type: "text/plain" });
+    const blob = new Blob([fillNames(editor.getText(), getNames())], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `RGN ${DOCS[doc].title}${meta.label ? " " + meta.label.replace(/,/g, "") : ""}.txt`;
@@ -394,10 +411,37 @@ if (TALENT) {
     if (pub) { published = pub; $("dlgScript").close("cancel"); usePublished(); }
     else $("weeklyNote").textContent = "This week's script isn't published yet.";
   };
-  $("btnNewScript").onclick = async () => {
+  // Newer draft banner: load it, or keep this version (asked again only when
+  // another, newer draft comes out).
+  $("draftLoad").onclick = async () => {
     const pub = await fetchPublished();
-    if (pub) { published = pub; usePublished(); note(`Loaded the newer draft (updated ${pub.generated_label}).`); }
+    if (pub) { published = pub; usePublished(); note(`Loaded the draft from ${pub.generated_label}.`); }
   };
+  $("draftKeep").onclick = () => {
+    setMeta({ ...getMeta(), dismissed: published && published.generated });
+    refreshDocUI();
+  };
+  $("openEdit").onclick = () => setView("edit");
+  // Who's on air
+  const nameIds = { a1: "nameA1", a2: "nameA2", wx: "nameWx" };
+  for (const [k, id] of Object.entries(nameIds)) {
+    $(id).value = getNames()[k] || "";
+    $(id).addEventListener("input", (e) => {
+      store.set("names", { ...getNames(), [k]: e.target.value.trim() });
+      stageStale = true;
+      editor.refresh();
+      updateOpenBar();
+    });
+  }
+  $("editor").addEventListener("need-names", () => {
+    const box = $("names");
+    box.classList.add("flash");
+    setTimeout(() => box.classList.remove("flash"), 1200);
+    const empty = [...box.querySelectorAll("label:not([hidden]) input")].find((i) => !i.value.trim());
+    (empty || box.querySelector("input")).focus();
+  });
+  // Close the More menu after choosing something.
+  $("moreMenu").addEventListener("click", (e) => { if (e.target.closest("button") && e.target.id !== "btnReset") $("moreMenu").open = false; });
   $("scriptFile").onchange = async (e) => {
     const f = e.target.files[0];
     if (f) $("scriptText").value = await f.text();
@@ -420,7 +464,8 @@ if (TALENT) {
     });
   };
   bind("setSize", "size"); bind("setWidth", "width"); bind("setEye", "eye"); bind("setSpeed", "speed");
-  bind("setMirror", "mirror"); bind("setCaps", "caps"); bind("setDim", "dim");
+  bind("setMirror", "mirror"); bind("setCaps", "caps"); bind("setDim", "dim"); bind("setNotes", "notes");
+  $("setNotes").addEventListener("input", () => { if (editor && doc) loadScript(editor.getText(), { keepPos: true, fromEditor: true }); });
   bind("setEngine", "engine", false); bind("setGrammar", "grammar"); bind("setMic", "mic", false);
   if (!WebSpeechEngine.available()) $("setEngine").querySelector('option[value="web"]').disabled = true;
 }
@@ -517,20 +562,38 @@ function refreshDocUI() {
   $("stNews").textContent = docStatus("news");
   $("stWeather").textContent = docStatus("weather");
   $("stCustom").textContent = docStatus("custom");
-  if (!doc) { $("docLabel").textContent = ""; $("epLabel").textContent = ""; $("btnNewScript").hidden = true; return; }
+  if (!doc) { $("docLabel").textContent = ""; $("epLabel").textContent = ""; $("draftBanner").hidden = true; return; }
   const meta = getMeta();
   $("docLabel").textContent = DOCS[doc].title;
   $("epLabel").textContent = meta.label ? meta.label + (meta.source === "edited" ? " (edited)" : "") : meta.source === "manual" ? "Pasted" : "";
   $("edTitle").textContent = DOCS[doc].title + (meta.label ? ` · ${meta.label}` : "");
+  // Which names this script needs.
+  $("nameA1Row").hidden = doc === "weather";
+  $("nameA2Row").hidden = doc === "weather" || (doc === "news" && anchors === 1);
+  $("nameWxRow").hidden = doc === "news" && !/\[WEATHER REPORTER\]/i.test(editor.getText());
   $("btnReset").textContent = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
   renderBoard();
-  const btn = $("btnNewScript");
   $("anchorsOpt").hidden = doc !== "news";
   $("twoAnchors").checked = anchors === 2;
   const newer = !!(DOCS[doc].draft && published && meta.base !== deriveFor(doc) &&
-    (store.get("script-" + doc, "") || "").trim());
-  btn.hidden = !newer;
-  if (newer) btn.textContent = meta.source === "published" ? "Load the newer draft" : "Load the newer draft (replaces your edits)";
+    (store.get("script-" + doc, "") || "").trim() && meta.dismissed !== published.generated);
+  $("draftBanner").hidden = !newer;
+  if (newer) {
+    $("draftText").textContent = `A newer ${DOCS[doc].title.toLowerCase()} draft is ready (updated ${published.generated_label}).` +
+      (meta.source === "edited" || meta.source === "manual" ? " Loading it replaces your edits." : "");
+  }
+  updateOpenBar();
+}
+
+/** In Prompt: a heads-up when the script still has things to fill in. */
+function updateOpenBar() {
+  if (TALENT || !editor) return;
+  const items = doc ? editor.openItems() : [];
+  const bar = $("openBar");
+  bar.hidden = !items.length || document.body.dataset.view !== "prompt";
+  if (!items.length) return;
+  const names = items.map((t) => (t.kind === "NAME" ? `name for ${t.text.toLowerCase()}` : t.text.split(":")[0].toLowerCase()));
+  $("openText").textContent = `${items.length} thing${items.length === 1 ? "" : "s"} still open: ${[...new Set(names)].slice(0, 3).join(", ")}${items.length > 3 ? "…" : ""}`;
 }
 
 // ------------------------------------------------------------------ board agenda picks
@@ -620,7 +683,7 @@ function toggleBoardItem(meeting, item, on) {
     const text = boardLine(meeting, item, first);
     picked[key] = text;
     setMeta({ ...meta, board: picked });
-    editor.insertParagraph("News block", text, /ADD CAMPUS STORY/, anchors === 1);
+    editor.insertParagraph(text, /ADD CAMPUS STORY/, anchors === 1);
     note("Added to the news block.");
   } else {
     const text = picked[key];
@@ -632,10 +695,10 @@ function toggleBoardItem(meeting, item, on) {
     if (nextKey) {
       const nextItem = meeting.items.find((it) => itemKey(meeting, it) === nextKey) || null;
       const fresh = boardLine(meeting, nextItem, true);
-      if (editor.replaceParagraph("News block", picked[nextKey], fresh)) picked[nextKey] = fresh;
+      if (editor.replaceParagraph(picked[nextKey], fresh)) picked[nextKey] = fresh;
     }
     setMeta({ ...meta, board: picked });
-    if (text && editor.removeParagraph("News block", text)) note("Taken out of the news block.");
+    if (text && editor.removeParagraph(text)) note("Taken out of the news block.");
     else note("That line was edited, so it's still in the news block. Delete it there if you don't want it.");
   }
   refreshDocUI();
@@ -651,6 +714,7 @@ function setView(v) {
     if (stageStale) loadScript(editor.getText(), { keepPos: true, fromEditor: true });
     requestAnimationFrame(() => { stage.layout(); spring.snap(targetOffset(mode === "manual" ? manualPos : motion.shown)); });
   }
+  updateOpenBar();
 }
 
 /** Route: "" = start page, "#news" / "#weather" / "#custom" = that script. */
@@ -680,7 +744,7 @@ if (TALENT) {
   loadScript("");
   if (chan) chan.postMessage({ type: "hello" });
 } else {
-  editor = new Editor($("editor"), { onChange: onEdited });
+  editor = new Editor($("editor"), { onChange: onEdited, names: getNames });
   setPill("idle", "Not listening");
   window.addEventListener("hashchange", route);
   route();

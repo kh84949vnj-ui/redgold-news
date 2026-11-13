@@ -74,7 +74,7 @@ export function todos(blocks) {
       const wholeLine = line === m[0];
       let kind = null;
       if (/^(verify|add|flagged)\b/i.test(inner)) kind = inner.split(/[:\s]/)[0].toUpperCase();
-      else if (!wholeLine && /^anchor\s*\d/i.test(inner)) kind = "NAME";
+      else if (!wholeLine && /^(anchor\s*\d|weather reporter)$/i.test(inner)) kind = "NAME";
       if (kind) out.push({ block: bi, index: m.index, length: m[0].length, kind, text: inner });
     }
   });
@@ -128,4 +128,22 @@ export function oneAnchor(text) {
     out.push(line);
   }
   return out.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+/**
+ * Put real names in place of [ANCHOR 1], [ANCHOR 2] and [WEATHER REPORTER]
+ * for the prompter and copies. A placeholder on its own line is a speaker tag
+ * and stays a tag ("[Sam]"); inside a sentence it becomes the name.
+ * Names left blank keep their placeholder.
+ */
+export function fillNames(text, names = {}) {
+  const map = [["ANCHOR\\s*1", names.a1], ["ANCHOR\\s*2", names.a2], ["WEATHER REPORTER", names.wx]];
+  let t = String(text || "");
+  for (const [pat, name] of map) {
+    const n = String(name || "").trim().replace(/[[\]]/g, "");
+    if (!n) continue;
+    t = t.replace(new RegExp(`^([ \\t]*)\\[${pat}\\]([ \\t]*)$`, "gim"), `$1[${n}]$2`);
+    t = t.replace(new RegExp(`\\[${pat}\\]`, "gi"), n);
+  }
+  return t;
 }

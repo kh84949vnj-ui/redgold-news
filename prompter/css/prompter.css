@@ -105,7 +105,9 @@ dialog::backdrop { background: rgba(0,0,0,.6); }
 body[data-view="edit"] .stage, body[data-view="edit"] .prompt-only, body[data-view="edit"] .panel { display: none !important; }
 body[data-view="prompt"] .editor, body.talent .editor { display: none !important; }
 body[data-view="home"] .stage, body[data-view="home"] .editor, body[data-view="home"] .prompt-only,
-body[data-view="home"] .panel, body[data-view="home"] .views, body[data-view="home"] #btnNewScript { display: none !important; }
+body[data-view="home"] .panel, body[data-view="home"] .views, body[data-view="home"] .banner { display: none !important; }
+body:not(.listening) .heard { display: none !important; }
+body.touch #btnTalent { display: none !important; }
 body:not([data-view="home"]) .home, body.talent .home { display: none !important; }
 
 .home { flex: 1; min-height: 0; overflow-y: auto; }
@@ -153,17 +155,6 @@ body:not([data-view="home"]) .home, body.talent .home { display: none !important
 .board-list .flag { color: #ffb3bb; font: 600 11px var(--mono); margin-left: 6px; white-space: nowrap; }
 .board-list label.off { cursor: not-allowed; opacity: .6; }
 .board-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 0 0 8px; font-size: 13px; color: var(--muted); }
-.rundown { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
-.blk { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); background: var(--chrome); border: 1px solid var(--line); border-radius: 10px; }
-.blk-cue { background: transparent; border-style: dashed; }
-.blk-n { font: 700 20px var(--mono); color: var(--muted); text-align: center; padding-top: 12px; border-right: 1px solid var(--line); }
-.blk-text .blk-n { color: var(--gold); }
-.blk-body { padding: 10px 14px 12px; min-width: 0; }
-.blk-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.blk-head h3 { margin: 0; font-size: 16px; text-transform: uppercase; letter-spacing: .06em; }
-.blk-cue-text { font: 600 13px var(--mono); color: var(--gold); }
-.blk-time { margin-left: auto; font: 12px var(--mono); color: var(--muted); }
-.blk textarea { display: block; width: 100%; margin-top: 8px; min-height: 5em; resize: vertical; overflow: hidden; background: #000; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 17px/1.5 var(--body); }
 
 /* Talent view: just the text. Tap shows nothing; F or double-tap for full screen. */
 body.talent .bar, body.talent .heard, body.talent .panel, body.talent .empty { display: none; }
@@ -178,4 +169,43 @@ body.solo.show-chrome .bar, body.solo.show-chrome .heard { display: flex; }
 }
 @media (prefers-reduced-motion: reduce) {
   .meter i { transition: none; }
+}
+
+/* Banners under the top bar */
+.banner, .openbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); font-weight: 600; }
+.banner { background: var(--gold); color: #1a1405; }
+.banner button { background: rgba(0,0,0,.12); border-color: rgba(0,0,0,.35); color: #1a1405; min-height: 32px; }
+.banner button.primary { background: #1a1405; color: var(--gold); border-color: #1a1405; }
+.openbar { background: var(--chrome-2); color: var(--warn); border-bottom: 1px solid var(--line); font-size: 14px; }
+.openbar button { min-height: 30px; font-size: 13px; }
+
+/* Settings additions */
+.panel .seg { display: inline-flex; margin-bottom: 10px; }
+.panel-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 6px; }
+
+/* Editor: More menu, names, one script box */
+.more { position: relative; }
+.more summary { list-style: none; cursor: pointer; padding: 7px 14px; min-height: 36px; border: 1px solid var(--line); border-radius: 8px; background: var(--chrome-2); display: inline-flex; align-items: center; gap: 6px; }
+.more summary::-webkit-details-marker { display: none; }
+.more summary::after { content: "\25BE"; color: var(--muted); }
+.more .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; display: grid; gap: 4px; min-width: 260px; padding: 6px; background: var(--chrome); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.more .menu button { text-align: left; border-color: transparent; background: transparent; }
+.more .menu button:hover { background: var(--chrome-2); }
+.names { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 14px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); }
+.names-k { font-weight: 700; margin-right: 4px; }
+.names label { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
+.names input { width: 150px; background: #000; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font: 15px var(--body); }
+.names.flash { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold) inset; }
+.script-box { display: block; width: 100%; margin-top: 12px; min-height: 60vh; resize: vertical; overflow: hidden; background: #000; color: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; font: 18px/1.6 var(--body); }
+.script-box:focus { border-color: var(--gold); outline: none; }
+.stage-text .tag { text-transform: uppercase; }
+
+/* Keep the Prompt bar on one row on iPads: drop the episode date and the word
+   "Prompter" there (both are on the Edit view). */
+@media (max-width: 1100px) {
+  body[data-view="prompt"] .bar .ep { display: none; }
+}
+@media (max-width: 900px) {
+  body[data-view="prompt"] .brand span { display: none; }
+  body[data-view="prompt"] .meter { width: 40px; }
 }

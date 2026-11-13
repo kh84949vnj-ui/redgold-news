@@ -71,3 +71,11 @@ See you next week!`;
   assert.equal((one.split("[CUE INTRO SEQUENCE]")[1].match(/\[ANCHOR 1\]/g) || []).length, 1);
   assert.equal(oneAnchor("[BOTH]\nHello RedWolves, I'm [ANCHOR 1] and I'm [ANCHOR 2]."), "[ANCHOR 1]\nHello RedWolves, I'm [ANCHOR 1].");
 });
+
+test("names fill in: tags stay tags, inline placeholders become the name", async () => {
+  const { fillNames } = await import("../js/segments.js");
+  const s = "[ANCHOR 1]\nHey, RedWolves! I'm [ANCHOR 1].\n\n[ANCHOR 2]\nThanks, [ANCHOR 1]. Up next, [WEATHER REPORTER].";
+  assert.equal(fillNames(s, { a1: "Sam", a2: "Alex", wx: "Jo" }),
+    "[Sam]\nHey, RedWolves! I'm Sam.\n\n[Alex]\nThanks, Sam. Up next, Jo.");
+  assert.equal(fillNames(s, { a1: "Sam" }).includes("[ANCHOR 2]"), true, "blank names keep placeholders");
+});
