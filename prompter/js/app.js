@@ -8,7 +8,7 @@ import { Editor } from "./editor.js";
 import { deriveDoc, oneAnchor, fillNames } from "./segments.js";
 import { boardPanel } from "./board-panel.js";
 import { store } from "./store.js";
-import { host, gasCall } from "./host.js";
+import { host, viaGoogle, gasCall } from "./host.js";
 
 const $ = (id) => document.getElementById(id);
 // Apps Script passes ?view= in a meta tag (the page runs in a Google frame).
@@ -424,7 +424,15 @@ if (TALENT) {
   $("btnFull").onclick = toggleFullscreen;
   const execMeta = document.querySelector('meta[name="rgn-exec"]');
   const talentUrl = (execMeta && execMeta.content ? execMeta.content : location.pathname) + "?view=talent";
-  $("btnTalent").onclick = () => window.open(talentUrl, "rgn-talent", "popup,width=1024,height=768");
+  // In the Apps Script window, the talent screen is a copy of this page.
+  let selfHtml = null;
+  if (host === "gaswin") fetch(location.href).then((r) => r.text()).then((t) => { selfHtml = t; }).catch(() => {});
+  $("btnTalent").onclick = () => {
+    const url = host === "gaswin" && selfHtml
+      ? URL.createObjectURL(new Blob([selfHtml.replace('name="rgn-view" content=""', 'name="rgn-view" content="talent"')], { type: "text/html" }))
+      : talentUrl;
+    window.open(url, "rgn-talent", "popup,width=1024,height=768");
+  };
   $("btnSettings").onclick = () => {
     const p = $("panel");
     p.hidden = !p.hidden;
@@ -532,7 +540,7 @@ function deriveFor(d) {
 async function fetchPublished() {
   try {
     let d;
-    if (host === "gas") d = JSON.parse(await gasCall("getDraft"));
+    if (viaGoogle) d = JSON.parse(await gasCall("getDraft"));
     else {
       const r = await fetch("scripts/current.json", { cache: "no-store" });
       if (!r.ok) return null;

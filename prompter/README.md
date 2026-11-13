@@ -14,8 +14,12 @@ pushed here show up there without re-pasting. `gas/App.html` is the whole
 prompter in one file, built by `node build-gas.mjs` (CI fails if it is out of
 date). The speech library loads from jsDelivr and the model from
 raw.githubusercontent.com; if those are blocked, both come through the Apps
-Script server instead (slower). Whether the microphone works inside Google's
-frame still needs a real test.
+Script server instead (slower). Google's frame is not allowed to use the
+microphone, so the Google page is a launcher: "Open the prompter" opens the
+app in its own window (a blob: page on the script's googleusercontent origin),
+where the mic works. That window asks the Google tab for the draft and other
+server calls by postMessage, so the Google tab must stay open. "Use it here
+instead" runs the app in Google's frame with steady scroll only.
 
 **claude.ai copy** (for computers or networks that block github.io):
 https://claude.ai/artifact/AabhYE5cJH4Xew39BPQmun. It is built with

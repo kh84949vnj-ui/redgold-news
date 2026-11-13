@@ -7,7 +7,7 @@
 // WebSpeechEngine uses the browser's built-in recognizer. In Safari and
 // Chrome that may send audio to Apple or Google, so it is opt-in.
 
-import { host, gasCall } from "./host.js";
+import { host, viaGoogle, gasCall } from "./host.js";
 
 const MODEL_FILE = "vosk-model-small-en-us-0.15.tar.gz";
 // On Apps Script the page can't load files from its own server, so the
@@ -16,7 +16,7 @@ const MODEL_FILE = "vosk-model-small-en-us-0.15.tar.gz";
 // too, both come through the Apps Script server instead.
 const RAW_MODEL = "https://raw.githubusercontent.com/kh84949vnj-ui/redgold-news/main/prompter/models/" + MODEL_FILE;
 const VOSK_CDN = "https://cdn.jsdelivr.net/npm/vosk-browser@0.0.8/dist/vosk.js";
-const MODEL_URL = host === "gas" ? RAW_MODEL : new URL("../models/" + MODEL_FILE, import.meta.url).href;
+const MODEL_URL = viaGoogle ? RAW_MODEL : new URL("../models/" + MODEL_FILE, import.meta.url).href;
 
 function addScript(attrs) {
   return new Promise((resolve, reject) => {
@@ -30,7 +30,7 @@ function addScript(attrs) {
 
 async function ensureVosk() {
   if (window.Vosk) return;
-  if (host !== "gas") throw new Error("The speech library didn't load.");
+  if (!viaGoogle) throw new Error("The speech library didn't load.");
   try { await addScript({ src: VOSK_CDN }); } catch (e) { /* try the server */ }
   if (window.Vosk) return;
   const code = await gasCall("getVosk");
@@ -62,7 +62,7 @@ function loadModel(onProgress) {
       try {
         return await window.Vosk.createModel(MODEL_URL);
       } catch (e) {
-        if (host !== "gas") throw e;
+        if (!viaGoogle) throw e;
         return window.Vosk.createModel(await modelViaServer(onProgress));
       }
     })();
