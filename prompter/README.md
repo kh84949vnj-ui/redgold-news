@@ -5,6 +5,13 @@ holds when they pause or ad-lib, and catches up if they skip ahead.
 
 Live at (once GitHub Pages is on): `https://kh84949vnj-ui.github.io/redgold-news/prompter/`
 
+**claude.ai copy** (for computers or networks that block github.io):
+https://claude.ai/artifact/AabhYE5cJH4Xew39BPQmun. It is built with
+`node build-claude.mjs <out-dir>` and published by Claude. Differences:
+voice following uses claude.ai dictation (Chrome only; audio goes to
+Anthropic's speech service, not on-device), there is no offline copy, and the
+weekly draft only changes there when Claude republishes it after an update.
+
 ## Privacy
 
 With the default **On this device** engine, speech recognition runs inside the

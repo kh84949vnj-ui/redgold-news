@@ -3,7 +3,7 @@ import { parseScript, speakPhrase } from "./text.js";
 import { Aligner } from "./align.js";
 import { Motion, Spring } from "./motion.js";
 import { Stage } from "./render.js";
-import { VoskEngine, WebSpeechEngine } from "./engines.js";
+import { VoskEngine, WebSpeechEngine, DictationEngine, onClaude } from "./engines.js";
 import { Editor } from "./editor.js";
 import { deriveDoc, oneAnchor, fillNames } from "./segments.js";
 import { boardPanel } from "./board-panel.js";
@@ -164,11 +164,11 @@ async function startListening() {
   if (listening) return;
   if (!script || !script.tokens.length) { openScriptDialog(); return; }
   const useWeb = settings.engine === "web" && WebSpeechEngine.available();
-  engine = useWeb ? new WebSpeechEngine(handlers) : new VoskEngine(handlers);
+  engine = onClaude ? new DictationEngine(handlers) : useWeb ? new WebSpeechEngine(handlers) : new VoskEngine(handlers);
   listening = true;
   updateListenButton();
   try {
-    const words = settings.grammar && !useWeb ? [...new Set(script.tokens.map((t) => t.t))] : null;
+    const words = settings.grammar && !useWeb && !onClaude ? [...new Set(script.tokens.map((t) => t.t))] : null;
     await engine.start({ words, deviceId: settings.mic || null });
     fillMicList();
   } catch (err) {
@@ -420,6 +420,8 @@ if (TALENT) {
     refreshDocUI();
   };
   $("openEdit").onclick = () => setView("edit");
+  // On claude.ai the draft is updated by asking Claude, not by this button.
+  if (onClaude) document.querySelectorAll(".update-btn").forEach((b) => { b.hidden = true; });
   $("btnUpdate").onclick = requestUpdate;
   $("btnUpdate2").onclick = requestUpdate;
   // Who's on air
@@ -686,7 +688,7 @@ if (TALENT) {
 }
 requestAnimationFrame(frame);
 
-if ("serviceWorker" in navigator && location.protocol === "https:") {
+if (!onClaude && "serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
@@ -698,7 +700,7 @@ async function checkOnline() {
   try { ok = (await fetch("scripts/current.json?check=" + Date.now(), { cache: "no-store" })).ok; } catch (e) {}
   $("offBar").hidden = ok;
 }
-if (location.protocol === "https:") {
+if (!onClaude && location.protocol === "https:") {
   checkOnline();
   setInterval(checkOnline, 60 * 1000);
 }

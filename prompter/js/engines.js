@@ -163,3 +163,66 @@ export class WebSpeechEngine {
     this.h.onState("stopped", "");
   }
 }
+
+// On claude.ai the page can't open the microphone itself. The platform's
+// dictation listens instead and hands the page text (it uses Anthropic's
+// speech service, so audio does leave the device). Chrome only.
+export const onClaude = !!document.querySelector('meta[name="rgn-host"][content="claude"]');
+let dictation = null;
+if (onClaude && window.claude && window.claude.use) {
+  window.claude.use("dictation").then((d) => { dictation = d; }).catch(() => {});
+}
+
+export class DictationEngine {
+  constructor(handlers) {
+    this.h = handlers;
+    this.label = "claude.ai dictation";
+    this.private = false;
+  }
+
+  static available() { return !!dictation; }
+
+  /** Must run straight from the click: start() is called before any await. */
+  start() {
+    const d = dictation;
+    if (!d) return Promise.reject(new Error("Voice following here needs Chrome. You can still scroll by hand."));
+    // No microphone level here: treat each new word as "speaking now".
+    const bump = () => { this.h.onLevel(0.2); clearTimeout(this.quiet); this.quiet = setTimeout(() => this.h.onLevel(0), 300); };
+    // onWords wants the words of the current phrase; finals arrive as pieces.
+    let phrase = "";
+    this.off = [
+      d.onPartial(({ text }) => { if (text) { bump(); this.h.onWords((phrase + " " + text).trim(), false); } }),
+      d.onFinal(({ text }) => { bump(); phrase = (phrase + " " + text).trim(); this.h.onWords(phrase, true); phrase = ""; }),
+      d.onState(({ state, reason }) => {
+        if (state === "listening") this.h.onState("listening", "Listening with claude.ai dictation.");
+        else if (state === "idle" && reason && reason !== "stopped") {
+          const why = reason === "not_granted" ? "Dictation is turned off for this page. Turn it on in the page's Permissions menu."
+            : reason === "hidden" ? "Listening stopped because the page was hidden. Press Listen again."
+            : reason === "viewer_stopped" ? "Listening stopped." : "Dictation stopped (" + reason + "). Press Listen again.";
+          this.h.onState("error", why);
+        }
+      }),
+    ];
+    this.h.onState("loading", "Starting dictation…");
+    const p = d.start({ language: "en" });
+    return p.catch((e) => {
+      this.cleanup();
+      const m = e && e.code === "not_granted" ? "Dictation was not allowed for this page."
+        : e && e.code === "unavailable" ? "Dictation isn't available here. Use Chrome, or scroll by hand."
+        : "Couldn't start dictation" + (e && e.code ? " (" + e.code + ")" : "") + ".";
+      throw new Error(m);
+    });
+  }
+
+  cleanup() {
+    (this.off || []).forEach((u) => { try { u(); } catch (e) {} });
+    this.off = null;
+    clearTimeout(this.quiet);
+  }
+
+  stop() {
+    this.cleanup();
+    if (dictation) dictation.stop().catch(() => {});
+    this.h.onState("stopped", "");
+  }
+}
