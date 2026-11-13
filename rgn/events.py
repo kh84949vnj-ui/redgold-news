@@ -44,6 +44,9 @@ class Lead:
     url: str
     flagged: list[str] = field(default_factory=list)
     detail: str = ""
+    date: str = ""       # ISO start date
+    end: str = ""        # ISO end date (same as date for one-day events)
+    time: str = ""       # "6:30 PM", or "" for all-day events
 
     @property
     def suggestion(self) -> str:
@@ -166,6 +169,9 @@ def build(week: c.SchoolWeek, events: list[Event]) -> TipSheet:
             url=e.url,
             flagged=c.matches_any(f"{e.title} {e.description}", sensitive),
             detail=e.description[:300],
+            date=e.start.isoformat(),
+            end=e.end.isoformat(),
+            time=c.fmt_time(e.time) if e.time else "",
         ))
 
     start = dt.datetime.combine(week.monday, dt.time(), c.TZ)

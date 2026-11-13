@@ -6,12 +6,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex, nofollow">
 <title>RGN Prompter</title>
 <link rel="stylesheet" href="css/prompter.css">
 </head>
 <body>
 <header class="bar" id="bar">
-  <div class="brand">RGN <span>Prompter</span></div>
+  <div class="brand">RGN <span>Prompter</span> <small id="epLabel" class="ep"></small></div>
   <div class="bar-main">
     <button type="button" id="btnListen" class="primary">Start listening</button>
     <div class="seg" role="group" aria-label="Scrolling mode">
@@ -22,6 +23,7 @@
     <div class="meter" aria-hidden="true"><i id="meter"></i></div>
   </div>
   <div class="bar-side">
+    <button type="button" id="btnNewScript" class="primary" hidden>Load this week's script</button>
     <button type="button" id="btnScript">Script</button>
     <button type="button" id="btnTalent" title="Open the talent screen in its own window (drag it to the iPad with Sidecar)">Talent screen</button>
     <button type="button" id="btnFull" title="Full screen (F)">Full screen</button>
@@ -69,6 +71,8 @@
     <p class="fine">Paste the script in the weekly doc format. Lines like <code>[ANCHOR 1]</code> are speaker tags, <code>[CUE BUMPER]</code> lines are cue cards, and <code>[VERIFY: …]</code> notes are shown but never read.</p>
     <textarea id="scriptText" rows="16" spellcheck="false"></textarea>
     <div class="dlg-actions">
+      <button type="button" id="btnWeekly">Load this week's script</button>
+      <span id="weeklyNote" class="fine"></span>
       <label class="file">Open .txt file<input type="file" id="scriptFile" accept=".txt,text/plain"></label>
       <span class="spacer"></span>
       <button value="cancel" type="submit">Cancel</button>

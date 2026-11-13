@@ -198,7 +198,14 @@ export function parseScript(text) {
         words.push(w); para.words.push(w);
         continue;
       }
-      for (const wtext of part.split(/\s+/).filter(Boolean)) {
+      // Punctuation right after an inline note ("[ANCHOR 2]. Welcome") stays
+      // with the note so it isn't shown as a word of its own.
+      const lead = part.match(/^[.,;:!?]+/);
+      if (lead && words.length && words[words.length - 1].note) {
+        words[words.length - 1].text += lead[0];
+      }
+      const rest = lead ? part.slice(lead[0].length) : part;
+      for (const wtext of rest.split(/\s+/).filter(Boolean)) {
         const toks = speak(wtext, { prev, acronyms });
         const w = { text: wtext, note: false, item: itemIndex, tokenStart: tokens.length, tokenEnd: tokens.length + toks.length };
         const wi = words.length;

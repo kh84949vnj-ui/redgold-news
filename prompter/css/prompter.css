@@ -36,6 +36,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: calc(8px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); background: var(--chrome); border-bottom: 1px solid var(--line); }
 .brand { font-weight: 800; letter-spacing: .08em; color: var(--gold); }
 .brand span { color: var(--ink); font-weight: 600; letter-spacing: .02em; }
+.brand .ep { color: var(--muted); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-size: 13px; }
 .bar-main, .bar-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .bar-side { margin-left: auto; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
@@ -65,7 +66,7 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 body:not(.talent) .stage-text .w { cursor: pointer; }
 .stage-text .w.read { color: var(--read-ink); }
 .stage-text .w.note, .stage-text .note { color: var(--gold); font: 600 .38em var(--mono); letter-spacing: .04em; vertical-align: middle; }
-.stage-text .note { display: block; margin: .6em 0; }
+.stage-text div.note { display: block; margin: .6em 0; }
 .stage-text .tag { font: 700 .42em var(--mono); color: var(--gold); letter-spacing: .1em; margin: 1.3em 0 .25em; }
 .stage-text .cue { font: 700 .5em var(--mono); color: var(--gold); letter-spacing: .08em; text-align: center; border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold); padding: .45em 0; margin: 1.1em 0; }
 .stage-text .end { font: 700 .45em var(--mono); color: var(--muted); text-align: center; margin-top: 2em; }

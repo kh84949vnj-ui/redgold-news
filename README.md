@@ -29,6 +29,7 @@ That makes `output/<monday>/`:
 | File | What it is |
 |---|---|
 | `RGN Prep <monday>.docx` / `.txt` | The weekly doc: weather read and tip sheet |
+| `RGN Script <monday>.txt` | Full episode script draft in the weekly doc format (also `prompter/scripts/current.json`) |
 | `weather.csv` | Day, high, low, rain chance, conditions (for Canva Bulk Create or Phase 2 graphics) |
 | `week.json` | Data for the student page (also copied to `site/week.json`) |
 | `tip_sheet.txt` | Only when you run `python -m rgn.events` by itself |
@@ -37,6 +38,10 @@ Options:
 
 - `--week 2026-11-30` targets the week with that date. The default is the episode week. Episodes are recorded on Friday or Monday and always air as Monday's episode for that Monday through Friday. Run on a Monday, the scripts use that same week. Run on any other day (for example Thursday before a Friday recording), they use the next Monday.
 - `--gdoc` also writes the week's block into the weekly Google Doc (see `gdoc/README.md`).
+- `--publish` commits and pushes the episode script so the live prompter loads it
+  (run it on the `main` branch). The script only uses public sources: the
+  district calendar and the NWS forecast, with anchor names as `[ANCHOR 1]` /
+  `[ANCHOR 2]` placeholders. Flagged topics appear as adviser notes, never as reads.
 
 Each piece also runs by itself: `python -m rgn.weather`, `python -m rgn.events`.
 

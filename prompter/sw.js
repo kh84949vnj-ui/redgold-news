@@ -1,6 +1,6 @@
 // Offline support: after the first visit the prompter, speech library and
 // model load from this device, so a bad Wi-Fi day doesn't stop a recording.
-const CACHE = "rgn-prompter-v1";
+const CACHE = "rgn-prompter-v2";
 const CORE = [
   "./", "index.html", "css/prompter.css",
   "js/app.js", "js/text.js", "js/align.js", "js/motion.js", "js/render.js", "js/engines.js",

@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-12T18:00-06:00",
-  "generated_label": "Thursday, November 12 at 6:00 PM",
+  "generated": "2026-11-12T21:53-06:00",
+  "generated_label": "Thursday, November 12 at 9:53 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -27,6 +27,28 @@
   ],
   "closures": [],
   "prior_break": null,
+  "next_closures": [
+    {
+      "date": "2026-11-23",
+      "reason": "Thanksgiving Break"
+    },
+    {
+      "date": "2026-11-24",
+      "reason": "Thanksgiving Break"
+    },
+    {
+      "date": "2026-11-25",
+      "reason": "Thanksgiving Break"
+    },
+    {
+      "date": "2026-11-26",
+      "reason": "Thanksgiving Break"
+    },
+    {
+      "date": "2026-11-27",
+      "reason": "Thanksgiving Break"
+    }
+  ],
   "weather": {
     "script": [
       "Let's take a look at the weather through Thursday!",
@@ -88,7 +110,7 @@
         "extended": false
       }
     ],
-    "updated": "Thursday, November 12 at 5:45 PM",
+    "updated": "Thursday, November 12 at 9:45 PM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": [
@@ -103,28 +125,40 @@
         "title": "Education Support Professionals Day",
         "url": "https://www.lajoyaisd.com/event_view?event_id=2sqd4nhm0ff2ilpuce41dhgjel%40google.com&calIDref=145985&feedID=6400&uid=2sqd4nhm0ff2ilpuce41dhgjel%40google.com&did=35fd75bdc3be7b0d68af2544226ccb160aa87179&eventDate=2026-11-18&feed_type=ics",
         "detail": "",
-        "flagged": false
+        "flagged": false,
+        "date": "2026-11-18",
+        "end": "2026-11-18",
+        "time": ""
       },
       {
         "when": "Thursday, November 19 (all day)",
         "title": "National Parental Involvement Day",
         "url": "https://www.lajoyaisd.com/event_view?event_id=4qpdm2ko91e0so41drautrspfg%40google.com&calIDref=145985&feedID=6400&uid=4qpdm2ko91e0so41drautrspfg%40google.com&did=7d4779322b926d2f97e1c3b453e4482abf009820&eventDate=2026-11-19&feed_type=ics",
         "detail": "",
-        "flagged": false
+        "flagged": false,
+        "date": "2026-11-19",
+        "end": "2026-11-19",
+        "time": ""
       },
       {
         "when": "Thursday, November 19, 6:30 PM",
         "title": "La Joya ISD Conjunto Showcase",
         "url": "https://www.lajoyaisd.com/event_view?event_id=5g10r0fnn6bu9pduojdacstmvj%40google.com&calIDref=145985&feedID=6400&uid=5g10r0fnn6bu9pduojdacstmvj%40google.com&did=1c7a1901d0cfb64b05e7e181bedb2f6dec87c147&eventDate=2026-11-20&feed_type=ics",
         "detail": "",
-        "flagged": false
+        "flagged": false,
+        "date": "2026-11-19",
+        "end": "2026-11-19",
+        "time": "6:30 PM"
       },
       {
         "when": "Friday, November 20 (all day)",
         "title": "Substitute Appreciation Day",
         "url": "https://www.lajoyaisd.com/event_view?event_id=5eo4gf0j56irbs3kt19s71p8sj%40google.com&calIDref=145985&feedID=6400&uid=5eo4gf0j56irbs3kt19s71p8sj%40google.com&did=ed13822ab2b204a397cf6f2478fcb3a2bd62fe4e&eventDate=2026-11-20&feed_type=ics",
         "detail": "",
-        "flagged": false
+        "flagged": false,
+        "date": "2026-11-20",
+        "end": "2026-11-20",
+        "time": ""
       }
     ],
     "board": [

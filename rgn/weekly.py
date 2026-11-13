@@ -6,9 +6,11 @@ that Monday-Friday week. Run this the day before recording (or that morning):
   python -m rgn.weekly                  # episode week (this Monday if today is Monday, else next Monday)
   python -m rgn.weekly --week 2026-11-30
   python -m rgn.weekly --gdoc           # also write the week's block into the Google Doc
+  python -m rgn.weekly --publish        # also publish the episode script to the live prompter
 
 Writes to output/<monday>/:
   RGN Prep <monday>.docx / .txt  plain doc, all black text
+  RGN Script <monday>.txt        full episode script draft (also prompter/scripts/current.json)
   week.json                      data for the student page (also copied to site/week.json)
   weather.csv                    for Canva Bulk Create or weather graphics
 """
@@ -18,6 +20,7 @@ import argparse
 import datetime as dt
 import json
 import shutil
+import subprocess
 from pathlib import Path
 
 from docx import Document
@@ -27,10 +30,11 @@ from docx.shared import Pt, RGBColor
 from . import common as c
 from . import events as ev
 from . import weather as wx
-from .district_calendar import school_week
+from .district_calendar import closures as find_closures, fetch_events, school_week
 
 BLACK = RGBColor(0, 0, 0)
 SITE_DIR = c.ROOT / "site"
+PROMPTER_SCRIPT = c.ROOT / "prompter" / "scripts" / "current.json"
 
 
 # ---------------------------------------------------------------- gather
@@ -49,6 +53,15 @@ def collect(monday: dt.date) -> dict:
         "closures": [{"date": d.isoformat(), "label": c.fmt_date(d), "reason": r} for d, r in sorted(week.closures.items())],
         "prior_break": week.prior_break,
     }
+
+    # Next week's closures, so the close can say "next week is Thanksgiving Break".
+    try:
+        nm = monday + dt.timedelta(days=7)
+        nxt = find_closures(fetch_events(nm, nm + dt.timedelta(days=13)))
+        data["next_closures"] = [{"date": d.isoformat(), "reason": r}
+                                 for d, r in sorted(nxt.items()) if d.weekday() < 5]
+    except Exception:
+        data["next_closures"] = []
 
     try:
         w = wx.build(week)
@@ -74,7 +87,8 @@ def collect(monday: dt.date) -> dict:
         data["news"] = {
             "closures": t.closures,
             "leads": [
-                {"when": l.when, "title": l.title, "url": l.url, "detail": l.detail, "flagged": bool(l.flagged)}
+                {"when": l.when, "title": l.title, "url": l.url, "detail": l.detail, "flagged": bool(l.flagged),
+                 "date": l.date, "end": l.end, "time": l.time}
                 for l in t.leads
             ],
             "board": [
@@ -209,13 +223,45 @@ def run(monday: dt.date) -> Path:
     (out / "week.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
     SITE_DIR.mkdir(exist_ok=True)
     shutil.copy(out / "week.json", SITE_DIR / "week.json")
+
+    # Full episode script for the prompter (public sources only: district
+    # calendar and NWS, with anchor names left as placeholders).
+    from .episode import build_script
+
+    text = build_script(data)
+    (out / f"RGN Script {monday.isoformat()}.txt").write_text(text, encoding="utf-8")
+    PROMPTER_SCRIPT.parent.mkdir(parents=True, exist_ok=True)
+    PROMPTER_SCRIPT.write_text(json.dumps({
+        "episode_date": data["episode_date"],
+        "episode_label": data["episode_label"],
+        "generated": data["generated"],
+        "generated_label": data["generated_label"],
+        "text": text,
+    }, indent=1), encoding="utf-8")
     return path
+
+
+def publish(monday: dt.date) -> str:
+    """Commit and push the prompter script so the live site picks it up."""
+    rel = PROMPTER_SCRIPT.relative_to(c.ROOT)
+    git = lambda *a: subprocess.run(["git", "-C", str(c.ROOT), *a], capture_output=True, text=True)
+    git("add", str(rel))
+    if git("diff", "--cached", "--quiet", "--", str(rel)).returncode == 0:
+        return "Prompter script unchanged; nothing to publish."
+    r = git("commit", "-m", f"Publish episode script for {monday.isoformat()}", "--", str(rel))
+    if r.returncode != 0:
+        raise SystemExit("Couldn't commit the prompter script: " + (r.stderr or r.stdout).strip())
+    r = git("push")
+    if r.returncode != 0:
+        raise SystemExit("Committed, but the push failed: " + r.stderr.strip())
+    return "Published. The live prompter will have it in a minute or two."
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--week", help="any date in the target week (default: the episode week)")
     ap.add_argument("--gdoc", action="store_true", help="also write this week's block into the weekly Google Doc")
+    ap.add_argument("--publish", action="store_true", help="commit and push the episode script to the live prompter")
     args = ap.parse_args()
     path = run(c.parse_week(args.week))
     print("Saved", path)
@@ -225,6 +271,9 @@ def main() -> None:
         print(send(json.loads((path.parent / "week.json").read_text(encoding="utf-8"))))
     print("Saved", path.with_suffix(".txt"))
     print("Saved", SITE_DIR / "week.json", "(publish this with the student page)")
+    print("Saved", PROMPTER_SCRIPT)
+    if args.publish:
+        print(publish(c.parse_week(args.week)))
 
 
 if __name__ == "__main__":

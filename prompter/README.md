@@ -20,10 +20,13 @@ the district has approved that.
 ## Using it
 
 1. Open the prompter page in **Safari** (Mac or iPad).
-2. Click **Script** and paste the episode script. "Copy for Google Doc" on the
-   Episode Script page gives exactly the right format. `[ANCHOR 1]` lines show
-   as speaker tags, `[CUE …]` lines as cue cards, `[VERIFY: …]` notes are shown
-   but never read.
+2. This week's script loads automatically: the weekly prep run
+   (`python -m rgn.weekly --publish`) publishes it to `scripts/current.json`.
+   The episode date shows next to the title. To use a different script, click
+   **Script** and paste it (the weekly Google Doc format). A pasted script is
+   kept; when a newer published one arrives, a **Load the script for…** button
+   appears instead of replacing yours. `[ANCHOR 1]` lines show as speaker tags,
+   `[CUE …]` lines as cue cards, `[VERIFY: …]` notes are shown but never read.
 3. Click **Start listening** and allow the microphone. The first time, the
    speech model takes a few seconds to load.
 4. Read. The status pill shows **Following** when it knows where you are,

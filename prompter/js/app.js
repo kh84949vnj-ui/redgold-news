@@ -319,8 +319,18 @@ if (TALENT) {
     $("btnSettings").setAttribute("aria-expanded", String(!p.hidden));
   };
   $("dlgScript").addEventListener("close", () => {
-    if ($("dlgScript").returnValue === "ok") loadScript($("scriptText").value);
+    if ($("dlgScript").returnValue === "ok") {
+      loadScript($("scriptText").value);
+      store.set("script-meta", { source: "manual" });
+      showPublished();
+    }
   });
+  $("btnWeekly").onclick = async () => {
+    const pub = await fetchPublished();
+    if (pub) { $("dlgScript").close("cancel"); usePublished(pub); }
+    else $("weeklyNote").textContent = "This week's script isn't published yet.";
+  };
+  $("btnNewScript").onclick = async () => { const pub = await fetchPublished(); if (pub) usePublished(pub); };
   $("scriptFile").onchange = async (e) => {
     const f = e.target.files[0];
     if (f) $("scriptText").value = await f.text();
@@ -329,7 +339,7 @@ if (TALENT) {
   document.addEventListener("drop", async (e) => {
     e.preventDefault();
     const f = e.dataTransfer.files[0];
-    if (f) loadScript(await f.text());
+    if (f) { loadScript(await f.text()); store.set("script-meta", { source: "manual" }); showPublished(); }
   });
   // iPad alone: in "solo" mode the controls hide; tap the top edge to show them.
   stageEl.addEventListener("click", (e) => {
@@ -351,6 +361,36 @@ if (TALENT) {
 window.addEventListener("resize", () => stage.layout());
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => stage.layout());
 
+// ------------------------------------------------------------------ weekly script
+// The weekly prep run publishes the episode script next to the prompter
+// (scripts/current.json). It loads automatically unless someone pasted their
+// own script; then a button offers the new one instead of overwriting.
+let published = null;
+async function fetchPublished() {
+  try {
+    const r = await fetch("scripts/current.json", { cache: "no-store" });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d && typeof d.text === "string" && d.text.trim() ? d : null;
+  } catch (e) { return null; }
+}
+function usePublished(pub) {
+  loadScript(pub.text);
+  store.set("script-meta", { source: "published", generated: pub.generated, label: pub.episode_label });
+  showPublished();
+  setStatus(`Loaded the script for ${pub.episode_label} (updated ${pub.generated_label}).`);
+}
+function showPublished() {
+  if (TALENT) return;
+  const meta = store.get("script-meta", {});
+  const ep = $("epLabel");
+  ep.textContent = meta.source === "published" ? meta.label : meta.source === "manual" ? "Pasted script" : "";
+  const btn = $("btnNewScript");
+  const isNewer = published && !(meta.source === "published" && meta.generated === published.generated);
+  btn.hidden = !isNewer;
+  if (isNewer) btn.textContent = `Load the script for ${published.episode_label}`;
+}
+
 // ------------------------------------------------------------------ start
 applySettings();
 if (TALENT) {
@@ -359,6 +399,13 @@ if (TALENT) {
 } else {
   loadScript(store.get("script", ""));
   setPill("idle", "Not listening");
+  fetchPublished().then((pub) => {
+    published = pub;
+    const meta = store.get("script-meta", {});
+    const hasLocal = !!(store.get("script", "") || "").trim();
+    if (pub && (!hasLocal || meta.source !== "manual") && meta.generated !== pub.generated && !listening) usePublished(pub);
+    else showPublished();
+  });
 }
 requestAnimationFrame(frame);
 
