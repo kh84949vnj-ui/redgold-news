@@ -194,7 +194,26 @@ WEATHER_TOSS = [
 SIGN_OFFS = ["Have a great week, and go RedWolves!", "Have a great week, RedWolves!", "Make it a great week, RedWolves!"]
 
 
-def build_script(week: dict) -> str:
+def board_pick_lines(week: dict, picks) -> dict:
+    """Picked board items -> {key: line}, in agenda order. The first pick from a
+    meeting opens with the meeting time; the rest say "also"."""
+    from .board import board_line, item_key
+
+    picks = set(picks or [])
+    out: dict[str, str] = {}
+    for m in (week.get("news") or {}).get("board", []):
+        first = True
+        for it in (m.get("items") or []) or [None]:
+            if it is not None and it.get("flagged"):
+                continue
+            key = item_key(m, it)
+            if key in picks:
+                out[key] = board_line(m, it, first)
+                first = False
+    return out
+
+
+def build_script(week: dict, board_picks=None) -> str:
     import random
 
     rnd = random.Random(int(week["episode_date"].replace("-", "")))
@@ -249,6 +268,9 @@ def build_script(week: dict) -> str:
             f"Next week is {brk['reason']}, so there's no school {_long_date(brk['first'])}, "
             f"through {_long_date(brk['last'])}.",
             f"Classes start back up {_long_date(brk['back'])}.")
+        anchor = 2 if anchor == 1 else 1
+    for line in board_pick_lines(week, board_picks).values():
+        say(anchor, line)
         anchor = 2 if anchor == 1 else 1
     add(f"[ANCHOR {anchor}]")
     add("[ADD CAMPUS STORY: Jimmy Carter news or an RGN package]")

@@ -439,7 +439,10 @@ function usePublished() {
   if (!published || !doc || !DOCS[doc].draft) return;
   const text = deriveDoc(doc, published.text);
   loadScript(text);
-  setMeta({ source: "published", base: text, generated: published.generated, label: published.episode_label });
+  const meta = { source: "published", base: text, generated: published.generated, label: published.episode_label };
+  // Board items picked on the Story Desk are already in the news draft; show them checked.
+  if (doc === "news") meta.board = { ...(published.board_picks || {}) };
+  setMeta(meta);
   refreshDocUI();
 }
 

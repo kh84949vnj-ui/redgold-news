@@ -215,9 +215,13 @@ def write_doc(data: dict, path: Path) -> None:
     d.save(path)
 
 
-def run(monday: dt.date) -> Path:
+def run(monday: dt.date, board_picks_file: Path | None = None) -> Path:
     out = c.week_dir(monday)
     data = collect(monday)
+    # Board agenda items picked on the Story Desk (saved by Claude from the
+    # page, or written by hand): a JSON list of item keys.
+    picks_path = board_picks_file or out / "board_picks.json"
+    board_picks = json.loads(picks_path.read_text(encoding="utf-8")) if picks_path.exists() else []
     path = out / f"RGN Prep {monday.isoformat()}.docx"
     write_doc(data, path)
     (out / "week.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -226,9 +230,9 @@ def run(monday: dt.date) -> Path:
 
     # Full episode script for the prompter (public sources only: district
     # calendar and NWS, with anchor names left as placeholders).
-    from .episode import build_script
+    from .episode import board_pick_lines, build_script
 
-    text = build_script(data)
+    text = build_script(data, board_picks)
     (out / f"RGN Script {monday.isoformat()}.txt").write_text(text, encoding="utf-8")
     PROMPTER_SCRIPT.parent.mkdir(parents=True, exist_ok=True)
     PROMPTER_SCRIPT.write_text(json.dumps({
@@ -245,6 +249,8 @@ def run(monday: dt.date) -> Path:
                         "student_interest": it["student_interest"]} for it in m["items"]]}
             for m in (data.get("news") or {}).get("board", [])
         ],
+        # Items already written into the draft, so the prompter shows them checked.
+        "board_picks": board_pick_lines(data, board_picks),
     }, indent=1), encoding="utf-8")
     return path
 
@@ -270,8 +276,9 @@ def main() -> None:
     ap.add_argument("--week", help="any date in the target week (default: the episode week)")
     ap.add_argument("--gdoc", action="store_true", help="also write this week's block into the weekly Google Doc")
     ap.add_argument("--publish", action="store_true", help="commit and push the episode script to the live prompter")
+    ap.add_argument("--board-picks", type=Path, help="JSON list of board item keys to include (default: output/<monday>/board_picks.json)")
     args = ap.parse_args()
-    path = run(c.parse_week(args.week))
+    path = run(c.parse_week(args.week), args.board_picks)
     print("Saved", path)
     if args.gdoc:
         from .gdoc import send

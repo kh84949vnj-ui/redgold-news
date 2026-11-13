@@ -113,6 +113,16 @@ button.copy.done { background: var(--gold); color: #1d1718; }
 .items li { display: grid; grid-template-columns: 4.2em minmax(0, 1fr); gap: 8px; padding: 5px 0; border-top: 1px solid var(--line); }
 .items .n { font-family: var(--mono); font-size: 12px; color: var(--muted); padding-top: 3px; }
 .pending { color: var(--flag); font-weight: 600; font-size: 14px; }
+.items li.pick { grid-template-columns: 26px 4.2em minmax(0, 1fr); align-items: start; }
+.items li.pick input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--gold); cursor: pointer; }
+.items li.pick input:disabled { cursor: not-allowed; }
+.items li.pick label { display: contents; cursor: pointer; }
+.items li.pick.checked { background: var(--gold-soft); }
+.only-si .items li.pick:not(.si):not(.checked) { display: none; }
+.board-tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 4px 0 10px; font-size: 14px; color: var(--muted); }
+.board-tools label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.board-save { font-size: 13px; color: var(--muted); }
+.board-save.err { color: var(--flag); font-weight: 600; }
 
 .notes { margin-top: 12px; font-size: 14px; color: var(--muted); border-left: 3px solid var(--gold); padding: 2px 0 2px 10px; }
 .notes p { margin: 2px 0; overflow-wrap: anywhere; }
@@ -174,7 +184,7 @@ footer p { margin: 4px 0; max-width: 80ch; }
       const off = closed[iso];
       week += `<div class="wd${off ? " off" : ""}"><b>${n.slice(0, 3)}</b><span>${day.toLocaleDateString("en-US", { month: "short", day: "numeric" })}${off ? " · " + esc(off) : ""}</span></div>`;
     });
-    week += `</div><p class="intro">Everything here is a starting point. Check every fact against the linked source before it goes in your script. Items marked <span class="chip flag" style="margin-left:0">See adviser</span> are sensitive: talk to the adviser before covering them. Write your script on the <a href="https://claude.ai/artifact/Rv5Ari6FbU4FZqP1CxvQr6" target="_blank" rel="noopener">Episode Script</a> page.</p>`;
+    week += `</div><p class="intro">Everything here is a starting point. Check every fact against the linked source before it goes in your script. Items marked <span class="chip flag" style="margin-left:0">See adviser</span> are sensitive: talk to the adviser before covering them. Finish the script on the <a href="https://kh84949vnj-ui.github.io/redgold-news/prompter/" target="_blank" rel="noopener">RGN Prompter</a>.</p>`;
 
     // Block 3: News
     const n = d.news || {};
@@ -194,15 +204,23 @@ footer p { margin: 4px 0; max-width: 80ch; }
           ${l.flagged ? `<div class="flag-note">Sensitive topic. Do not write this one until you have talked with the adviser.</div>` : ""}
         </li>`).join("")}</ul>`;
       if (n.board && n.board.length) {
-        news += `<h3 class="sub">School board meets this week</h3>`;
+        boardMeetings = n.board;
+        news += `<h3 class="sub">School board meets this week</h3>
+          <p class="intro" style="margin-top:0">Check the agenda items worth covering. Checked items go into the News rundown draft on the prompter the next time the script is published, and the lines below are ready to copy now.</p>
+          <div class="board-tools"><label><input type="checkbox" id="onlySi" checked> Show only items marked student interest</label><span class="board-save" id="boardSave"></span></div>`;
         n.board.forEach((m) => {
-          news += `<div class="board"><h3>${esc(m.title)}</h3><div class="meta">${esc(m.when)} · <a href="${esc(m.url)}" target="_blank" rel="noopener">${m.agenda_pending ? "BoardBook" : "Full agenda"} ↗</a>${m.posted ? " · posted " + esc(m.posted) : ""}</div>`;
+          news += `<div class="board only-si" data-board><h3>${esc(m.title)}</h3><div class="meta">${esc(m.when)} · <a href="${esc(m.url)}" target="_blank" rel="noopener">${m.agenda_pending ? "BoardBook" : "Full agenda"} ↗</a>${m.posted ? " · posted " + esc(m.posted) : ""}</div>`;
           if (m.agenda_pending) news += `<p class="pending">The agenda isn't posted yet. Texas requires it at least 72 hours before the meeting, so check BoardBook again before writing.</p>`;
-          if (m.items && m.items.length) {
-            news += `<ul class="items">${m.items.map((it) => `<li><span class="n">${esc(it.number)}</span><span>${esc(it.text)}${it.flagged ? `<span class="chip flag">See adviser</span>` : it.student_interest ? `<span class="chip si">Student interest</span>` : ""}</span></li>`).join("")}</ul>`;
-          }
-          news += `</div>`;
+          const rows = m.items && m.items.length ? m.items : [null];
+          news += `<ul class="items">${rows.map((it) => {
+            const key = itemKey(m, it);
+            const id = "pick-" + key.replace(/[^a-z0-9]+/gi, "-");
+            const label = it ? esc(it.text.replace(/,?\s*(presented by|item lead:).*/i, "")) : "Mention the meeting (agenda not posted yet)";
+            const chip = it && it.flagged ? `<span class="chip flag">See adviser</span>` : it && it.student_interest ? `<span class="chip si">Student interest</span>` : "";
+            return `<li class="pick${it && it.student_interest ? " si" : ""}${it ? "" : " si"}"><input type="checkbox" id="${id}" data-key="${esc(key)}"${it && it.flagged ? " disabled" : ""}><label for="${id}"><span class="n">${it ? esc(it.number) : ""}</span><span>${label}${chip}</span></label></li>`;
+          }).join("")}</ul></div>`;
         });
+        news += `<div id="boardLines"></div>`;
       }
       news += notes(n.notes);
     }
@@ -230,6 +248,194 @@ footer p { margin: 4px 0; max-width: 80ch; }
     </footer>`;
 
     app.innerHTML = week + news + wx + foot;
+    if (boardMeetings.length) startPicks(d.episode_date);
+  }
+
+  // ---------------------------------------------------------- board picks
+  // Same wording as the prompter (copied from prompter/js/board.js).
+  // Board agenda items -> lines an anchor can read.
+  //
+  // Agenda titles are written for the record ("Approval of Purchase for Dual
+  // Enrollment Textbooks for the Spring 2027 Semester for Jimmy Carter ECHS,
+  // presented by …"). This turns them into a plain phrase and a sentence, and
+  // adds a [SIMPLIFY] note when the phrase is still long.
+
+  const PREFIXES = [
+    [/^consider and take (possible )?action (to|on) /i, "whether to "],
+    [/^approval to /i, "whether to "],
+    [/^approval of /i, "whether to approve "],
+    [/^recognition of /i, "a recognition of "],
+    [/^report on /i, "a report on "],
+    [/^announcement of /i, "an announcement of "],
+    [/^discussion (of|on) /i, "a discussion of "],
+    [/^discuss /i, "a discussion of "],
+    [/^update on /i, "an update on "],
+  ];
+
+  /** "Approval of Purchase for X, presented by Y" -> "whether to approve the purchase for X" */
+  function plainItem(text) {
+    let t = String(text)
+      .replace(/,?\s*(presented by|item lead:).*/i, "")       // who presents it
+      .replace(/\s*\((texas )?government code[^)]*\)/gi, "")  // legal citations
+      .replace(/\s*\([^)]*\)\s*$/, "")                         // trailing (dates)
+      .replace(/[\s.:-]+$/, "")
+      .trim();
+    for (const [re, lead] of PREFIXES) {
+      if (re.test(t)) {
+        let rest = t.replace(re, "");
+        if (lead.endsWith("approve ") && /^(purchase|memorandum|change order|agreement|contract|report|renewal|policy|budget|donation)/i.test(rest)) {
+          rest = "the " + rest;
+        }
+        return lead + plainCase(rest);
+      }
+    }
+    return "the " + plainCase(t.replace(/^the\s+/i, ""));
+  }
+
+  // Record-keeping words that agendas capitalize but people don't say that way.
+  // Names, acronyms (SAT, TELPAS, ECHS) and anything else stay as written.
+  const COMMON = new Set(("purchase purchases approval books book recommended library report reports renewal " +
+    "license licenses order change memorandum understanding project services service replacement renovation " +
+    "renovations field plan plans semester year exam textbooks program programs support professional development " +
+    "instructional additional district-wide districtwide exterior door doors gate numbering signage window film " +
+    "resistant quotation through purchasing cooperative cooperatives contract contracts agreement policy update " +
+    "budget transfer amendments open period tax collectors' recognition observance improvement campus targeted " +
+    "goals benchmark aligned action recommendations time use tracker self-assessment instrument architectural " +
+    "entry hardening key cores cooling tower crew cab passenger van sports complex baseball users user special " +
+    "education department's department appraiser called meeting recognitions student students school").split(" "));
+
+  function plainCase(s) {
+    // A common word right after a name-like capitalized word is part of the
+    // name ("National School Psychologist Week"), so it keeps its capital.
+    const words = s.split(" ");
+    const isName = (w) => /^[A-Z][a-z'-]*$/.test(w) && !COMMON.has(w.toLowerCase());
+    return words.map((w, i) => (COMMON.has(w.toLowerCase()) && /^[A-Z][a-z'-]*$/.test(w) && !(i > 0 && isName(words[i - 1]))
+      ? w.toLowerCase() : w)).join(" ");
+  }
+
+  function sayTime(t) {
+    const m = String(t || "").match(/(\d{1,2}):(\d\d) ([AP])M/i);
+    if (!m) return t;
+    return `${m[1]}${m[2] === "00" ? "" : ":" + m[2]} ${m[3].toLowerCase()}.m.`;
+  }
+
+  /** "Wednesday, November 18, 6:00 PM" -> {day: "Wednesday", time: "6 p.m."} */
+  function meetingWhen(when) {
+    const day = String(when).split(",")[0].trim();
+    const time = sayTime(String(when).split(",").pop().trim());
+    return { day, time };
+  }
+
+  function meetingIntro(meeting) {
+    const { day, time } = meetingWhen(meeting.when);
+    const end = time.endsWith(".") ? "" : ".";
+    const title = String(meeting.title || "").trim();
+    if (/^(regular|special|called)/i.test(title) || /workshop/i.test(title)) {
+      return `The school board meets ${day} at ${time}${end}`;
+    }
+    return `The school board's ${title.replace(/\s*meeting$/i, "").toLowerCase()} meets ${day} at ${time}${end}`;
+  }
+
+  /**
+   * The sentence(s) for one checked item. `first` = no other item from this
+   * meeting is in the script yet, so this one opens with the meeting time.
+   * item === null means "just mention the meeting" (agenda not posted).
+   */
+  function boardLine(meeting, item, first) {
+    if (!item) return `${meetingIntro(meeting)} The agenda will be posted on BoardBook.`;
+    const phrase = plainItem(item.text);
+    const long = phrase.split(/\s+/).length > 16 ? " [SIMPLIFY: put this in your own words]" : "";
+    return first
+      ? `${meetingIntro(meeting)} One thing on the agenda is ${phrase}.${long}`
+      : `The board will also look at ${phrase}.${long}`;
+  }
+
+  /** Stable key for a checkbox. */
+  function itemKey(meeting, item) {
+    return `${meeting.url}#${item ? item.number : "meeting"}`;
+  }
+
+  let boardMeetings = [];
+  let picks = new Set();
+  let db = null, canWrite = true, episodeDate = "", saveTimer = null, saving = Promise.resolve();
+  const saveNote = (t, err) => { const el = document.getElementById("boardSave"); if (el) { el.textContent = t; el.classList.toggle("err", !!err); } };
+
+  function pickedLines() {
+    const out = [];
+    for (const m of boardMeetings) {
+      let first = true;
+      for (const it of (m.items && m.items.length ? m.items : [null])) {
+        if (it && it.flagged) continue;
+        if (picks.has(itemKey(m, it))) { out.push(boardLine(m, it, first)); first = false; }
+      }
+    }
+    return out;
+  }
+
+  function paintPicks() {
+    document.querySelectorAll("input[data-key]").forEach((cb) => {
+      cb.checked = picks.has(cb.dataset.key);
+      cb.closest("li").classList.toggle("checked", cb.checked);
+      if (!canWrite) cb.disabled = true;
+    });
+    const lines = pickedLines();
+    const box = document.getElementById("boardLines");
+    if (!box) return;
+    box.innerHTML = lines.length ? scriptBox("board", `${lines.length} board item${lines.length === 1 ? "" : "s"} picked · lines for the script`, lines) : "";
+  }
+
+  async function startPicks(date) {
+    episodeDate = date;
+    document.getElementById("onlySi").onchange = (e) =>
+      document.querySelectorAll("[data-board]").forEach((b) => b.classList.toggle("only-si", e.target.checked));
+    app.addEventListener("change", (e) => {
+      const cb = e.target.closest("input[data-key]");
+      if (!cb) return;
+      if (cb.checked) picks.add(cb.dataset.key); else picks.delete(cb.dataset.key);
+      paintPicks();
+      queueSave();
+    });
+    // Shared picks live in the page's store, so everyone sees the same checks.
+    const c = window.claude;
+    db = c && c.use ? await c.use("db") : null;
+    if (!db) {
+      try { picks = new Set(JSON.parse(localStorage.getItem("rgn-picks-" + date) || "[]")); } catch (e) {}
+      saveNote("Saved in this browser only. Sign in to share picks with the team.");
+      paintPicks();
+      return;
+    }
+    const user = await c.use("user");
+    if (user && (await user.can("data.write")) === false) { canWrite = false; saveNote("View only: ask the adviser for edit access to pick items."); }
+    const timer = setTimeout(() => saveNote("Can't reach saved picks yet."), 10000);
+    db.doc("picks/" + date).onSnapshot((snap) => {
+      clearTimeout(timer);
+      if (!saveTimer) {
+        const data = snap.exists ? snap.data() : null;
+        picks = new Set((data && data.keys) || []);
+        paintPicks();
+        if (canWrite) saveNote(picks.size ? "Picks saved for the whole team." : "");
+      }
+    }, () => { clearTimeout(timer); saveNote("Lost the connection to saved picks. Reload to try again.", true); });
+  }
+
+  function queueSave() {
+    if (!db) {
+      try { localStorage.setItem("rgn-picks-" + episodeDate, JSON.stringify([...picks])); } catch (e) {}
+      return;
+    }
+    if (!canWrite) return;
+    saveNote("Saving…");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const keys = [...picks];
+      saving = saving.then(() => db.doc("picks/" + episodeDate).set({ keys, at: new Date().toISOString() }))
+        .then(() => { saveTimer = null; saveNote("Picks saved for the whole team."); })
+        .catch((err) => {
+          saveTimer = null;
+          if (err && err.code === "invalid_argument") { canWrite = false; saveNote("View only: ask the adviser for edit access to pick items.", true); paintPicks(); }
+          else saveNote("Couldn't save picks. Try again in a moment.", true);
+        });
+    }, 400);
   }
 
   app.addEventListener("click", async (e) => {

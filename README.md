@@ -38,6 +38,12 @@ Options:
 
 - `--week 2026-11-30` targets the week with that date. The default is the episode week. Episodes are recorded on Friday or Monday and always air as Monday's episode for that Monday through Friday. Run on a Monday, the scripts use that same week. Run on any other day (for example Thursday before a Friday recording), they use the next Monday.
 - `--gdoc` also writes the week's block into the weekly Google Doc (see `gdoc/README.md`).
+- `--board-picks FILE` adds school board agenda items to the news block (a JSON
+  list of item keys). By default it reads `output/<monday>/board_picks.json`,
+  which Claude saves from the items checked on the Story Desk
+  (its `picks/<episode date>` record). The wording matches the prompter's board
+  panel (`rgn/board.py`, checked against `prompter/js/board.js` by
+  `tests/test_board.py`), and the prompter shows those items as checked.
 - `--publish` commits and pushes the episode script so the live prompter loads it
   (run it on the `main` branch). The script only uses public sources: the
   district calendar and the NWS forecast, with anchor names as `[ANCHOR 1]` /
