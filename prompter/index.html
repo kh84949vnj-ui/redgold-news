@@ -13,7 +13,11 @@
 <body>
 <header class="bar" id="bar">
   <div class="brand">RGN <span>Prompter</span> <small id="epLabel" class="ep"></small></div>
-  <div class="bar-main">
+  <div class="seg views" role="group" aria-label="View">
+    <button type="button" id="viewEdit" aria-pressed="false">Edit</button>
+    <button type="button" id="viewPrompt" aria-pressed="false">Prompt</button>
+  </div>
+  <div class="bar-main prompt-only">
     <button type="button" id="btnListen" class="primary">Start listening</button>
     <div class="seg" role="group" aria-label="Scrolling mode">
       <button type="button" id="modeVoice" aria-pressed="true">Follow voice</button>
@@ -24,14 +28,13 @@
   </div>
   <div class="bar-side">
     <button type="button" id="btnNewScript" class="primary" hidden>Load this week's script</button>
-    <button type="button" id="btnScript">Script</button>
-    <button type="button" id="btnTalent" title="Open the talent screen in its own window (drag it to the iPad with Sidecar)">Talent screen</button>
-    <button type="button" id="btnFull" title="Full screen (F)">Full screen</button>
-    <button type="button" id="btnSettings" aria-expanded="false">Settings</button>
+    <button type="button" id="btnTalent" class="prompt-only" title="Open the talent screen in its own window (drag it to the iPad with Sidecar)">Talent screen</button>
+    <button type="button" id="btnFull" class="prompt-only" title="Full screen (F)">Full screen</button>
+    <button type="button" id="btnSettings" class="prompt-only" aria-expanded="false">Settings</button>
   </div>
 </header>
 
-<div class="heard" id="heardRow"><span class="heard-label">Heard</span><span id="heard" class="heard-text"></span><span id="status" class="status-text"></span></div>
+<div class="heard prompt-only" id="heardRow"><span class="heard-label">Heard</span><span id="heard" class="heard-text"></span><span id="status" class="status-text"></span></div>
 
 <main class="stage" id="stage">
   <div class="eyeline" id="eyeline" aria-hidden="true"></div>
@@ -40,9 +43,31 @@
   </div>
   <div class="empty" id="empty">
     <h1>No script loaded</h1>
-    <p>Click <b>Script</b> and paste the episode script (use “Copy for Google Doc” on the Episode Script page), or drop a .txt file here.</p>
+    <p>Go to <b>Edit</b> to load this week's script or paste one, or drop a .txt file here.</p>
   </div>
 </main>
+
+<section class="editor" id="editor">
+  <div class="ed-wrap">
+    <div class="ed-top">
+      <div class="ed-title">
+        <h1 id="edTitle">Episode script</h1>
+        <p class="total"></p>
+      </div>
+      <div class="ed-actions">
+        <button type="button" id="btnWeather" class="primary" hidden>Update weather</button>
+        <button type="button" id="btnCopy">Copy for Google Doc</button>
+        <button type="button" id="btnDownload">Download .txt</button>
+        <button type="button" id="btnPaste">Paste a script</button>
+        <button type="button" id="btnReset">Start over from this week's draft</button>
+      </div>
+    </div>
+    <p class="ed-note" id="edNote"></p>
+    <div class="todo"></div>
+    <ol class="rundown"></ol>
+    <p class="fine">Edits save on this device as you type. Lines like <code>[ANCHOR 1]</code> are speaker tags, <code>[VERIFY: …]</code> and <code>[ADD: …]</code> notes show on the prompter but are never read. When it's ready, switch to <b>Prompt</b>.</p>
+  </div>
+</section>
 
 <aside class="panel" id="panel" hidden>
   <h2>Settings</h2>

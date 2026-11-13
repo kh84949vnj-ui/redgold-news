@@ -19,17 +19,32 @@ the district has approved that.
 
 ## Using it
 
-1. Open the prompter page in **Safari** (Mac or iPad).
-2. This week's script loads automatically: the weekly prep run
-   (`python -m rgn.weekly --publish`) publishes it to `scripts/current.json`.
-   The episode date shows next to the title. To use a different script, click
-   **Script** and paste it (the weekly Google Doc format). A pasted script is
-   kept; when a newer published one arrives, a **Load the script for…** button
-   appears instead of replacing yours. `[ANCHOR 1]` lines show as speaker tags,
-   `[CUE …]` lines as cue cards, `[VERIFY: …]` notes are shown but never read.
-3. Click **Start listening** and allow the microphone. The first time, the
-   speech model takes a few seconds to load.
-4. Read. The status pill shows **Following** when it knows where you are,
+The site has two views, switched at the top: **Edit** and **Prompt**.
+
+### Edit
+
+1. Open the prompter page in **Safari** (Mac or iPad). This week's script is
+   already there: the weekly prep run (`python -m rgn.weekly --publish`)
+   publishes the draft, and the page loads it.
+2. The script is laid out as the episode rundown: anchor open, intro cue,
+   news block, bumper, weather, bumper, student voices, menu, close, outro.
+   Each written block is a text box with its reading time; cues are cards.
+3. The box at the top lists what still needs filling in: anchor names
+   (`[ANCHOR 1]`), `[VERIFY: …]` and `[ADD: …]` notes, and flagged topics for
+   the adviser. Click one to jump to it.
+4. Edits save on that device as you type. **Copy for Google Doc** and
+   **Download .txt** take the finished script anywhere else.
+5. If the prep run is done again for the same episode (for a fresher
+   forecast), an **Update weather** button swaps in the new weather read and
+   keeps every other edit. A new week's draft shows a **Load the script for…**
+   button instead of replacing your work. **Start over from this week's draft**
+   throws away your edits (it asks twice).
+
+### Prompt
+
+1. Click **Start listening** and allow the microphone. The first time, the
+   speech model (about 40 MB) takes a few seconds to load.
+2. Read. The status pill shows **Following** when it knows where you are,
    **Listening, not sure where** when it's holding still (ad-lib, or it lost
    track), and **Waiting for speech** during pauses.
 

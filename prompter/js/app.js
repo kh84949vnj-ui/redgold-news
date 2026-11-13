@@ -4,6 +4,8 @@ import { Aligner } from "./align.js";
 import { Motion, Spring } from "./motion.js";
 import { Stage } from "./render.js";
 import { VoskEngine, WebSpeechEngine } from "./engines.js";
+import { Editor } from "./editor.js";
+import { splitScript, nameBlocks } from "./segments.js";
 
 const $ = (id) => document.getElementById(id);
 const TALENT = new URLSearchParams(location.search).get("view") === "talent";
@@ -21,6 +23,8 @@ let settings = { ...DEFAULT_SETTINGS, ...store.get("settings", {}) };
 // ------------------------------------------------------------------ state
 const stageEl = $("stage");
 const stage = new Stage(stageEl);
+let editor = null;            // created below (operator page only)
+let stageStale = false;       // editor changed since the stage was last built
 const spring = new Spring(7);
 let script = null, aligner = null;
 const motion = new Motion();
@@ -67,7 +71,9 @@ function saveSettings() {
 }
 
 // ------------------------------------------------------------------ script
-function loadScript(text, { keepPos = false } = {}) {
+function loadScript(text, { keepPos = false, fromEditor = false } = {}) {
+  if (editor && !fromEditor) editor.setText(text || "");
+  stageStale = false;
   script = parseScript(text || "");
   aligner = new Aligner(script.tokens.map((t) => t.t));
   cueStarts = [...script.cueBefore].sort((a, b) => a - b);
@@ -293,6 +299,7 @@ function step(dir) {
 
 document.addEventListener("keydown", (e) => {
   if (e.target.closest("textarea, input, select, dialog")) return;
+  if (!TALENT && document.body.dataset.view !== "prompt") return;
   const k = e.key;
   if (k === " " || k === "Spacebar") { e.preventDefault(); paused = !paused; }
   else if (k === "ArrowDown" || k === "PageDown" || k === "ArrowRight") { e.preventDefault(); step(1); }
@@ -310,7 +317,49 @@ if (TALENT) {
   $("btnListen").onclick = () => (listening ? stopListening() : startListening());
   $("modeVoice").onclick = () => setMode("voice");
   $("modeManual").onclick = () => setMode("manual");
-  $("btnScript").onclick = openScriptDialog;
+  $("btnPaste").onclick = openScriptDialog;
+  $("viewEdit").onclick = () => setView("edit");
+  $("viewPrompt").onclick = () => setView("prompt");
+  $("btnCopy").onclick = async () => {
+    const b = $("btnCopy");
+    try { await navigator.clipboard.writeText(editor.getText()); b.textContent = "Copied"; }
+    catch (e) { b.textContent = "Copy blocked; use Download"; }
+    setTimeout(() => { b.textContent = "Copy for Google Doc"; }, 2000);
+  };
+  $("btnDownload").onclick = () => {
+    const meta = store.get("script-meta", {});
+    const blob = new Blob([editor.getText()], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `RGN Script ${(meta.label || "episode").replace(/,/g, "")}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  // Starting over replaces everyone's edits on this device, so it asks twice.
+  let resetArmed = null;
+  $("btnReset").onclick = async () => {
+    const b = $("btnReset");
+    if (!resetArmed) {
+      b.textContent = "Click again to replace your edits";
+      resetArmed = setTimeout(() => { resetArmed = null; b.textContent = "Start over from this week's draft"; }, 4000);
+      return;
+    }
+    clearTimeout(resetArmed); resetArmed = null;
+    b.textContent = "Start over from this week's draft";
+    const pub = await fetchPublished();
+    if (pub) { published = pub; usePublished(pub); note("Started over from this week's draft."); }
+    else note("This week's draft isn't published yet.");
+  };
+  $("btnWeather").onclick = () => {
+    if (!published) return;
+    const w = nameBlocks(splitScript(published.text)).find((b) => b.name === "Weather");
+    if (w && editor.replaceBlock("Weather", w.text)) {
+      const meta = store.get("script-meta", {});
+      store.set("script-meta", { ...meta, generated: published.generated });
+      note(`Weather updated to the forecast from ${published.generated_label}. Your other edits are kept.`);
+      showPublished();
+    }
+  };
   $("btnFull").onclick = toggleFullscreen;
   $("btnTalent").onclick = () => window.open(location.pathname + "?view=talent", "rgn-talent", "popup,width=1024,height=768");
   $("btnSettings").onclick = () => {
@@ -374,6 +423,28 @@ async function fetchPublished() {
     return d && typeof d.text === "string" && d.text.trim() ? d : null;
   } catch (e) { return null; }
 }
+function note(text) { const n = $("edNote"); if (n) n.textContent = text || ""; }
+
+function setView(v) {
+  if (TALENT) return;
+  document.body.dataset.view = v;
+  store.set("view", v);
+  $("viewEdit").setAttribute("aria-pressed", String(v === "edit"));
+  $("viewPrompt").setAttribute("aria-pressed", String(v === "prompt"));
+  if (v === "prompt") {
+    if (stageStale) loadScript(editor.getText(), { keepPos: true, fromEditor: true });
+    requestAnimationFrame(() => { stage.layout(); spring.snap(targetOffset(mode === "manual" ? manualPos : motion.shown)); });
+  }
+}
+
+function onEdited(text) {
+  store.set("script", text);
+  const meta = store.get("script-meta", {});
+  if (meta.source === "published") store.set("script-meta", { ...meta, source: "edited" });
+  stageStale = true;
+  showPublished();
+}
+
 function usePublished(pub) {
   loadScript(pub.text);
   store.set("script-meta", { source: "published", generated: pub.generated, label: pub.episode_label });
@@ -384,14 +455,30 @@ function showPublished() {
   if (TALENT) return;
   const meta = store.get("script-meta", {});
   const ep = $("epLabel");
-  ep.textContent = meta.source === "published" ? meta.label : meta.source === "manual" ? "Pasted script" : "";
-  const btn = $("btnNewScript");
-  const isNewer = published && !(meta.source === "published" && meta.generated === published.generated);
-  btn.hidden = !isNewer;
-  if (isNewer) btn.textContent = `Load the script for ${published.episode_label}`;
+  ep.textContent = meta.source === "published" ? meta.label
+    : meta.source === "edited" ? `${meta.label} (edited)` : meta.source === "manual" ? "Pasted script" : "";
+  $("edTitle").textContent = meta.label ? `Episode of ${meta.label}` : "Episode script";
+  const btn = $("btnNewScript"), wx = $("btnWeather");
+  btn.hidden = true; wx.hidden = true;
+  if (!published || meta.generated === published.generated) return;
+  const sameEpisode = meta.label && meta.label === published.episode_label;
+  if (sameEpisode && meta.source === "edited") {
+    // Same episode, re-run (usually a fresher forecast): offer just the weather.
+    wx.hidden = false;
+    wx.textContent = `Update weather (forecast from ${published.generated_label})`;
+  } else {
+    btn.hidden = false;
+    btn.textContent = meta.source === "published" || !meta.source
+      ? `Load the script for ${published.episode_label}`
+      : `Load the script for ${published.episode_label} (replaces yours)`;
+  }
 }
 
 // ------------------------------------------------------------------ start
+if (!TALENT) {
+  editor = new Editor($("editor"), { onChange: onEdited });
+  setView(store.get("view", "edit"));
+}
 applySettings();
 if (TALENT) {
   loadScript("");
@@ -403,7 +490,8 @@ if (TALENT) {
     published = pub;
     const meta = store.get("script-meta", {});
     const hasLocal = !!(store.get("script", "") || "").trim();
-    if (pub && (!hasLocal || meta.source !== "manual") && meta.generated !== pub.generated && !listening) usePublished(pub);
+    const untouched = !hasLocal || meta.source === "published" || !meta.source;
+    if (pub && untouched && meta.generated !== pub.generated && !listening) usePublished(pub);
     else showPublished();
   });
 }

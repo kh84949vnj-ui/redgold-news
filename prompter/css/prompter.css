@@ -99,6 +99,39 @@ dialog::backdrop { background: rgba(0,0,0,.6); }
 .file { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
 .file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
+/* Views: Edit shows the rundown editor, Prompt shows the stage. */
+body[data-view="edit"] .stage, body[data-view="edit"] .prompt-only, body[data-view="edit"] .panel { display: none !important; }
+body[data-view="prompt"] .editor, body.talent .editor { display: none !important; }
+.views button { min-width: 72px; }
+
+.editor { flex: 1; min-height: 0; overflow-y: auto; background: var(--bg); -webkit-overflow-scrolling: touch; }
+.ed-wrap { max-width: 860px; margin: 0 auto; padding: 18px max(16px, env(safe-area-inset-right, 0px)) 60px max(16px, env(safe-area-inset-left, 0px)); }
+.ed-top { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; justify-content: space-between; }
+.ed-title h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
+.ed-title .total { margin: 4px 0 0; color: var(--muted); font: 13px var(--mono); }
+.ed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ed-note { margin: 10px 0 0; color: var(--gold); font-size: 14px; min-height: 0; }
+.ed-note:empty { display: none; }
+.todo { margin: 16px 0 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); }
+.todo-head { margin: 0 0 8px; font-weight: 600; color: var(--warn); }
+.todo-done { margin: 0; color: var(--ok); font-weight: 600; }
+.todo ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.todo-item { font-size: 13px; min-height: 30px; padding: 4px 10px; border-radius: 999px; }
+.todo-name { border-color: var(--gold); }
+.todo-verify, .todo-add { border-color: var(--warn); }
+.todo-flagged { border-color: var(--red); color: #ffb3bb; }
+.rundown { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.blk { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); background: var(--chrome); border: 1px solid var(--line); border-radius: 10px; }
+.blk-cue { background: transparent; border-style: dashed; }
+.blk-n { font: 700 20px var(--mono); color: var(--muted); text-align: center; padding-top: 12px; border-right: 1px solid var(--line); }
+.blk-text .blk-n { color: var(--gold); }
+.blk-body { padding: 10px 14px 12px; min-width: 0; }
+.blk-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.blk-head h3 { margin: 0; font-size: 16px; text-transform: uppercase; letter-spacing: .06em; }
+.blk-cue-text { font: 600 13px var(--mono); color: var(--gold); }
+.blk-time { margin-left: auto; font: 12px var(--mono); color: var(--muted); }
+.blk textarea { display: block; width: 100%; margin-top: 8px; min-height: 5em; resize: vertical; overflow: hidden; background: #000; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 17px/1.5 var(--body); }
+
 /* Talent view: just the text. Tap shows nothing; F or double-tap for full screen. */
 body.talent .bar, body.talent .heard, body.talent .panel, body.talent .empty { display: none; }
 
