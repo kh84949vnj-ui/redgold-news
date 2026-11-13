@@ -53,6 +53,18 @@ available). Direct links work too: `…/prompter/#news`, `#weather`, `#custom`.
    Weather script. **Start over from this week's draft** (or **Clear** for
    Custom) throws away edits; it asks twice.
 
+### School board items (News rundown)
+
+When the school board meets during the episode week, the News rundown editor
+shows a **School board this week** panel with the posted agenda. Check an item
+to add a plain-English line to the news block ("The school board meets
+Wednesday at 6 p.m. One thing on the agenda is whether to approve…"); later
+items say "The board will also look at…". Uncheck to take the line back out.
+Items marked *student interest* are shown first (untick the filter to see all),
+flagged items (personnel, safety and similar) can't be added, and long items
+get a `[SIMPLIFY]` note so a student puts them in their own words. If the
+agenda isn't posted yet, there's an option to just mention the meeting.
+
 ### Prompt
 
 1. Click **Start listening** and allow the microphone. The first time, the

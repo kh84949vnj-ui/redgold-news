@@ -6,6 +6,7 @@ import { Stage } from "./render.js";
 import { VoskEngine, WebSpeechEngine } from "./engines.js";
 import { Editor } from "./editor.js";
 import { deriveDoc } from "./segments.js";
+import { boardLine, itemKey } from "./board.js";
 
 const $ = (id) => document.getElementById(id);
 const TALENT = new URLSearchParams(location.search).get("view") === "talent";
@@ -492,11 +493,120 @@ function refreshDocUI() {
   $("epLabel").textContent = meta.label ? meta.label + (meta.source === "edited" ? " (edited)" : "") : meta.source === "manual" ? "Pasted" : "";
   $("edTitle").textContent = DOCS[doc].title + (meta.label ? ` · ${meta.label}` : "");
   $("btnReset").textContent = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
+  renderBoard();
   const btn = $("btnNewScript");
   const newer = !!(DOCS[doc].draft && published && meta.base !== deriveDoc(doc, published.text) &&
     (store.get("script-" + doc, "") || "").trim());
   btn.hidden = !newer;
   if (newer) btn.textContent = meta.source === "published" ? "Load the newer draft" : "Load the newer draft (replaces your edits)";
+}
+
+// ------------------------------------------------------------------ board agenda picks
+// In the News rundown, the week's school board agenda items can be checked to
+// add a plain-English line to the news block; unchecking takes it back out.
+// Choices are kept with the news script (meta.board: key -> the added text).
+let boardStudentOnly = true;
+
+function renderBoard() {
+  const box = $("boardPick");
+  const meetings = (doc === "news" && published && published.board) || [];
+  box.hidden = !meetings.length;
+  if (!meetings.length) { box.replaceChildren(); return; }
+  const picked = getMeta().board || {};
+  const wasOpen = box.querySelector("details")?.open;
+  const det = document.createElement("details");
+  det.open = wasOpen ?? Object.keys(picked).length > 0;
+  const sum = document.createElement("summary");
+  const n = Object.keys(picked).length;
+  const count = meetings.reduce((a, m) => a + m.items.length, 0);
+  sum.append("School board this week ");
+  const sub = document.createElement("span");
+  sub.className = "sub";
+  sub.textContent = `· ${count ? count + " agenda items" : "agenda not posted yet"}${n ? ` · ${n} added to the news block` : ""}`;
+  sum.appendChild(sub);
+  det.appendChild(sum);
+  const body = document.createElement("div");
+  body.className = "board-body";
+  const tip = document.createElement("p");
+  tip.className = "fine";
+  tip.textContent = "Check an item to add a line about it to the news block. Uncheck to take it out. Flagged items need the adviser first.";
+  body.appendChild(tip);
+  if (count) {
+    const tools = document.createElement("label");
+    tools.className = "board-tools";
+    const only = document.createElement("input");
+    only.type = "checkbox"; only.checked = boardStudentOnly; only.id = "boardOnly";
+    only.onchange = () => { boardStudentOnly = only.checked; renderBoard(); };
+    tools.append(only, " Show only items marked student interest");
+    body.appendChild(tools);
+  }
+  for (const m of meetings) {
+    const head = document.createElement("p");
+    head.className = "fine";
+    head.append(`${m.title}, ${m.when} · `);
+    const a = document.createElement("a");
+    a.href = m.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Full agenda";
+    head.appendChild(a);
+    body.appendChild(head);
+    const ul = document.createElement("ul");
+    ul.className = "board-list";
+    const rows = m.items.length ? m.items : [null];
+    for (const it of rows) {
+      const key = itemKey(m, it);
+      if (it && boardStudentOnly && !it.student_interest && !picked[key]) continue;
+      const li = document.createElement("li");
+      const lab = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!picked[key];
+      cb.disabled = !!(it && it.flagged);
+      if (cb.disabled) lab.className = "off";
+      cb.onchange = () => toggleBoardItem(m, it, cb.checked);
+      const num = document.createElement("span");
+      num.className = "num";
+      num.textContent = it ? it.number : "";
+      const txt = document.createElement("span");
+      txt.textContent = it ? it.text.replace(/,?\s*(presented by|item lead:).*/i, "") : "Mention the meeting (the agenda isn't posted yet)";
+      if (it && it.student_interest) { const b = document.createElement("span"); b.className = "si"; b.textContent = "student interest"; txt.appendChild(b); }
+      if (it && it.flagged) { const b = document.createElement("span"); b.className = "flag"; b.textContent = "see adviser"; txt.appendChild(b); }
+      lab.append(cb, num, txt);
+      li.appendChild(lab);
+      ul.appendChild(li);
+    }
+    body.appendChild(ul);
+  }
+  det.appendChild(body);
+  box.replaceChildren(det);
+}
+
+function toggleBoardItem(meeting, item, on) {
+  const meta = getMeta();
+  const picked = { ...(meta.board || {}) };
+  const key = itemKey(meeting, item);
+  if (on) {
+    const first = !Object.keys(picked).some((k) => k.startsWith(meeting.url + "#"));
+    const text = boardLine(meeting, item, first);
+    picked[key] = text;
+    setMeta({ ...meta, board: picked });
+    editor.insertParagraph("News block", text, /ADD CAMPUS STORY/);
+    note("Added to the news block.");
+  } else {
+    const text = picked[key];
+    delete picked[key];
+    // If this was the line that opened with the meeting time, the next item
+    // from the same meeting takes over that opening.
+    const wasFirst = text && text.startsWith("The school board");
+    const nextKey = wasFirst && Object.keys(picked).find((k) => k.startsWith(meeting.url + "#"));
+    if (nextKey) {
+      const nextItem = meeting.items.find((it) => itemKey(meeting, it) === nextKey) || null;
+      const fresh = boardLine(meeting, nextItem, true);
+      if (editor.replaceParagraph("News block", picked[nextKey], fresh)) picked[nextKey] = fresh;
+    }
+    setMeta({ ...meta, board: picked });
+    if (text && editor.removeParagraph("News block", text)) note("Taken out of the news block.");
+    else note("That line was edited, so it's still in the news block. Delete it there if you don't want it.");
+  }
+  refreshDocUI();
 }
 
 function setView(v) {

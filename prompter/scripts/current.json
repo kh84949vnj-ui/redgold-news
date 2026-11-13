@@ -1,7 +1,245 @@
 {
  "episode_date": "2026-11-16",
  "episode_label": "Monday, November 16, 2026",
- "generated": "2026-11-13T09:10-06:00",
- "generated_label": "Friday, November 13 at 9:10 AM",
- "text": "[ANCHOR 1]\nGood morning, RedWolves! I'm [ANCHOR 1].\n\n[ANCHOR 2]\nAnd I'm [ANCHOR 2]. It's the last week before Thanksgiving Break, and we have a lot to cover. Coming up, we've got school news, your weather, and Student Voices.\n\n[CUE INTRO SEQUENCE]\n\n[ANCHOR 1]\nFirst up, here's what's going on. Wednesday is Education Support Professionals Day. It's a day to thank the people who keep our schools running, like custodians, cafeteria workers, and bus drivers.\n\n[ANCHOR 2]\nThursday is National Parental Involvement Day. It's a day to thank the parents and families who help out at school and at home.\n\n[ANCHOR 1]\nThanks, [ANCHOR 2]. The La Joya ISD Conjunto Showcase is Thursday at 6:30 p.m. [VERIFY: location] It's a great way to support our student musicians.\n\n[ANCHOR 2]\nFriday is Substitute Appreciation Day. Substitute teachers step in when our teachers are out, and they help keep our classes going.\n\n[ANCHOR 1]\nMark your calendars. Next week is Thanksgiving Break, so there's no school Monday, November 23, through Friday, November 27. Classes start back up Monday, November 30.\n\n[ANCHOR 2]\n[ADD CAMPUS STORY: Jimmy Carter news or an RGN package]\n\n[ANCHOR 1]\nStay with us. [WEATHER REPORTER] has the weather after the break.\n\n[CUE BUMPER]\n\n[WEATHER]\nGood morning, RedWolves! I'm [WEATHER REPORTER]. Let's take a look at this week's weather forecast!\nWe're starting the week off mild on Monday, with a high of 74 degrees. Expect partly sunny skies, a morning low of 65, and a 14 percent chance of rain.\nTuesday stays about the same, with a high of 72. Expect partly sunny skies, a morning low of 59, and no rain.\nWednesday warms up to 76 degrees. Expect partly sunny skies, a morning low of 62, and no rain.\nThursday warms up to 80 degrees. Expect mostly cloudy skies, a morning low of 67, and an 11 percent chance of rain.\nFriday warms up to 83 degrees. Expect mostly cloudy skies, a morning low of 69, and no rain.\nHave a great week, RedWolves!\n\n[CUE BUMPER]\n\n[CUE STUDENT VOICES]\n\n[CUE MENU]\n\n[ANCHOR 1]\nThat's it for this week's RGN. Remember, there's no school next week for Thanksgiving Break. We'll see you back on November 30.\n\n[ANCHOR 2]\nThanks for watching. Have a safe and happy Thanksgiving, RedWolves!\n\n[CUE OUTRO]\n"
+ "generated": "2026-11-13T09:23-06:00",
+ "generated_label": "Friday, November 13 at 9:23 AM",
+ "text": "[ANCHOR 1]\nGood morning, RedWolves! I'm [ANCHOR 1].\n\n[ANCHOR 2]\nAnd I'm [ANCHOR 2]. It's the last week before Thanksgiving Break, and we have a lot to cover. Coming up, we've got school news, your weather, and Student Voices.\n\n[CUE INTRO SEQUENCE]\n\n[ANCHOR 1]\nFirst up, here's what's going on. Wednesday is Education Support Professionals Day. It's a day to thank the people who keep our schools running, like custodians, cafeteria workers, and bus drivers.\n\n[ANCHOR 2]\nThursday is National Parental Involvement Day. It's a day to thank the parents and families who help out at school and at home.\n\n[ANCHOR 1]\nThanks, [ANCHOR 2]. The La Joya ISD Conjunto Showcase is Thursday at 6:30 p.m. [VERIFY: location] It's a great way to support our student musicians.\n\n[ANCHOR 2]\nFriday is Substitute Appreciation Day. Substitute teachers step in when our teachers are out, and they help keep our classes going.\n\n[ANCHOR 1]\nMark your calendars. Next week is Thanksgiving Break, so there's no school Monday, November 23, through Friday, November 27. Classes start back up Monday, November 30.\n\n[ANCHOR 2]\n[ADD CAMPUS STORY: Jimmy Carter news or an RGN package]\n\n[ANCHOR 1]\nStay with us. [WEATHER REPORTER] has the weather after the break.\n\n[CUE BUMPER]\n\n[WEATHER]\nGood morning, RedWolves! I'm [WEATHER REPORTER]. Let's take a look at this week's weather forecast!\nWe're starting the week off mild on Monday, with a high of 74 degrees. Expect partly sunny skies, a morning low of 65, and a 14 percent chance of rain.\nTuesday stays about the same, with a high of 72. Expect partly sunny skies, a morning low of 59, and no rain.\nWednesday warms up to 76 degrees. Expect partly sunny skies, a morning low of 62, and no rain.\nThursday warms up to 80 degrees. Expect mostly cloudy skies, a morning low of 67, and an 11 percent chance of rain.\nFriday warms up to 83 degrees. Expect mostly cloudy skies, a morning low of 69, and no rain.\nHave a great week, RedWolves!\n\n[CUE BUMPER]\n\n[CUE STUDENT VOICES]\n\n[CUE MENU]\n\n[ANCHOR 1]\nThat's it for this week's RGN. Remember, there's no school next week for Thanksgiving Break. We'll see you back on November 30.\n\n[ANCHOR 2]\nThanks for watching. Have a safe and happy Thanksgiving, RedWolves!\n\n[CUE OUTRO]\n",
+ "board": [
+  {
+   "when": "Wednesday, November 18, 6:00 PM",
+   "title": "Regular Meeting",
+   "url": "https://meetings.boardbook.org/Public/Agenda/3263?meeting=768953",
+   "agenda_pending": false,
+   "items": [
+    {
+     "number": "5.1",
+     "text": "Recognition of Parent, Family and Community Liaisons in Observance of National Parent Involvement Day (November 2026), presented by Ms. Anna Marie Candelario, Deputy Chief of Academic Support & School Enrichment",
+     "flagged": false,
+     "student_interest": true
+    },
+    {
+     "number": "5.2",
+     "text": "Recognition of National School Psychologist Week November 9-13, 2026, presented by Ms. Anna Marie Candelario, Deputy Chief of Academic Support & School Enrichment",
+     "flagged": false,
+     "student_interest": true
+    },
+    {
+     "number": "5.3",
+     "text": "Recognition of National Superintendent Day - November 14, 2026, presented by Ms. Blanca Cant\u00fa, Public Relations & Communications Director",
+     "flagged": false,
+     "student_interest": true
+    },
+    {
+     "number": "6.1",
+     "text": "Report on Goals 1-4: TELPAS Benchmark aligned to GPMs for Goals 1, 3 & 4, presented by Dr. Derek Little, Deputy Superintendent",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "6.2",
+     "text": "Report on Goals 1-4: School Action Recommendations for 27-28, presented by Dr. Derek Little, Deputy Superintendent",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "6.3",
+     "text": "Lone Star Governance Time Use Tracker Report - October 14, 2026, presented by Mr. Celso Gomez Jr., School Board Secretary",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "6.4",
+     "text": "Monthly TEA Conservator's Report, presented by Dr. Sylvia Ibarra, TEA Conservator",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.1.1",
+     "text": "Approval of Purchase for Dual Enrollment Textbooks for the Spring 2027 Semester for Jimmy Carter ECHS",
+     "flagged": false,
+     "student_interest": true
+    },
+    {
+     "number": "7.1.2",
+     "text": "Approval of Memorandum of Understanding for Y7 Texas Reading Academies TEA Project with Region One",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.1.3",
+     "text": "Approval of Purchase of a 2023 Ford 12 Passenger Van through Purchasing Cooperatives",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.1.4",
+     "text": "Approval of Dell Chromebooks for CTE Professional Development and Instructional Support through the District-Wide Technology Devices Quotation",
+     "flagged": false,
+     "student_interest": true
+    },
+    {
+     "number": "7.1.5",
+     "text": "Approval of Memorandum of Understanding Between La Joya Independent School District and Diesel Fleet LLC for Career and Technical Education Work-Based Learning Partnership for the 2026-2027 School Year",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.1.6",
+     "text": "Approval of Memorandum of Understanding Between La Joya Independent School District and South Texas Health Systems for Career and Technical Education Work-Based Learning Partnership for the 2026-2027 School Year",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.1.7",
+     "text": "Approval of SAT Exam Purchase for the 2026-2027 School Year Through the Student Testing and Assessment RFP",
+     "flagged": false,
+     "student_interest": true
+    },
+    {
+     "number": "7.1.8",
+     "text": "Approval of 2026-2027 Special Education Program Licenses Renewal and Additional User License to Support the Department's Operational and Instructional Needs through Purchasing Cooperative",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.3.1",
+     "text": "Approval of September 2026 Tax Collectors' Report",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.3.2",
+     "text": "Approval of October 2026 Open Period Budget Transfer Amendments",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.3.3",
+     "text": "2026-2027 District Improvement Plan and Campus Improvement Plans",
+     "flagged": false,
+     "student_interest": true
+    },
+    {
+     "number": "7.4.1",
+     "text": "Approval of T-TESS Appraiser for the 2026-2027 School Year",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.5.1",
+     "text": "Approval of Library Books Recommended",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.6.1",
+     "text": "Approval of Report on Goals 1-4: TELPAS Benchmark Aligned to GPMs for Goals 1, 3 & 4",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.6.2",
+     "text": "Approval of Report on Goals 1-4: School Action Recommendations for 27-28",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.6.3",
+     "text": "Approval of the Lone Star Governance Time Use Tracker Report - October 14, 2026",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.6.4",
+     "text": "Approval of the Lone Star Governance Board Self-Assessment Using the LSG Integrity Instrument",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.7.1",
+     "text": "Approval of Change Order for La Joya ISD Sports Complex Baseball Field Renovations",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.7.2",
+     "text": "Approval of Additional Architectural Services for the District-Wide Entry Door Hardening Project by the Engineering & Architectural Services RFQ #2025-24",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.7.3",
+     "text": "Approval of Change Order to Reorder Key Cores for the District-Wide Entry Door Hardening Project through Purchasing Cooperatives",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.7.4",
+     "text": "Approval of Cooling Tower Replacement at Juarez-Lincoln High School through Purchasing Cooperatives",
+     "flagged": false,
+     "student_interest": true
+    },
+    {
+     "number": "7.7.5",
+     "text": "Approval of Purchase of a 2025 Ford F150 XLT Crew Cab 4x2 through Purchasing Cooperatives",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.8.1",
+     "text": "Approval of Districtwide Exterior Door and Gate Numbering Signage - Furnish and Installation Quotation #2027-809 through Marquees, Signage, Related Supplies & Services RFP",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "7.8.2",
+     "text": "Approval of District-Wide Window Resistant Film Quotation #2027-810 Through Purchasing Cooperative",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "10.1",
+     "text": "2026-2027 Targeted Improvement Plans, Item Lead: Dr. Derek Little, Deputy Superintendent",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "10.2",
+     "text": "Approval of Policy Update AE (Local) - Goal 4 Target and Superintendent Guardrails, Item Lead: Dr. Derek Little, Deputy Superintendent",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "10.3",
+     "text": "Approval of District-Wide Door Renovation/Replacement Project Quotation through Construction Services Job Order Contract (JOC), Item Lead: Mr. Efrain Matamoros, Deputy Chief of Operations & Infrastructure",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "10.4",
+     "text": "Approval of Change Order for Additional Perimeter Access Doors Outside of Entry Area for the District-Wide Entry Door Hardening Project, Item Lead: Mr. Efrain Matamoros, Deputy Chief of Operations & Infrastructure",
+     "flagged": false,
+     "student_interest": false
+    },
+    {
+     "number": "10.5",
+     "text": "Consider and Take Possible Action to Propose Mid-Contract Terminations for Good Cause, Item Lead: Mr. Efrain Garza, Chief of Human Capital & Talent Development",
+     "flagged": true,
+     "student_interest": false
+    },
+    {
+     "number": "10.6",
+     "text": "Consider and Take Possible Action to Propose and Finalize Contract Terminations and Authorize Superintendent to Pursue Sanctions for Contract Abandonment, Item Lead: Mr. Efrain Garza, Chief of Human Capital & Talent Deve...",
+     "flagged": true,
+     "student_interest": false
+    },
+    {
+     "number": "11.1",
+     "text": "December 2, 2026: Special Called Meeting (Student Recognitions)",
+     "flagged": false,
+     "student_interest": true
+    }
+   ]
+  }
+ ]
 }

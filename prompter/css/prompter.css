@@ -137,6 +137,20 @@ body:not([data-view="home"]) .home, body.talent .home { display: none !important
 .todo-name { border-color: var(--gold); }
 .todo-verify, .todo-add { border-color: var(--warn); }
 .todo-flagged { border-color: var(--red); color: #ffb3bb; }
+.board { margin: 10px 0 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--chrome); }
+.board summary { cursor: pointer; padding: 12px 14px; font-weight: 600; }
+.board summary .sub { color: var(--muted); font-weight: 400; }
+.board-body { padding: 0 14px 12px; }
+.board-body .fine { margin: 0 0 8px; }
+.board-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.board-list label { display: grid; grid-template-columns: 22px 3.6em minmax(0, 1fr); gap: 8px; align-items: start; padding: 6px 4px; border-radius: 6px; cursor: pointer; }
+.board-list label:hover { background: var(--chrome-2); }
+.board-list input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--gold); }
+.board-list .num { font: 12px var(--mono); color: var(--muted); padding-top: 3px; }
+.board-list .si { color: var(--gold); font: 600 11px var(--mono); margin-left: 6px; white-space: nowrap; }
+.board-list .flag { color: #ffb3bb; font: 600 11px var(--mono); margin-left: 6px; white-space: nowrap; }
+.board-list label.off { cursor: not-allowed; opacity: .6; }
+.board-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 0 0 8px; font-size: 13px; color: var(--muted); }
 .rundown { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
 .blk { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); background: var(--chrome); border: 1px solid var(--line); border-radius: 10px; }
 .blk-cue { background: transparent; border-style: dashed; }

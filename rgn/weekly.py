@@ -237,6 +237,14 @@ def run(monday: dt.date) -> Path:
         "generated": data["generated"],
         "generated_label": data["generated_label"],
         "text": text,
+        # Board meetings this week, so the editor can offer agenda items to add.
+        # BoardBook agendas are public; flagged items are marked and can't be added.
+        "board": [
+            {"when": m["when"], "title": m["title"], "url": m["url"], "agenda_pending": m["agenda_pending"],
+             "items": [{"number": it["number"], "text": it["text"], "flagged": it["flagged"],
+                        "student_interest": it["student_interest"]} for it in m["items"]]}
+            for m in (data.get("news") or {}).get("board", [])
+        ],
     }, indent=1), encoding="utf-8")
     return path
 

@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-13T09:10-06:00",
-  "generated_label": "Friday, November 13 at 9:10 AM",
+  "generated": "2026-11-13T09:23-06:00",
+  "generated_label": "Friday, November 13 at 9:23 AM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -111,7 +111,7 @@
         "extended": true
       }
     ],
-    "updated": "Friday, November 13 at 9:00 AM",
+    "updated": "Friday, November 13 at 9:18 AM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": [
@@ -383,13 +383,13 @@
           {
             "number": "10.5",
             "text": "Consider and Take Possible Action to Propose Mid-Contract Terminations for Good Cause, Item Lead: Mr. Efrain Garza, Chief of Human Capital & Talent Development",
-            "flagged": false,
+            "flagged": true,
             "student_interest": false
           },
           {
             "number": "10.6",
             "text": "Consider and Take Possible Action to Propose and Finalize Contract Terminations and Authorize Superintendent to Pursue Sanctions for Contract Abandonment, Item Lead: Mr. Efrain Garza, Chief of Human Capital & Talent Deve...",
-            "flagged": false,
+            "flagged": true,
             "student_interest": false
           },
           {

@@ -115,7 +115,8 @@ def load_keywords(name: str) -> list[str]:
 
 def matches_any(text: str, keywords: list[str]) -> list[str]:
     low = text.lower()
-    return [k for k in keywords if re.search(r"\b" + re.escape(k) + r"\b", low)]
+    # Allow plurals: "termination" also catches "terminations".
+    return [k for k in keywords if re.search(r"\b" + re.escape(k) + r"(s|es)?\b", low)]
 
 
 @dataclass

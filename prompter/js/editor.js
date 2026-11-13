@@ -29,6 +29,56 @@ export class Editor {
 
   getText() { return joinScript(this.blocks); }
 
+  /**
+   * Add a paragraph to a block, before the first paragraph matching `before`
+   * (or before the block's last paragraph, which is usually a toss).
+   * Returns the anchor number used, so the caller can remember the text.
+   */
+  insertParagraph(name, body, before) {
+    const b = this.blocks.find((x) => x.name === name);
+    if (!b) return false;
+    const paras = b.text.split(/\n{2,}/);
+    let at = paras.findIndex((p) => before && before.test(p));
+    if (at < 0) at = paras.length > 1 ? paras.length - 1 : paras.length;
+    // Use the other anchor from the one who read just before this spot.
+    const prevTag = paras.slice(0, at).reverse().join("\n").match(/\[ANCHOR (\d)\]/i);
+    const anchor = prevTag && prevTag[1] === "1" ? 2 : 1;
+    paras.splice(at, 0, `[ANCHOR ${anchor}]\n${body}`);
+    b.text = paras.join("\n\n");
+    this.render();
+    this.changed(true);
+    return anchor;
+  }
+
+  /** Remove the paragraph whose spoken text is exactly `body`. False if it was edited. */
+  removeParagraph(name, body) {
+    const b = this.blocks.find((x) => x.name === name);
+    if (!b) return false;
+    const paras = b.text.split(/\n{2,}/);
+    const i = paras.findIndex((p) => p.replace(/^\s*\[ANCHOR \d\]\s*\n/i, "").trim() === body.trim());
+    if (i < 0) return false;
+    paras.splice(i, 1);
+    b.text = paras.join("\n\n");
+    this.render();
+    this.changed(true);
+    return true;
+  }
+
+  /** Swap one paragraph's spoken text for another, keeping its speaker tag. */
+  replaceParagraph(name, oldBody, newBody) {
+    const b = this.blocks.find((x) => x.name === name);
+    if (!b) return false;
+    const paras = b.text.split(/\n{2,}/);
+    const i = paras.findIndex((p) => p.replace(/^\s*\[ANCHOR \d\]\s*\n/i, "").trim() === oldBody.trim());
+    if (i < 0) return false;
+    const tag = paras[i].match(/^\s*\[ANCHOR \d\]\s*\n/i);
+    paras[i] = (tag ? tag[0] : "") + newBody;
+    b.text = paras.join("\n\n");
+    this.render();
+    this.changed(true);
+    return true;
+  }
+
   /** Replace the Weather block's text (keeps everything else as edited). */
   replaceBlock(name, text) {
     const b = this.blocks.find((x) => x.name === name);
