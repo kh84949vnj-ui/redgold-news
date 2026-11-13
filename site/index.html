@@ -93,14 +93,6 @@ button.copy.done { background: var(--gold); color: #1d1718; }
 .bar i { display: block; height: 100%; background: var(--gold); }
 .wx-day.na { border-style: dashed; background: transparent; }
 
-/* Menu table */
-.tbl-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
-table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 560px; }
-th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
-tr:last-child td { border-bottom: 0; }
-td.day { font-family: var(--display); font-size: 18px; font-weight: 600; white-space: nowrap; }
-
 /* Leads */
 .leads { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
 .lead { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: start; }
@@ -232,27 +224,12 @@ footer p { margin: 4px 0; max-width: 80ch; }
     }
     wx += `</section>`;
 
-    // Block 8: Menu
-    const m = d.menu || {};
-    let menu = `<section class="block" id="menu">${head(8, "Menu", "Voiceover + menu graphics")}`;
-    if (m.error) menu += `<p class="err">${esc(m.error)}</p>`;
-    else if (!m.days || !m.days.length) menu += `<p class="empty">No menu for this week yet.</p>`;
-    else {
-      menu += `<div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Breakfast</th><th>Lunch</th><th>Sides</th></tr></thead><tbody>
-        ${m.days.map((x) => `<tr><td class="day">${esc(x.day)}</td><td>${esc(x.breakfast)}</td><td>${esc(x.entree)}</td><td>${esc((x.sides || []).join(", "))}</td></tr>`).join("")}
-        </tbody></table></div>`;
-      menu += scriptBox("menu", "Menu voiceover read", m.script);
-      if (m.canva && m.canva.length) menu += scriptBox("canva", "Menu for Canva graphic", m.canva).replace("Copy script", "Copy for Canva");
-    }
-    if (m.sources) menu += notes(m.sources.map((s) => "Source: " + s).concat(m.notes || []));
-    menu += `</section>`;
-
     const foot = `<footer>
-      <p>Sources: La Joya ISD district calendar (lajoyaisd.com), BoardBook public meetings, the LJISD Child Nutrition high school menu, and the National Weather Service.</p>
+      <p>Sources: La Joya ISD district calendar (lajoyaisd.com), BoardBook public meetings, and the National Weather Service. The menu segment is made separately.</p>
       <p>The episode order: anchor open, show open, news (block 3), bumper, weather (block 5), bumper, student voices, menu (block 8), anchor close, outro.</p>
     </footer>`;
 
-    app.innerHTML = week + news + wx + menu + foot;
+    app.innerHTML = week + news + wx + foot;
   }
 
   app.addEventListener("click", async (e) => {

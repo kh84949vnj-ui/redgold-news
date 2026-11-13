@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-12T15:39-06:00",
-  "generated_label": "Thursday, November 12 at 3:39 PM",
+  "generated": "2026-11-12T18:00-06:00",
+  "generated_label": "Thursday, November 12 at 6:00 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -33,7 +33,7 @@
       "We're starting the week off mild on Monday, with a high of 74 degrees, partly sunny skies, a morning low of 65, and a 15 percent chance of rain showers.",
       "Tuesday stays about the same, with a high of 72, partly sunny skies, a morning low of 59, and no rain expected.",
       "Wednesday warms up to 75 degrees, with mostly cloudy skies, a morning low of 62, and no rain expected.",
-      "Thursday warms up to 80 degrees, with mostly cloudy skies, a morning low of 67, and an 18 percent chance of rain.",
+      "Thursday warms up to 80 degrees, with mostly cloudy skies, a morning low of 67, and an 18 percent chance of rain showers later in the day.",
       "Have a great week, RedWolves!"
     ],
     "days": [
@@ -73,9 +73,9 @@
         "high": 80,
         "low": 67,
         "rain": 18,
-        "conditions": "mostly cloudy",
+        "conditions": "Mostly Cloudy then Slight Chance Rain Showers",
         "available": true,
-        "extended": true
+        "extended": false
       },
       {
         "day": "Friday",
@@ -88,101 +88,12 @@
         "extended": false
       }
     ],
-    "updated": "Thursday, November 12 at 3:30 PM",
+    "updated": "Thursday, November 12 at 5:45 PM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": [
-      "Thursday comes from NWS grid data because the 7-day text forecast doesn't reach it yet. These numbers can still change, so rerun the morning of recording.",
       "No NWS forecast yet for Friday (NWS reaches about 7 days out), so the read stops at Thursday. Rerun the morning of recording to get as many days as possible."
     ]
-  },
-  "menu": {
-    "script": [
-      "Hey RedWolves, here's what's cookin' this week.",
-      "Monday, Hawaiian Sandwich for breakfast. Lunch will be Pulled Pork Burger with Ranch Style Beans, Onion Rings and Burger Salad.",
-      "Tuesday, Kolache for breakfast. Lunch will be Cherry Blossom Chicken with Fried Rice and Egg Roll, along with Carrot Coins and Broccoli with Queso.",
-      "Wednesday, Buttermaple Waffle for breakfast. Lunch will be VIP Turkey with Dinner Roll, along with Mashed Potato with Gravy and Golden Corn.",
-      "Thursday, Pancake on a Stick for breakfast. Lunch will be Chili and Cheese Hot Dog with Tater Tots and Carrot Coins.",
-      "Friday, Assorted Cereal with Cracker for breakfast. Lunch will be Pizza with Wings, along with Baby Carrots and Garden Salad."
-    ],
-    "canva": [
-      "MONDAY",
-      "Breakfast: Hawaiian Sandwich",
-      "Lunch: Pulled Pork Burger, Ranch Style Beans, Onion Rings, Burger Salad",
-      "",
-      "TUESDAY",
-      "Breakfast: Kolache",
-      "Lunch: Cherry Blossom Chicken w/ Fried Rice & Egg Roll, Carrot Coins, Broccoli w/ Queso",
-      "",
-      "WEDNESDAY",
-      "Breakfast: Buttermaple Waffle",
-      "Lunch: VIP Turkey w/ Dinner Roll, Mashed Potato w/ Gravy, Golden Corn",
-      "",
-      "THURSDAY",
-      "Breakfast: Pancake on a Stick",
-      "Lunch: Chili & Cheese Hot Dog, Tater Tots, Carrot Coins",
-      "",
-      "FRIDAY",
-      "Breakfast: Assorted Cereal w/ Cracker",
-      "Lunch: Pizza w/ Wings, Baby Carrots, Garden Salad"
-    ],
-    "days": [
-      {
-        "day": "Monday",
-        "date": "2026-11-16",
-        "breakfast": "Hawaiian Sandwich",
-        "entree": "Pulled Pork Burger",
-        "sides": [
-          "Ranch Style Beans",
-          "Onion Rings",
-          "Burger Salad"
-        ]
-      },
-      {
-        "day": "Tuesday",
-        "date": "2026-11-17",
-        "breakfast": "Kolache",
-        "entree": "Cherry Blossom Chicken w/ Fried Rice & Egg Roll",
-        "sides": [
-          "Carrot Coins",
-          "Broccoli w/ Queso"
-        ]
-      },
-      {
-        "day": "Wednesday",
-        "date": "2026-11-18",
-        "breakfast": "Buttermaple Waffle",
-        "entree": "VIP Turkey w/ Dinner Roll",
-        "sides": [
-          "Mashed Potato w/ Gravy",
-          "Golden Corn"
-        ]
-      },
-      {
-        "day": "Thursday",
-        "date": "2026-11-19",
-        "breakfast": "Pancake on a Stick",
-        "entree": "Chili & Cheese Hot Dog",
-        "sides": [
-          "Tater Tots",
-          "Carrot Coins"
-        ]
-      },
-      {
-        "day": "Friday",
-        "date": "2026-11-20",
-        "breakfast": "Assorted Cereal w/ Cracker",
-        "entree": "Pizza w/ Wings",
-        "sides": [
-          "Baby Carrots",
-          "Garden Salad"
-        ]
-      }
-    ],
-    "sources": [
-      "https://www.lajoyaisdcns.com/downloadMenu.php/0208131445498761/921009"
-    ],
-    "notes": []
   },
   "news": {
     "closures": [],
@@ -219,11 +130,240 @@
     "board": [
       {
         "when": "Wednesday, November 18, 6:00 PM",
-        "title": "Board Meeting",
-        "url": "https://meetings.boardbook.org/Public/Organization/3263",
-        "posted": "",
-        "agenda_pending": true,
-        "items": []
+        "title": "Regular Meeting",
+        "url": "https://meetings.boardbook.org/Public/Agenda/3263?meeting=768953",
+        "posted": "November 12, 2026",
+        "agenda_pending": false,
+        "items": [
+          {
+            "number": "5.1",
+            "text": "Recognition of Parent, Family and Community Liaisons in Observance of National Parent Involvement Day (November 2026), presented by Ms. Anna Marie Candelario, Deputy Chief of Academic Support & School Enrichment",
+            "flagged": false,
+            "student_interest": true
+          },
+          {
+            "number": "5.2",
+            "text": "Recognition of National School Psychologist Week November 9-13, 2026, presented by Ms. Anna Marie Candelario, Deputy Chief of Academic Support & School Enrichment",
+            "flagged": false,
+            "student_interest": true
+          },
+          {
+            "number": "5.3",
+            "text": "Recognition of National Superintendent Day - November 14, 2026, presented by Ms. Blanca Cant\u00fa, Public Relations & Communications Director",
+            "flagged": false,
+            "student_interest": true
+          },
+          {
+            "number": "6.1",
+            "text": "Report on Goals 1-4: TELPAS Benchmark aligned to GPMs for Goals 1, 3 & 4, presented by Dr. Derek Little, Deputy Superintendent",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "6.2",
+            "text": "Report on Goals 1-4: School Action Recommendations for 27-28, presented by Dr. Derek Little, Deputy Superintendent",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "6.3",
+            "text": "Lone Star Governance Time Use Tracker Report - October 14, 2026, presented by Mr. Celso Gomez Jr., School Board Secretary",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "6.4",
+            "text": "Monthly TEA Conservator's Report, presented by Dr. Sylvia Ibarra, TEA Conservator",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.1.1",
+            "text": "Approval of Purchase for Dual Enrollment Textbooks for the Spring 2027 Semester for Jimmy Carter ECHS",
+            "flagged": false,
+            "student_interest": true
+          },
+          {
+            "number": "7.1.2",
+            "text": "Approval of Memorandum of Understanding for Y7 Texas Reading Academies TEA Project with Region One",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.1.3",
+            "text": "Approval of Purchase of a 2023 Ford 12 Passenger Van through Purchasing Cooperatives",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.1.4",
+            "text": "Approval of Dell Chromebooks for CTE Professional Development and Instructional Support through the District-Wide Technology Devices Quotation",
+            "flagged": false,
+            "student_interest": true
+          },
+          {
+            "number": "7.1.5",
+            "text": "Approval of Memorandum of Understanding Between La Joya Independent School District and Diesel Fleet LLC for Career and Technical Education Work-Based Learning Partnership for the 2026-2027 School Year",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.1.6",
+            "text": "Approval of Memorandum of Understanding Between La Joya Independent School District and South Texas Health Systems for Career and Technical Education Work-Based Learning Partnership for the 2026-2027 School Year",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.1.7",
+            "text": "Approval of SAT Exam Purchase for the 2026-2027 School Year Through the Student Testing and Assessment RFP",
+            "flagged": false,
+            "student_interest": true
+          },
+          {
+            "number": "7.1.8",
+            "text": "Approval of 2026-2027 Special Education Program Licenses Renewal and Additional User License to Support the Department's Operational and Instructional Needs through Purchasing Cooperative",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.3.1",
+            "text": "Approval of September 2026 Tax Collectors' Report",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.3.2",
+            "text": "Approval of October 2026 Open Period Budget Transfer Amendments",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.3.3",
+            "text": "2026-2027 District Improvement Plan and Campus Improvement Plans",
+            "flagged": false,
+            "student_interest": true
+          },
+          {
+            "number": "7.4.1",
+            "text": "Approval of T-TESS Appraiser for the 2026-2027 School Year",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.5.1",
+            "text": "Approval of Library Books Recommended",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.6.1",
+            "text": "Approval of Report on Goals 1-4: TELPAS Benchmark Aligned to GPMs for Goals 1, 3 & 4",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.6.2",
+            "text": "Approval of Report on Goals 1-4: School Action Recommendations for 27-28",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.6.3",
+            "text": "Approval of the Lone Star Governance Time Use Tracker Report - October 14, 2026",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.6.4",
+            "text": "Approval of the Lone Star Governance Board Self-Assessment Using the LSG Integrity Instrument",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.7.1",
+            "text": "Approval of Change Order for La Joya ISD Sports Complex Baseball Field Renovations",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.7.2",
+            "text": "Approval of Additional Architectural Services for the District-Wide Entry Door Hardening Project by the Engineering & Architectural Services RFQ #2025-24",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.7.3",
+            "text": "Approval of Change Order to Reorder Key Cores for the District-Wide Entry Door Hardening Project through Purchasing Cooperatives",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.7.4",
+            "text": "Approval of Cooling Tower Replacement at Juarez-Lincoln High School through Purchasing Cooperatives",
+            "flagged": false,
+            "student_interest": true
+          },
+          {
+            "number": "7.7.5",
+            "text": "Approval of Purchase of a 2025 Ford F150 XLT Crew Cab 4x2 through Purchasing Cooperatives",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.8.1",
+            "text": "Approval of Districtwide Exterior Door and Gate Numbering Signage - Furnish and Installation Quotation #2027-809 through Marquees, Signage, Related Supplies & Services RFP",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "7.8.2",
+            "text": "Approval of District-Wide Window Resistant Film Quotation #2027-810 Through Purchasing Cooperative",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "10.1",
+            "text": "2026-2027 Targeted Improvement Plans, Item Lead: Dr. Derek Little, Deputy Superintendent",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "10.2",
+            "text": "Approval of Policy Update AE (Local) - Goal 4 Target and Superintendent Guardrails, Item Lead: Dr. Derek Little, Deputy Superintendent",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "10.3",
+            "text": "Approval of District-Wide Door Renovation/Replacement Project Quotation through Construction Services Job Order Contract (JOC), Item Lead: Mr. Efrain Matamoros, Deputy Chief of Operations & Infrastructure",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "10.4",
+            "text": "Approval of Change Order for Additional Perimeter Access Doors Outside of Entry Area for the District-Wide Entry Door Hardening Project, Item Lead: Mr. Efrain Matamoros, Deputy Chief of Operations & Infrastructure",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "10.5",
+            "text": "Consider and Take Possible Action to Propose Mid-Contract Terminations for Good Cause, Item Lead: Mr. Efrain Garza, Chief of Human Capital & Talent Development",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "10.6",
+            "text": "Consider and Take Possible Action to Propose and Finalize Contract Terminations and Authorize Superintendent to Pursue Sanctions for Contract Abandonment, Item Lead: Mr. Efrain Garza, Chief of Human Capital & Talent Deve...",
+            "flagged": false,
+            "student_interest": false
+          },
+          {
+            "number": "11.1",
+            "text": "December 2, 2026: Special Called Meeting (Student Recognitions)",
+            "flagged": false,
+            "student_interest": true
+          }
+        ]
       }
     ],
     "board_page": "https://meetings.boardbook.org/Public/Organization/3263",

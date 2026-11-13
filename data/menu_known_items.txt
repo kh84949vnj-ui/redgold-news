@@ -1,7 +1,0 @@
-# Menu items that wrap onto two or more lines in the PDF day boxes.
-# If the parser splits one of these, add it here exactly as printed on the PDF
-# (before menu_fixes.csv spelling fixes are applied).
-Chili & Cheese Hot Dog
-Cherry Blossom Chicken
-Cheses Steak Nachos
-Cheese Steak Nachos

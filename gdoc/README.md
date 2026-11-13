@@ -1,8 +1,7 @@
 # Writing into the weekly Google Doc
 
 `Code.gs` is a small Apps Script that lives inside the weekly script doc. The
-prep script sends it the week's block (weather read, menu read, the menu for
-Canva and news leads) and it writes that block between two marker lines:
+prep script sends it the week's block (weather read and news leads) and it writes that block between two marker lines:
 
     ▼ RGN WEEKLY (written automatically, edits between these lines get replaced) ▼
     ...this week's block...

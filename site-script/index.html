@@ -140,7 +140,7 @@ footer p { margin: 4px 0; max-width: 80ch; }
 <main class="wrap">
   <div class="summary" id="summary"></div>
   <div id="banner" class="banner" hidden></div>
-  <p class="intro">Write your part right in its block, with speaker names in brackets like the weekly script doc. It saves as you type, and everyone on the team sees the same script. Weather and menu start from the generated reads; edit them if you need to. Find news leads on the <a href="https://claude.ai/artifact/27TgGXcMsQC494av9TZq5B" target="_blank" rel="noopener">Story Desk</a>.</p>
+  <p class="intro">Write your part right in its block, with speaker names in brackets like the weekly script doc. It saves as you type, and everyone on the team sees the same script. Weather starts from the generated read; edit it if you need to. Find news leads on the <a href="https://claude.ai/artifact/27TgGXcMsQC494av9TZq5B" target="_blank" rel="noopener">Story Desk</a>.</p>
   <ol class="rundown" id="rundown"></ol>
   <footer>
     <p>Reading time is figured at 150 words per minute. The whole episode runs about 3:45 including the show open, bumpers, student voices, menu and outro.</p>
@@ -173,7 +173,7 @@ footer p { margin: 4px 0; max-width: 80ch; }
     { n: 5, key: "weather", name: "Weather", kind: "generated", cam: true, who: "Weather reporter", hint: "On camera with forecast graphics." },
     { n: 6, key: "bumper2", name: "Bumper", kind: "fixed", cue: "CUE BUMPER" },
     { n: 7, key: "voices", name: "Student voices", kind: "note", cue: "CUE STUDENT VOICES", who: "From Google Drive", hint: "List the segments in air order. This is a note for the editor and is not read on air." },
-    { n: 8, key: "menu", name: "Menu", kind: "generated", cam: false, cue: "CUE MENU (VOICEOVER)", who: "ElevenLabs voiceover", hint: "Voiceover with menu graphics. Not read on camera." },
+    { n: 8, key: "menu", name: "Menu", kind: "fixed", cue: "CUE MENU" },
     { n: 9, key: "anchor_close", name: "Anchor close", kind: "write", cam: true, who: "Anchors", hint: "Wrap up and sign off.", ph: "[BOTH]\nThat's it for this week. See you next Monday, RedWolves!" },
     { n: 10, key: "outro", name: "Outro", kind: "fixed", cue: "CUE OUTRO" },
   ];
@@ -191,7 +191,6 @@ footer p { margin: 4px 0; max-width: 80ch; }
   function generated(key) {
     if (!week) return "";
     if (key === "weather") return (week.weather && week.weather.script || []).join("\n");
-    if (key === "menu") return (week.menu && week.menu.script || []).join("\n");
     return "";
   }
   function textFor(key) {
@@ -369,7 +368,6 @@ footer p { margin: 4px 0; max-width: 80ch; }
       const t = s.kind === "fixed" ? "" : (($("seg-" + s.key) || {}).value || "").trim();
       if (s.kind === "fixed") out.push(`[${s.cue}]`);
       else if (s.key === "voices") out.push(`[${s.cue}]` + (t ? "\n" + t : ""));
-      else if (s.key === "menu") out.push(`[${s.cue}]` + (t ? "\n" + t : ""));
       else if (s.key === "weather") out.push("[WEATHER]\n" + (t || "(weather not written yet)"));
       else out.push(t || `(${s.name.toLowerCase()} not written yet)`);
       out.push("");

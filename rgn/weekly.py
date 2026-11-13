@@ -1,17 +1,16 @@
-"""One weekly prep package: menu read, weather read, and the news tip sheet.
+"""One weekly prep package: the weather read and the news tip sheet.
 
 Episodes are recorded Friday or Monday and presented as recorded on Monday, for
 that Monday-Friday week. Run this the day before recording (or that morning):
 
   python -m rgn.weekly                  # episode week (this Monday if today is Monday, else next Monday)
   python -m rgn.weekly --week 2026-11-30
-  python -m rgn.weekly --tts            # also make the menu MP3
-  python -m rgn.weekly --menu-csv FILE  # use your own menu CSV
+  python -m rgn.weekly --gdoc           # also write the week's block into the Google Doc
 
 Writes to output/<monday>/:
   RGN Prep <monday>.docx / .txt  plain doc, all black text
   week.json                      data for the student page (also copied to site/week.json)
-  menu.csv, weather.csv          for Canva Bulk Create
+  weather.csv                    for Canva Bulk Create or weather graphics
 """
 from __future__ import annotations
 
@@ -27,7 +26,6 @@ from docx.shared import Pt, RGBColor
 
 from . import common as c
 from . import events as ev
-from . import menu as mn
 from . import weather as wx
 from .district_calendar import school_week
 
@@ -37,7 +35,7 @@ SITE_DIR = c.ROOT / "site"
 
 # ---------------------------------------------------------------- gather
 
-def collect(monday: dt.date, tts: bool = False, menu_csv: Path | None = None) -> dict:
+def collect(monday: dt.date) -> dict:
     """Everything for the week as plain data (also what the student page reads)."""
     out = c.week_dir(monday)
     week, events = school_week(monday)
@@ -70,27 +68,6 @@ def collect(monday: dt.date, tts: bool = False, menu_csv: Path | None = None) ->
         }
     except Exception as ex:
         data["weather"] = {"error": f"Weather failed: {ex}. Check forecast.weather.gov for La Joya, TX."}
-
-    try:
-        m = mn.build(week, menu_csv)
-        mn.write_outputs(m, out)
-        data["menu"] = {
-            "script": m.script_lines,
-            "canva": mn.canva_lines(m.days),
-            "days": [
-                {"day": c.DAY_NAMES[d.date.weekday()], "date": d.date.isoformat(), "breakfast": d.breakfast,
-                 "entree": d.entree, "sides": d.sides}
-                for d in m.days
-            ],
-            "sources": m.sources,
-            "notes": m.notes,
-        }
-        if tts and m.lines:
-            from .tts import synthesize
-
-            data["menu"]["mp3"] = synthesize(m.script, out / "menu_read.mp3").name
-    except Exception as ex:
-        data["menu"] = {"error": f"Menu failed: {ex}. Check {c.CNS_BASE} for the menu PDF."}
 
     try:
         t = ev.build(week, events)
@@ -187,24 +164,6 @@ def write_doc(data: dict, path: Path) -> None:
         for n in w["notes"]:
             d.para(f"Note: {n}")
 
-    m = data["menu"]
-    d.heading("Menu read (voiceover)")
-    if "error" in m:
-        d.para(m["error"])
-    else:
-        for line in m["script"] or ["(no school days with a menu this week)"]:
-            d.para(line)
-        if m.get("canva"):
-            d.para("Menu for Canva (paste into the menu graphic)", bold=True)
-            for line in m["canva"]:
-                d.para(line)
-        for s in m["sources"]:
-            d.para(f"Source: {s}")
-        for n in m["notes"]:
-            d.para(f"Note: {n}")
-        if m.get("mp3"):
-            d.para(f"Voiceover saved: {m['mp3']}")
-
     n = data["news"]
     d.heading("News block tip sheet")
     d.para("Leads only. Students verify every item and write the final script. Flagged items get no draft.")
@@ -242,9 +201,9 @@ def write_doc(data: dict, path: Path) -> None:
     d.save(path)
 
 
-def run(monday: dt.date, tts: bool = False, menu_csv: Path | None = None) -> Path:
+def run(monday: dt.date) -> Path:
     out = c.week_dir(monday)
-    data = collect(monday, tts, menu_csv)
+    data = collect(monday)
     path = out / f"RGN Prep {monday.isoformat()}.docx"
     write_doc(data, path)
     (out / "week.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -256,11 +215,9 @@ def run(monday: dt.date, tts: bool = False, menu_csv: Path | None = None) -> Pat
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--week", help="any date in the target week (default: the episode week)")
-    ap.add_argument("--tts", action="store_true", help="make the menu MP3 with ElevenLabs")
-    ap.add_argument("--menu-csv", type=Path, help="menu CSV to use instead of the district PDF")
     ap.add_argument("--gdoc", action="store_true", help="also write this week's block into the weekly Google Doc")
     args = ap.parse_args()
-    path = run(c.parse_week(args.week), tts=args.tts, menu_csv=args.menu_csv)
+    path = run(c.parse_week(args.week))
     print("Saved", path)
     if args.gdoc:
         from .gdoc import send

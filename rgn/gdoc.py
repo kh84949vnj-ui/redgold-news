@@ -29,7 +29,7 @@ CUES = [
     ("weather", "[WEATHER]"),
     ("bumper2", "[CUE BUMPER]"),
     ("voices", "[CUE STUDENT VOICES]"),
-    ("menu", "[CUE MENU (VOICEOVER)]"),
+    ("menu", "[CUE MENU]"),
     ("anchor_close", None),
     ("outro", "[CUE OUTRO]"),
 ]
@@ -39,11 +39,9 @@ def build_lines(week: dict, segments: dict | None = None) -> list:
     """Lines for the doc block, in the same layout as the weekly script doc."""
     segments = segments or {}
     weather = segments.get("weather") or "\n".join((week.get("weather") or {}).get("script") or [])
-    menu = week.get("menu") or {}
-    menu_read = segments.get("menu") or "\n".join(menu.get("script") or [])
     out: list = [
         {"text": f"[EPISODE OF {week['episode_label'].upper()}]", "kind": "tag"},
-        f"Updated {week['generated_label']}. Weather from the National Weather Service; menu from LJISD Child Nutrition.",
+        f"Updated {week['generated_label']}. Weather from the National Weather Service.",
         "",
     ]
 
@@ -53,7 +51,8 @@ def build_lines(week: dict, segments: dict | None = None) -> list:
 
     if segments:  # whole episode from the script page
         for key, cue in CUES:
-            text = {"weather": weather, "menu": menu_read}.get(key, segments.get(key, ""))
+            # The menu segment comes from a separate project; it's just a cue here.
+            text = weather if key == "weather" else ("" if key == "menu" else segments.get(key, ""))
             if cue:
                 out.append(cue)
             if text.strip():
@@ -64,14 +63,6 @@ def build_lines(week: dict, segments: dict | None = None) -> list:
     else:  # generated parts only
         out.append("[WEATHER]")
         block(weather or "(no forecast this week)")
-        out.append("")
-        out.append("[CUE MENU (VOICEOVER)]")
-        block(menu_read or "(no menu this week)")
-        out.append("")
-
-    if menu.get("canva"):
-        out.append({"text": "[MENU FOR CANVA]", "kind": "tag"})
-        out += menu["canva"]
         out.append("")
 
     news = week.get("news") or {}

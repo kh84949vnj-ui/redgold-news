@@ -24,11 +24,6 @@ TZ = ZoneInfo("America/Chicago")
 LAT = float(os.getenv("RGN_LAT", "26.2470"))
 LON = float(os.getenv("RGN_LON", "-98.4814"))
 
-# Which menu the school uses on lajoyaisdcns.com (link text on the Menus page).
-MENU_LABEL = os.getenv("RGN_MENU_LABEL", "High School Menu")
-
-CNS_BASE = "https://www.lajoyaisdcns.com"
-CNS_SID = "0208131445498761"
 DISTRICT_BASE = "https://www.lajoyaisd.com"
 DISTRICT_CALENDAR_ID = 145985  # "LJISD Calendar" on the ParentSquare site
 BOARDBOOK_ORG = 3263
