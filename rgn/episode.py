@@ -208,7 +208,7 @@ def next_break(week: dict) -> dict | None:
 
 
 # Short reactions the other anchor can toss in after a story. Cheers and
-# thanks only, never a new fact. At most two per episode so it stays light.
+# thanks only, never a new fact. At most one per episode so it stays light.
 REACTIONS = [
     (r"education support|custodian|bus driver|cafeteria|nutrition", ["Shout out to everyone who keeps our campuses running.", "They really do keep everything going."]),
     (r"substitute", ["Subs, we see you. Thank you!", "Big thanks to all our subs."]),
@@ -319,10 +319,10 @@ def build_script(week: dict, board_picks=None) -> str:
             fact = linked_fact(it, prev, last) + (f" [{it['verify']}]" if it["verify"] else "")
             parts += [fact, it["context"]]
             prev = it
-            # One quick reaction from the co-anchor per run (two per episode),
-            # after a story in the middle of a run, then the reader goes on.
+            # At most one quick reaction from the co-anchor per episode, after
+            # the first story of a run, then the reader goes on.
             other = 2 if anchor == 1 else 1
-            line = _reaction(it, pick) if reacted < 2 and k < len(run) - 1 and k == 0 else ""
+            line = _reaction(it, pick) if reacted < 1 and k < len(run) - 1 and k == 0 else ""
             if line:
                 say(anchor, *parts)
                 say(other, line)

@@ -80,10 +80,10 @@ class EpisodeScript(unittest.TestCase):
         news = self.script.split("[CUE INTRO SEQUENCE]")[1].split("[CUE BUMPER]")[0]
         turns = news.count("[ANCHOR 1]\n") + news.count("[ANCHOR 2]\n")
         self.assertLessEqual(turns, 8, news)
-        # A little co-anchor banter, but no more than two quick reactions.
+        # A little co-anchor banter, but only one quick reaction.
         reactions = [p for p in news.split("\n\n") if p.strip().startswith("[ANCHOR") and len(p.split()) <= 12]
         self.assertGreaterEqual(len(reactions), 1, news)
-        self.assertLessEqual(len(reactions), 2, news)
+        self.assertLessEqual(len(reactions), 1, news)
         self.assertIn("Then on Thursday", news)
 
     def test_has_the_rundown(self):
