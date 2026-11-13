@@ -75,6 +75,17 @@ flagged items (personnel, safety and similar) can't be added, and long items
 get a `[SIMPLIFY]` note so a student puts them in their own words. If the
 agenda isn't posted yet, there's an option to just mention the meeting.
 
+### Updating the draft
+
+**Update this week's draft** (start page, or **More** in the editor) opens the
+GitHub page that runs the weekly update: click **Run workflow** there. In about
+two minutes the new draft appears in the prompter by itself (or as the gold
+banner, if the script was edited). The same update also runs on its own every
+Friday at 6:47 AM and Sunday at 6:47 PM Central
+(`.github/workflows/weekly.yml`). Board items picked on the Story Desk are
+only added when Claude runs the update; otherwise use the board panel in the
+News rundown editor.
+
 ### Prompt
 
 The prompter shows real names and hides notes like `[VERIFY]` (turn them on

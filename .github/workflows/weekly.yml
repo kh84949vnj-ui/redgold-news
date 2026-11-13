@@ -1,0 +1,48 @@
+name: Update this week's draft
+# Runs the weekly scraper and publishes the new drafts to the prompter.
+# Start it from the prompter's "Update this week's draft" button (it opens
+# this page: click "Run workflow"), or let the schedule run it.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "47 12 * * 5"   # Friday 6:47 AM Central (7:47 during daylight time)
+    - cron: "47 0 * * 1"    # Sunday 6:47 PM Central, fresh weather before Monday
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: weekly-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+      - name: Draft this week's scripts
+        run: python -m rgn.weekly
+      - name: Publish the drafts
+        run: |
+          git config user.name "Red Gold News"
+          git config user.email "noreply@users.noreply.github.com"
+          git add prompter/scripts/current.json site/week.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed since the last draft."
+          else
+            git commit -m "Weekly draft update ($(date -u +%Y-%m-%d))"
+            git push
+          fi
+      - name: Ask GitHub Pages to republish
+        # Pushes made by this workflow don't always start a Pages build on their own.
+        continue-on-error: true
+        run: |
+          curl -sS -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds"

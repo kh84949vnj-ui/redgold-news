@@ -420,6 +420,8 @@ if (TALENT) {
     refreshDocUI();
   };
   $("openEdit").onclick = () => setView("edit");
+  $("btnUpdate").onclick = requestUpdate;
+  $("btnUpdate2").onclick = requestUpdate;
   // Who's on air
   const nameIds = { a1: "nameA1", a2: "nameA2", wx: "nameWx" };
   for (const [k, id] of Object.entries(nameIds)) {
@@ -503,6 +505,35 @@ async function fetchPublished() {
 function getMeta(d = doc) { return store.get("meta-" + d, {}); }
 function setMeta(m, d = doc) { store.set("meta-" + d, m); }
 function note(text) { const n = $("edNote"); if (n) n.textContent = text || ""; }
+
+// "Update this week's draft": opens the GitHub page that runs the weekly
+// update (click "Run workflow" there), then watches for the new draft for a
+// few minutes so it shows up here without reloading.
+const UPDATE_URL = "https://github.com/kh84949vnj-ui/redgold-news/actions/workflows/weekly.yml";
+let watchTimer = null;
+function updateNote(text) {
+  $("updateNote").textContent = text || "";
+  if (text) note(text);
+}
+function requestUpdate() {
+  window.open(UPDATE_URL, "_blank", "noopener");
+  const before = published && published.generated;
+  const until = Date.now() + 6 * 60 * 1000;
+  updateNote("On GitHub, click “Run workflow”. The new draft shows up here in about 2 minutes.");
+  clearInterval(watchTimer);
+  watchTimer = setInterval(async () => {
+    const pub = await fetchPublished();
+    if (pub && pub.generated !== before) {
+      clearInterval(watchTimer);
+      published = pub;
+      if (doc) reconcile(); else refreshDocUI();
+      updateNote(`Updated: draft from ${pub.generated_label}.`);
+    } else if (Date.now() > until) {
+      clearInterval(watchTimer);
+      updateNote("No new draft yet. Check that the run finished on GitHub, then reload this page.");
+    }
+  }, 20000);
+}
 
 /** Load this week's draft into the current script (news or weather). */
 function usePublished() {
