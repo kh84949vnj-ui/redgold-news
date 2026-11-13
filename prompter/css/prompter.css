@@ -1,0 +1,114 @@
+/* RGN Prompter. The stage is always white on black, the studio convention.
+   The operator chrome is dark too so it doesn't light up the set. */
+:root {
+  --bg: #0b0a0a;
+  --chrome: #161314;
+  --chrome-2: #221d1e;
+  --line: #3a3233;
+  --ink: #f3eeea;
+  --muted: #a39897;
+  --red: #d64557;
+  --gold: #e3b341;
+  --ok: #6fcf8a;
+  --warn: #ffb35c;
+  --stage-bg: #000;
+  --stage-ink: #fff;
+  --read-ink: #6f6f6f;
+  --size: 56px;
+  --width: 30ch;
+  --eye: 33%;
+  --body: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --stage-font: -apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.4 var(--body); display: flex; flex-direction: column; overflow: hidden; }
+[hidden] { display: none !important; }
+button, select, input { font: inherit; color: inherit; }
+button { background: var(--chrome-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; min-height: 36px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* Top bar */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: calc(8px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); background: var(--chrome); border-bottom: 1px solid var(--line); }
+.brand { font-weight: 800; letter-spacing: .08em; color: var(--gold); }
+.brand span { color: var(--ink); font-weight: 600; letter-spacing: .02em; }
+.bar-main, .bar-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bar-side { margin-left: auto; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: transparent; }
+.seg button[aria-pressed="true"] { background: var(--gold); color: #111; font-weight: 600; }
+.pill { font: 600 12px var(--mono); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill[data-state="following"] { color: var(--ok); border-color: var(--ok); }
+.pill[data-state="holding"] { color: var(--warn); border-color: var(--warn); }
+.pill[data-state="loading"] { color: var(--gold); border-color: var(--gold); }
+.pill[data-state="error"] { color: #fff; background: var(--red); border-color: var(--red); }
+.meter { width: 64px; height: 8px; border-radius: 4px; background: var(--chrome-2); overflow: hidden; border: 1px solid var(--line); }
+.meter i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .08s linear; }
+
+.heard { display: flex; gap: 10px; align-items: baseline; padding: 4px max(12px, env(safe-area-inset-right, 0px)) 4px max(12px, env(safe-area-inset-left, 0px)); background: var(--chrome); border-bottom: 1px solid var(--line); font: 13px var(--mono); color: var(--muted); min-height: 26px; }
+.heard-label { text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+.heard-text { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; direction: rtl; text-align: left; flex: 1; min-width: 0; }
+.status-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
+
+/* Stage */
+.stage { position: relative; flex: 1; min-height: 0; background: var(--stage-bg); color: var(--stage-ink); overflow: hidden; }
+.stage-scroll { position: absolute; inset: 0; overflow: hidden; }
+.stage-text { width: min(var(--width), 100% - 48px); margin: 0 auto; font: 600 var(--size)/1.32 var(--stage-font); will-change: transform; padding-bottom: 80vh; }
+.stage.mirror .stage-scroll { transform: scaleX(-1); }
+.stage.caps .stage-text { text-transform: uppercase; }
+.stage-text p { margin: 0 0 .55em; }
+.stage-text .w { cursor: default; }
+body:not(.talent) .stage-text .w { cursor: pointer; }
+.stage-text .w.read { color: var(--read-ink); }
+.stage-text .w.note, .stage-text .note { color: var(--gold); font: 600 .38em var(--mono); letter-spacing: .04em; vertical-align: middle; }
+.stage-text .note { display: block; margin: .6em 0; }
+.stage-text .tag { font: 700 .42em var(--mono); color: var(--gold); letter-spacing: .1em; margin: 1.3em 0 .25em; }
+.stage-text .cue { font: 700 .5em var(--mono); color: var(--gold); letter-spacing: .08em; text-align: center; border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold); padding: .45em 0; margin: 1.1em 0; }
+.stage-text .end { font: 700 .45em var(--mono); color: var(--muted); text-align: center; margin-top: 2em; }
+.eyeline { position: absolute; left: 0; right: 0; top: var(--eye); height: 0; border-top: 3px solid var(--red); opacity: .75; z-index: 2; pointer-events: none; }
+.eyeline::before { content: ""; position: absolute; left: max(6px, env(safe-area-inset-left, 0px)); top: -12px; border: 10px solid transparent; border-left: 15px solid var(--red); }
+.empty { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; padding: 24px; color: var(--muted); }
+.empty h1 { color: var(--ink); font-size: 26px; margin: 0 0 8px; }
+.empty p { max-width: 46ch; margin: 0 auto; }
+
+/* Settings panel */
+.panel { position: absolute; right: max(10px, env(safe-area-inset-right, 0px)); top: 110px; width: min(380px, calc(100% - 20px)); max-height: calc(100% - 130px); overflow: auto; background: var(--chrome); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 6px 0 10px; }
+.panel h2 + .row { margin-top: 0; }
+.row { display: grid; grid-template-columns: 7.5em 1fr 3.5em; align-items: center; gap: 8px; margin: 8px 0; }
+.row.col { grid-template-columns: 1fr; gap: 4px; }
+.row output { font: 12px var(--mono); color: var(--muted); text-align: right; }
+.row select { background: var(--chrome-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px; width: 100%; }
+.check { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.fine { font-size: 13px; color: var(--muted); }
+code { font: 12px var(--mono); color: var(--gold); }
+
+/* Script dialog */
+dialog { background: var(--chrome); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; width: min(760px, calc(100% - 24px)); padding: 0; }
+dialog::backdrop { background: rgba(0,0,0,.6); }
+.dlg { padding: 16px; display: grid; gap: 10px; }
+.dlg h2 { margin: 0; font-size: 18px; }
+.dlg textarea { width: 100%; background: #000; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 14px/1.45 var(--mono); resize: vertical; }
+.dlg-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+.file { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* Talent view: just the text. Tap shows nothing; F or double-tap for full screen. */
+body.talent .bar, body.talent .heard, body.talent .panel, body.talent .empty { display: none; }
+
+/* "Talent mode" in the operator page (iPad alone): hide chrome until tapped. */
+body.solo .bar, body.solo .heard { display: none; }
+body.solo.show-chrome .bar, body.solo.show-chrome .heard { display: flex; }
+
+@media (max-width: 760px) {
+  .bar-side { margin-left: 0; }
+  .status-text { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meter i { transition: none; }
+}
