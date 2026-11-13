@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-12T21:53-06:00",
-  "generated_label": "Thursday, November 12 at 9:53 PM",
+  "generated": "2026-11-13T09:10-06:00",
+  "generated_label": "Friday, November 13 at 9:10 AM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -51,11 +51,12 @@
   ],
   "weather": {
     "script": [
-      "Let's take a look at the weather through Thursday!",
-      "We're starting the week off mild on Monday, with a high of 74 degrees, partly sunny skies, a morning low of 65, and a 15 percent chance of rain showers.",
-      "Tuesday stays about the same, with a high of 72, partly sunny skies, a morning low of 59, and no rain expected.",
-      "Wednesday warms up to 75 degrees, with mostly cloudy skies, a morning low of 62, and no rain expected.",
-      "Thursday warms up to 80 degrees, with mostly cloudy skies, a morning low of 67, and an 18 percent chance of rain showers later in the day.",
+      "Let's take a look at this week's weather forecast!",
+      "We're starting the week off mild on Monday, with a high of 74 degrees. Expect partly sunny skies, a morning low of 65, and a 14 percent chance of rain.",
+      "Tuesday stays about the same, with a high of 72. Expect partly sunny skies, a morning low of 59, and no rain.",
+      "Wednesday warms up to 76 degrees. Expect partly sunny skies, a morning low of 62, and no rain.",
+      "Thursday warms up to 80 degrees. Expect mostly cloudy skies, a morning low of 67, and an 11 percent chance of rain.",
+      "Friday warms up to 83 degrees. Expect mostly cloudy skies, a morning low of 69, and no rain.",
       "Have a great week, RedWolves!"
     ],
     "days": [
@@ -64,8 +65,8 @@
         "date": "2026-11-16",
         "high": 74,
         "low": 65,
-        "rain": 15,
-        "conditions": "Slight Chance Rain Showers then Partly Sunny",
+        "rain": 14,
+        "conditions": "Partly Sunny",
         "available": true,
         "extended": false
       },
@@ -74,7 +75,7 @@
         "date": "2026-11-17",
         "high": 72,
         "low": 59,
-        "rain": 6,
+        "rain": 5,
         "conditions": "Partly Sunny",
         "available": true,
         "extended": false
@@ -82,10 +83,10 @@
       {
         "day": "Wednesday",
         "date": "2026-11-18",
-        "high": 75,
+        "high": 76,
         "low": 62,
-        "rain": 5,
-        "conditions": "Mostly Cloudy",
+        "rain": 3,
+        "conditions": "Partly Sunny",
         "available": true,
         "extended": false
       },
@@ -94,27 +95,27 @@
         "date": "2026-11-19",
         "high": 80,
         "low": 67,
-        "rain": 18,
-        "conditions": "Mostly Cloudy then Slight Chance Rain Showers",
+        "rain": 11,
+        "conditions": "Mostly Cloudy",
         "available": true,
         "extended": false
       },
       {
         "day": "Friday",
         "date": "2026-11-20",
-        "high": null,
-        "low": null,
-        "rain": null,
-        "conditions": "",
-        "available": false,
-        "extended": false
+        "high": 83,
+        "low": 69,
+        "rain": 5,
+        "conditions": "mostly cloudy",
+        "available": true,
+        "extended": true
       }
     ],
-    "updated": "Thursday, November 12 at 9:45 PM",
+    "updated": "Friday, November 13 at 9:00 AM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": [
-      "No NWS forecast yet for Friday (NWS reaches about 7 days out), so the read stops at Thursday. Rerun the morning of recording to get as many days as possible."
+      "Friday comes from NWS grid data because the 7-day text forecast doesn't reach it yet. These numbers can still change, so rerun the morning of recording."
     ]
   },
   "news": {

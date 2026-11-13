@@ -54,13 +54,55 @@ def _show_name(title: str) -> str:
     return re.sub(r"\s*(public\s+)?(school\s+)?shows?\s*(\(.*\))?$", "", title, flags=re.I).strip() or title
 
 
-def news_lines(week: dict) -> list[tuple[str, str]]:
-    """[(kind, text)] where kind is 'read' or 'note'."""
-    news = week.get("news") or {}
-    out: list[tuple[str, str]] = []
-    leads = [l for l in news.get("leads", []) if l.get("date")]
+# One plain line explaining observances the calendar lists often. Only facts
+# about what the day is; nothing about specific people or events.
+OBSERVANCES = [
+    (r"education support professional", "It's a day to thank the people who keep our schools running, like custodians, cafeteria workers, and bus drivers."),
+    (r"substitute", "Substitute teachers step in when our teachers are out, and they help keep our classes going."),
+    (r"parent(al)? involvement", "It's a day to thank the parents and families who help out at school and at home."),
+    (r"veteran", "It's a day to honor the people who served in our military."),
+    (r"\bste(a)?m\b", "It celebrates science, technology, engineering, art, and math."),
+    (r"superintendent", "It's a day to recognize the leader of our school district."),
+    (r"principal", "It's a day to thank the principals who lead our campuses."),
+    (r"counselor", "It's a day to thank the counselors who help students every day."),
+    (r"school nurse|nurses", "It's a day to thank the nurses who keep us healthy at school."),
+    (r"teacher appreciation|teachers'? day", "It's a time to thank the teachers who help us learn every day."),
+    (r"custodian", "It's a day to thank the custodians who keep our campuses clean."),
+    (r"bus driver|transportation", "It's a day to thank the drivers who get us to school safely."),
+    (r"school lunch|nutrition|cafeteria", "It's a time to thank the cafeteria staff who serve us every day."),
+    (r"librar", "It's a time to celebrate our libraries and the people who run them."),
+    (r"coach", "It's a day to thank the coaches who help our athletes grow."),
+    (r"kindness", "It's a good reminder to be kind to the people around you."),
+]
 
-    # Group events that repeat (several showings of one musical).
+# What to say after a timed event, by kind of event. Encouragement only.
+EVENT_KIND = [
+    (r"musical|theat|play\b", "If you like theater, it's a great way to support our students."),
+    (r"concert|choir|band|orchestra|mariachi|folkl[oó]rico|conjunto|music", "It's a great way to support our student musicians."),
+    (r"\bvs\.?\b|game|tournament|meet\b", "Come out and cheer on our teams."),
+    (r"walk|run\b|5k", "It's a great way to get moving with our community."),
+    (r"art|exhibit|chalk", "It's a fun way to see what our student artists can do."),
+]
+
+
+def _observance_line(title: str) -> str:
+    for pat, line in OBSERVANCES:
+        if re.search(pat, title, re.I):
+            return line
+    return ""
+
+
+def _event_line(title: str) -> str:
+    for pat, line in EVENT_KIND:
+        if re.search(pat, title, re.I):
+            return line
+    return "It's a good chance to support our students."
+
+
+def news_items(week: dict) -> list[dict]:
+    """[{kind: "read"|"flag", fact, context, verify}] from the calendar leads."""
+    news = week.get("news") or {}
+    leads = [l for l in news.get("leads", []) if l.get("date")]
     groups: dict[str, list[dict]] = {}
     order: list[str] = []
     for l in leads:
@@ -70,25 +112,39 @@ def news_lines(week: dict) -> list[tuple[str, str]]:
             order.append(key)
         groups[key].append(l)
 
+    items = []
     for key in order:
-        items = groups[key]
-        first = items[0]
-        if any(l.get("flagged") for l in items):
-            out.append(("note", f"FLAGGED: {first['title']}. See the adviser before covering this."))
+        group = groups[key]
+        first = group[0]
+        if any(l.get("flagged") for l in group):
+            items.append({"kind": "flag", "fact": f"FLAGGED: {first['title']}. See the adviser before covering this."})
             continue
         day = DAY[_d(first["date"]).weekday()]
-        if not first.get("time"):  # all-day observance like "National STEM Day"
-            out.append(("read", f"{day} is {key}."))
+        if not first.get("time"):  # an all-day observance
+            items.append({"kind": "read", "fact": f"{day} is {key}.", "context": _observance_line(key), "verify": ""})
             continue
-        times = []
-        for l in items:
-            dd = DAY[_d(l["date"]).weekday()]
-            times.append(f"{dd} at {_say_time(l['time'])}")
-        name = key if key.lower().startswith("the ") else "The " + key
-        verb = "has showings" if len(items) > 1 else "is"
-        sentence = f"{name} {verb} {_join(times)}"
-        out.append(("read", sentence if sentence.endswith(".") else sentence + "."))
-        out.append(("note", "VERIFY: location"))
+        name = key if key.lower().startswith("the ") else "the " + key
+        times = [f"{DAY[_d(l['date']).weekday()]} at {_say_time(l['time'])}" for l in group]
+        if len(group) > 1:
+            fact = f"You can catch {name} {_join(times)}"
+            fact = fact if fact.endswith(".") else fact + "."
+        else:
+            fact = f"{name[0].upper() + name[1:]} is {times[0]}"
+            fact = fact if fact.endswith(".") else fact + "."
+        items.append({"kind": "read", "fact": fact, "context": _event_line(key), "verify": "VERIFY: location"})
+    return items
+
+
+# Kept for older callers: flat (kind, text) pairs.
+def news_lines(week: dict) -> list[tuple[str, str]]:
+    out = []
+    for it in news_items(week):
+        if it["kind"] == "flag":
+            out.append(("note", it["fact"]))
+        else:
+            out.append(("read", it["fact"]))
+            if it["verify"]:
+                out.append(("note", it["verify"]))
     return out
 
 
@@ -120,57 +176,98 @@ def next_break(week: dict) -> dict | None:
     return {"reason": reason, "first": first, "last": last, "back": back}
 
 
+# Phrase banks. One is picked per episode from the episode date, so reruns in
+# the same week give the same words and each week sounds a little different.
+GREETINGS = ["Good morning, RedWolves!", "Good morning, and welcome to the RGN!", "Hey, RedWolves, good morning!"]
+PREVIEWS = [
+    "Coming up, we've got school news, your weather, and Student Voices.",
+    "Today we have school news, the forecast, and Student Voices.",
+    "Stick with us for school news, the weather, and Student Voices.",
+]
+NEWS_STARTS = ["Let's get into the news.", "Let's start with what's happening this week.", "First up, here's what's going on."]
+HANDOFFS = ["Thanks, [ANCHOR {other}].", "Thanks, [ANCHOR {other}].", "That's right, [ANCHOR {other}]."]
+WEATHER_TOSS = [
+    "After the break, [WEATHER REPORTER] has your forecast. Stick around.",
+    "Stay with us. [WEATHER REPORTER] has the weather after the break.",
+    "Up next, [WEATHER REPORTER] with the weather. Don't go anywhere.",
+]
+SIGN_OFFS = ["Have a great week, and go RedWolves!", "Have a great week, RedWolves!", "Make it a great week, RedWolves!"]
+
+
 def build_script(week: dict) -> str:
+    import random
+
+    rnd = random.Random(int(week["episode_date"].replace("-", "")))
+    pick = lambda bank: bank[rnd.randrange(len(bank))]
     out: list[str] = []
     add = out.append
     brk = next_break(week)
+    items = news_items(week)
 
-    # Anchor open
-    add("[BOTH]")
+    def say(anchor: int, *lines: str) -> None:
+        add(f"[ANCHOR {anchor}]")
+        add(" ".join(l for l in lines if l))
+        add("")
+
+    # ---- Anchor open: both anchors, a hook from the calendar, a preview.
     if week.get("prior_break"):
-        add(f"Hello RedWolves, I'm [ANCHOR 1] and I'm [ANCHOR 2]. Welcome back from {week['prior_break']}, "
-            "and welcome to another episode of the RGN. Here's what you need to know.")
+        hook = f"Welcome back from {week['prior_break']}. We hope you got some rest."
+    elif brk:
+        hook = f"It's the last week before {brk['reason']}, and we have a lot to cover."
+    elif len(items) >= 3:
+        hook = "It's a busy week in La Joya ISD, so let's get right to it."
     else:
-        add("Hello RedWolves, I'm [ANCHOR 1] and I'm [ANCHOR 2]. Welcome to another episode of the RGN. "
-            "Here's what you need to know.")
-    add("")
+        hook = "Here's what you need to know this week."
+    say(1, pick(GREETINGS), "I'm [ANCHOR 1].")
+    say(2, "And I'm [ANCHOR 2].", hook, pick(PREVIEWS))
     add("[CUE INTRO SEQUENCE]")
     add("")
 
-    # News block, alternating anchors
+    # ---- News: each story is a fact plus one plain line about why it matters.
     anchor = 1
-    def read(text: str) -> None:
-        nonlocal anchor
-        add(f"[ANCHOR {anchor}]")
-        add(text)
-        add("")
+    first = True
+    reads = [it for it in items if it["kind"] == "read"]
+    for it in items:
+        if it["kind"] == "flag":
+            add(f"[{it['fact']}]")
+            add("")
+            continue
+        lead = pick(NEWS_STARTS) if first else ""
+        hand = ""
+        if not first and it is reads[min(2, len(reads) - 1)]:
+            hand = pick(HANDOFFS).format(other=1 if anchor == 2 else 2)  # one handoff mid-block
+        fact = it["fact"] + (f" [{it['verify']}]" if it["verify"] else "")
+        say(anchor, hand, lead, fact, it["context"])
         anchor = 2 if anchor == 1 else 1
+        first = False
 
     if (cl := closures_line(week)):
-        read(cl)
-    for kind, text in news_lines(week):
-        if kind == "note":
-            # VERIFY notes go at the end of the read they belong to; other notes
-            # (flagged topics) stand alone. Either way they're shown, never read.
-            if text.startswith("VERIFY") and out and out[-1] == "" and len(out) >= 2 and not out[-2].startswith("["):
-                out[-2] = out[-2] + f" [{text}]"
-            else:
-                add(f"[{text}]")
-                add("")
-            continue
-        read(text)
+        say(anchor, cl)
+        anchor = 2 if anchor == 1 else 1
     if brk:
-        read(f"Mark your calendars: next week is {brk['reason']}. There's no school "
-             f"{_long_date(brk['first'])}, through {_long_date(brk['last'])}. "
-             f"Classes start back up {_long_date(brk['back'])}.")
-    read("[ADD CAMPUS STORY: Jimmy Carter news or an RGN package]")
-    read("Now on with the show.")
+        say(anchor, "Mark your calendars.",
+            f"Next week is {brk['reason']}, so there's no school {_long_date(brk['first'])}, "
+            f"through {_long_date(brk['last'])}.",
+            f"Classes start back up {_long_date(brk['back'])}.")
+        anchor = 2 if anchor == 1 else 1
+    add(f"[ANCHOR {anchor}]")
+    add("[ADD CAMPUS STORY: Jimmy Carter news or an RGN package]")
+    add("")
+    anchor = 2 if anchor == 1 else 1
+    say(anchor, pick(WEATHER_TOSS))
 
     add("[CUE BUMPER]")
     add("")
+
+    # ---- Weather (its own script on the start page).
     add("[WEATHER]")
     wx = (week.get("weather") or {}).get("script") or []
-    out.extend(wx or ["[ADD: weather read]"])
+    if wx:
+        # The reporter's name goes in front of the forecast's own opener.
+        add("Good morning, RedWolves! I'm [WEATHER REPORTER]. " + wx[0])
+        out.extend(wx[1:])
+    else:
+        add("[ADD: weather read]")
     add("")
     add("[CUE BUMPER]")
     add("")
@@ -179,28 +276,21 @@ def build_script(week: dict) -> str:
     add("[CUE MENU]")
     add("")
 
-    # Close
+    # ---- Close: a quick reminder and the sign-off.
     if brk:
+        say(1, "That's it for this week's RGN.",
+            f"Remember, there's no school next week for {brk['reason']}.",
+            f"We'll see you back on {brk['back'].strftime('%B')} {brk['back'].day}.")
         holiday = re.sub(r"\s*break$", "", brk["reason"], flags=re.I).strip()
-        add("[ANCHOR 1]")
-        add(f"That's all for this week. Enjoy your {brk['reason']}, and we'll see you back on "
-            f"{brk['back'].strftime('%B')} {brk['back'].day}.")
-        add("")
-        add("[ANCHOR 2]")
-        add(f"Have a safe and happy {holiday}, RedWolves!" if holiday else "Have a safe and happy break, RedWolves!")
-        add("")
-        add("[BOTH]")
-        add("See you after the break!")
+        say(2, "Thanks for watching.",
+            f"Have a safe and happy {holiday}, RedWolves!" if holiday else "Have a safe and happy break, RedWolves!")
     else:
-        add("[ANCHOR 1]")
-        add("That's all for this week.")
-        add("")
-        add("[ANCHOR 2]")
-        add("Have a great week, RedWolves!")
-        add("")
-        add("[BOTH]")
-        add("See you next Monday!")
-    add("")
+        timed = [it for it in reads if it["verify"]]
+        reminder = ""
+        if timed:
+            reminder = "Don't forget, " + timed[0]["fact"][0].lower() + timed[0]["fact"][1:]
+        say(1, "That's it for this week's RGN.", reminder)
+        say(2, "Thanks for watching.", pick(SIGN_OFFS))
     add("[CUE OUTRO]")
     return "\n".join(out).strip() + "\n"
 

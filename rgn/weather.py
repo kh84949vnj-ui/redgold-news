@@ -252,8 +252,11 @@ def narrative(days: list[DayForecast]) -> list[str]:
                 lead = f"{name} cools down to {f.high} degrees"
             else:
                 lead = f"{name} stays about the same, with a high of {f.high}"
-        glue = ", " if " with " in lead else ", with "
-        lines.append(f"{lead}{glue}{_list(details)}.")
+        # Two short sentences per day reads easier on camera than one long one:
+        # "Tuesday warms up to 80 degrees. Expect cloudy skies, a morning low
+        # of 67, and an 18 percent chance of rain."
+        details = [("no rain" if d == "no rain expected" else d) for d in details]
+        lines.append(f"{lead}. Expect {_list(details)}.")
         prev = f
     return lines
 
