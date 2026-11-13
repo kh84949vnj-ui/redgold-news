@@ -63,6 +63,7 @@ function applySettings() {
     $("setWidth").value = settings.width; $("outWidth").textContent = settings.width + "ch";
     $("setEye").value = settings.eye; $("outEye").textContent = settings.eye + "%";
     $("setSpeed").value = settings.speed; $("outSpeed").textContent = settings.speed;
+    $("speedLabel").textContent = "Speed " + settings.speed;
     $("setMirror").checked = !!settings.mirror;
     $("setCaps").checked = !!settings.caps;
     $("setDim").checked = !!settings.dim;
@@ -165,6 +166,7 @@ const handlers = {
 
 async function startListening() {
   if (listening) return;
+  if (mode === "manual") setMode("voice");
   if (!script || !script.tokens.length) { openScriptDialog(); return; }
   const useWeb = settings.engine === "web" && WebSpeechEngine.available();
   engine = onClaude ? new DictationEngine(handlers) : useWeb ? new WebSpeechEngine(handlers) : new VoskEngine(handlers);
@@ -221,11 +223,27 @@ function updateListenButton() {
   document.body.classList.toggle("listening", listening);
 }
 
+let playShown = null;
+function updatePlayButton() {
+  const playing = mode === "manual" && !paused;
+  if (playing === playShown) return;
+  playShown = playing;
+  const b = $("btnPlay");
+  b.textContent = playing ? "❚❚ Pause" : "▶ Play";
+  b.classList.toggle("primary", playing);
+  b.setAttribute("aria-pressed", String(playing));
+}
+
 function updateStatus(t) {
   if (TALENT) return;
   const m = $("meter");
   if (m) m.style.width = Math.min(100, Math.round(levelAvg * 900)) + "%";
-  if (!listening) return;
+  updatePlayButton();
+  if (!listening) {
+    const want = mode === "manual" ? (paused ? "Paused" : "Steady scroll") : "Not listening";
+    if ($("pill").textContent !== want) setPill("idle", want);
+    return;
+  }
   if ($("pill").dataset.state === "error") return;
   if (mode === "manual") setPill("idle", paused ? "Paused" : "Steady scroll");
   else if (paused) setPill("idle", "Paused (Space)");
@@ -336,6 +354,16 @@ if (TALENT) {
   stageEl.addEventListener("dblclick", toggleFullscreen);
 } else {
   $("btnListen").onclick = () => (listening ? stopListening() : startListening());
+  // Steady scroll without a microphone: Play/Pause and speed.
+  $("btnPlay").onclick = () => {
+    if (mode === "manual" && !paused) { paused = true; return; }
+    if (listening) stopListening();
+    if (mode !== "manual") setMode("manual");
+    paused = false;
+  };
+  const nudge = (d) => { settings.speed = Math.max(1, Math.min(10, settings.speed + d)); saveSettings(); };
+  $("btnSlower").onclick = () => nudge(-1);
+  $("btnFaster").onclick = () => nudge(1);
   $("modeVoice").onclick = () => setMode("voice");
   $("modeManual").onclick = () => setMode("manual");
   $("btnPaste").onclick = openScriptDialog;

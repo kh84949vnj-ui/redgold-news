@@ -21,6 +21,12 @@
   </div>
   <div class="bar-main prompt-only">
     <button type="button" id="btnListen" class="primary">Start listening</button>
+    <div class="play-group" role="group" aria-label="Steady scroll">
+      <button type="button" id="btnPlay" title="Scroll at a steady speed, no microphone (Space pauses)">▶ Play</button>
+      <button type="button" id="btnSlower" aria-label="Slower" title="Slower">−</button>
+      <span class="speed" id="speedLabel" aria-live="polite">Speed 4</span>
+      <button type="button" id="btnFaster" aria-label="Faster" title="Faster">+</button>
+    </div>
     <span class="pill" id="pill" data-state="idle">Not listening</span>
     <div class="meter" aria-hidden="true"><i id="meter"></i></div>
   </div>

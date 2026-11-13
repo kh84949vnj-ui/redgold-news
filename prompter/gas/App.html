@@ -50,6 +50,9 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .brand .ep { color: var(--muted); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-size: 13px; }
 .bar-main, .bar-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .bar-side { margin-left: auto; }
+.play-group { display: inline-flex; align-items: center; gap: 4px; }
+.play-group #btnSlower, .play-group #btnFaster { min-width: 36px; font-weight: 700; }
+.play-group .speed { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; font-size: 14px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .seg button { border: 0; border-radius: 0; background: transparent; }
 .seg button[aria-pressed="true"] { background: var(--gold); color: #111; font-weight: 600; }
@@ -234,6 +237,12 @@ body.solo.show-chrome .bar, body.solo.show-chrome .heard { display: flex; }
   </div>
   <div class="bar-main prompt-only">
     <button type="button" id="btnListen" class="primary">Start listening</button>
+    <div class="play-group" role="group" aria-label="Steady scroll">
+      <button type="button" id="btnPlay" title="Scroll at a steady speed, no microphone (Space pauses)">▶ Play</button>
+      <button type="button" id="btnSlower" aria-label="Slower" title="Slower">−</button>
+      <span class="speed" id="speedLabel" aria-live="polite">Speed 4</span>
+      <button type="button" id="btnFaster" aria-label="Faster" title="Faster">+</button>
+    </div>
     <span class="pill" id="pill" data-state="idle">Not listening</span>
     <div class="meter" aria-hidden="true"><i id="meter"></i></div>
   </div>
@@ -2090,6 +2099,7 @@ function applySettings() {
     $("setWidth").value = settings.width; $("outWidth").textContent = settings.width + "ch";
     $("setEye").value = settings.eye; $("outEye").textContent = settings.eye + "%";
     $("setSpeed").value = settings.speed; $("outSpeed").textContent = settings.speed;
+    $("speedLabel").textContent = "Speed " + settings.speed;
     $("setMirror").checked = !!settings.mirror;
     $("setCaps").checked = !!settings.caps;
     $("setDim").checked = !!settings.dim;
@@ -2192,6 +2202,7 @@ const handlers = {
 
 async function startListening() {
   if (listening) return;
+  if (mode === "manual") setMode("voice");
   if (!script || !script.tokens.length) { openScriptDialog(); return; }
   const useWeb = settings.engine === "web" && WebSpeechEngine.available();
   engine = onClaude ? new DictationEngine(handlers) : useWeb ? new WebSpeechEngine(handlers) : new VoskEngine(handlers);
@@ -2248,11 +2259,27 @@ function updateListenButton() {
   document.body.classList.toggle("listening", listening);
 }
 
+let playShown = null;
+function updatePlayButton() {
+  const playing = mode === "manual" && !paused;
+  if (playing === playShown) return;
+  playShown = playing;
+  const b = $("btnPlay");
+  b.textContent = playing ? "❚❚ Pause" : "▶ Play";
+  b.classList.toggle("primary", playing);
+  b.setAttribute("aria-pressed", String(playing));
+}
+
 function updateStatus(t) {
   if (TALENT) return;
   const m = $("meter");
   if (m) m.style.width = Math.min(100, Math.round(levelAvg * 900)) + "%";
-  if (!listening) return;
+  updatePlayButton();
+  if (!listening) {
+    const want = mode === "manual" ? (paused ? "Paused" : "Steady scroll") : "Not listening";
+    if ($("pill").textContent !== want) setPill("idle", want);
+    return;
+  }
   if ($("pill").dataset.state === "error") return;
   if (mode === "manual") setPill("idle", paused ? "Paused" : "Steady scroll");
   else if (paused) setPill("idle", "Paused (Space)");
@@ -2363,6 +2390,16 @@ if (TALENT) {
   stageEl.addEventListener("dblclick", toggleFullscreen);
 } else {
   $("btnListen").onclick = () => (listening ? stopListening() : startListening());
+  // Steady scroll without a microphone: Play/Pause and speed.
+  $("btnPlay").onclick = () => {
+    if (mode === "manual" && !paused) { paused = true; return; }
+    if (listening) stopListening();
+    if (mode !== "manual") setMode("manual");
+    paused = false;
+  };
+  const nudge = (d) => { settings.speed = Math.max(1, Math.min(10, settings.speed + d)); saveSettings(); };
+  $("btnSlower").onclick = () => nudge(-1);
+  $("btnFaster").onclick = () => nudge(1);
   $("modeVoice").onclick = () => setMode("voice");
   $("modeManual").onclick = () => setMode("manual");
   $("btnPaste").onclick = openScriptDialog;
