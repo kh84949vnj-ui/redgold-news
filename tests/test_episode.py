@@ -87,7 +87,7 @@ class EpisodeScript(unittest.TestCase):
         self.assertIn("Then on Thursday", news)
 
     def test_has_the_rundown(self):
-        for cue in ["[CUE INTRO SEQUENCE]", "[CUE BUMPER]", "[WEATHER]", "[CUE STUDENT VOICES]", "[CUE MENU]", "[CUE OUTRO]"]:
+        for cue in ["[CUE INTRO SEQUENCE]", "[CUE BUMPER]", "[WEATHER]", "[CUE STUDENT VOICES]", "[MENU]", "[CUE OUTRO]"]:
             self.assertIn(cue, self.script)
 
 

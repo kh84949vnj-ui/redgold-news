@@ -28,6 +28,7 @@ from docx.shared import Pt, RGBColor
 
 from . import common as c
 from . import events as ev
+from . import menu as mn
 from . import weather as wx
 from .district_calendar import closures as find_closures, fetch_events, school_week
 
@@ -80,6 +81,13 @@ def collect(monday: dt.date) -> dict:
         }
     except Exception as ex:
         data["weather"] = {"error": f"Weather failed: {ex}. Check forecast.weather.gov for La Joya, TX."}
+
+    try:
+        lines, notes = mn.script(week.school_days, mn.fetch())
+        data["menu"] = {"script": lines, "notes": notes, "source": "La Joya ISD Child Nutrition (High School menu)",
+                        "source_url": mn.SOURCE_URL}
+    except Exception as ex:
+        data["menu"] = {"error": f"Menu failed: {ex}. Check {mn.SOURCE_URL}."}
 
     try:
         t = ev.build(week, events)

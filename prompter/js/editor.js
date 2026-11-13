@@ -108,7 +108,7 @@ export class Editor {
 
   todoList() {
     const n = this.names();
-    const named = { "ANCHOR 1": n.a1, "ANCHOR 2": n.a2, "WEATHER REPORTER": n.wx };
+    const named = { "ANCHOR 1": n.a1, "ANCHOR 2": n.a2, "WEATHER REPORTER": n.wx, "MENU REPORTER": n.mn };
     const items = todos([{ type: "text", text: this.ta.value }])
       .filter((t) => !(t.kind === "NAME" && named[t.text.toUpperCase().replace(/\s+/g, " ")]));
     // One entry per missing name, not one per mention.

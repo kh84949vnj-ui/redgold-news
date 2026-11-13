@@ -2,11 +2,13 @@
 //
 // A script in the weekly doc format is text broken up by cue lines:
 //   anchor open / [CUE INTRO SEQUENCE] / news / [CUE BUMPER] / [WEATHER] ... /
-//   [CUE BUMPER] / [CUE STUDENT VOICES] / [CUE MENU] / close / [CUE OUTRO]
+//   [CUE BUMPER] / [CUE STUDENT VOICES] / [MENU] ... / close / [CUE OUTRO]
 // Each run of text between cue lines is one editable block; each cue line is a
 // fixed block. Joining the blocks gives back the same script text.
 
 const CUE_LINE = /^\s*\[\s*(cue|roll)\b[^\]]*\]\s*$/i;
+const SECTION_LINE = /^\s*\[\s*(weather|menu)\s*\]\s*$/i;
+const SPEAKER_LINE = /^\s*\[\s*(anchor\s*\d|both)\s*\]\s*$/i;
 
 /** -> [{type:"text", text} | {type:"cue", text}] in order */
 export function splitScript(text) {
@@ -18,10 +20,22 @@ export function splitScript(text) {
     if (t.trim()) out.push({ type: "text", text: t });
     buf = [];
   };
+  // [WEATHER] and [MENU] start a read of their own. The menu read has no cue
+  // after it, so it ends where the next speaker tag starts ([ANCHOR 1]...).
+  let inSection = false;
   for (const line of lines) {
     if (CUE_LINE.test(line)) {
       flush();
+      inSection = false;
       out.push({ type: "cue", text: line.trim().slice(1, -1).trim() });
+    } else if (SECTION_LINE.test(line)) {
+      flush();
+      inSection = true;
+      buf.push(line);
+    } else if (inSection && SPEAKER_LINE.test(line)) {
+      flush();
+      inSection = false;
+      buf.push(line);
     } else buf.push(line);
   }
   flush();
@@ -48,6 +62,7 @@ export function nameBlocks(blocks) {
     }
     let name = "Script";
     if (/^\s*\[WEATHER\]/i.test(b.text)) name = "Weather";
+    else if (/^\s*\[MENU\]/i.test(b.text)) { name = "Menu"; seenMenu = true; }
     else if (lastCue.includes("VOICES") && !seenMenu) name = "Student voices notes";
     else if (seenMenu) name = "Anchor close";
     else if (firstText && !seenIntro && blocks.some((x) => x.type === "cue")) name = "Anchor open";
@@ -74,7 +89,7 @@ export function todos(blocks) {
       const wholeLine = line === m[0];
       let kind = null;
       if (/^(verify|add|flagged)\b/i.test(inner)) kind = inner.split(/[:\s]/)[0].toUpperCase();
-      else if (!wholeLine && /^(anchor\s*\d|weather reporter)$/i.test(inner)) kind = "NAME";
+      else if (!wholeLine && /^(anchor\s*\d|weather reporter|menu reporter)$/i.test(inner)) kind = "NAME";
       if (kind) out.push({ block: bi, index: m.index, length: m[0].length, kind, text: inner });
     }
   });
@@ -83,19 +98,22 @@ export function todos(blocks) {
 
 /**
  * The scripts the landing page offers, carved out of the weekly draft:
- *   news:    the anchors' rundown; the weather read becomes a [CUE WEATHER] card
- *            because the weather reporter reads it separately
+ *   news:    the anchors' rundown; the weather and menu reads become
+ *            [CUE WEATHER] / [CUE MENU] cards because others read them
  *   weather: just the weather read
+ *   menu:    just the menu read
  */
 export function deriveDoc(doc, draftText) {
   const blocks = splitScript(draftText);
   const isWeather = (b) => b.type === "text" && /^\s*\[WEATHER\]/i.test(b.text);
-  if (doc === "weather") {
-    const w = blocks.find(isWeather);
+  const isMenu = (b) => b.type === "text" && /^\s*\[MENU\]/i.test(b.text);
+  if (doc === "weather" || doc === "menu") {
+    const w = blocks.find(doc === "weather" ? isWeather : isMenu);
     return w ? w.text.replace(/^\n+|\n+$/g, "") + "\n" : "";
   }
   if (doc === "news") {
-    return joinScript(blocks.map((b) => (isWeather(b) ? { type: "cue", text: "CUE WEATHER" } : b)));
+    return joinScript(blocks.map((b) => (isWeather(b) ? { type: "cue", text: "CUE WEATHER" }
+      : isMenu(b) ? { type: "cue", text: "CUE MENU" } : b)));
   }
   return "";
 }
@@ -131,13 +149,13 @@ export function oneAnchor(text) {
 }
 
 /**
- * Put real names in place of [ANCHOR 1], [ANCHOR 2] and [WEATHER REPORTER]
+ * Put real names in place of [ANCHOR 1], [ANCHOR 2], [WEATHER REPORTER] and [MENU REPORTER]
  * for the prompter and copies. A placeholder on its own line is a speaker tag
  * and stays a tag ("[Sam]"); inside a sentence it becomes the name.
  * Names left blank keep their placeholder.
  */
 export function fillNames(text, names = {}) {
-  const map = [["ANCHOR\\s*1", names.a1], ["ANCHOR\\s*2", names.a2], ["WEATHER REPORTER", names.wx]];
+  const map = [["ANCHOR\\s*1", names.a1], ["ANCHOR\\s*2", names.a2], ["WEATHER REPORTER", names.wx], ["MENU REPORTER", names.mn]];
   let t = String(text || "");
   for (const [pat, name] of map) {
     const n = String(name || "").trim().replace(/[[\]]/g, "");

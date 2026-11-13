@@ -367,7 +367,13 @@ def build_script(week: dict, board_picks=None) -> str:
     add("")
     add("[CUE STUDENT VOICES]")
     add("")
-    add("[CUE MENU]")
+    # ---- Menu (its own script on the start page), from the lajoya-menus CSV.
+    add("[MENU]")
+    menu = (week.get("menu") or {}).get("script") or []
+    if menu:
+        out.extend(menu)
+    else:
+        add("[ADD: menu read]")
     add("")
 
     # ---- Close: a quick reminder and the sign-off.

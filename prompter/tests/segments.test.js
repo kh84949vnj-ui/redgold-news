@@ -79,3 +79,21 @@ test("names fill in: tags stay tags, inline placeholders become the name", async
     "[Sam]\nHey, RedWolves! I'm Sam.\n\n[Alex]\nThanks, Sam. Up next, Jo.");
   assert.equal(fillNames(s, { a1: "Sam" }).includes("[ANCHOR 2]"), true, "blank names keep placeholders");
 });
+
+test("the menu read is its own script and a cue card in the rundown", () => {
+  const draft = sample.replace("[CUE MENU]", "[MENU]\nHey, RedWolves! I'm [MENU REPORTER], and here's what's on the menu this week.\nOn Monday, breakfast is Kolache. For lunch, it's Pizza with Wings, plus Garden Salad.\nEnjoy your meals, RedWolves!");
+  const news = deriveDoc("news", draft);
+  const menu = deriveDoc("menu", draft);
+  assert.ok(news.includes("[CUE MENU]"));
+  assert.ok(!/Kolache/.test(news), "no menu text in the news rundown");
+  assert.ok(menu.startsWith("[MENU]") && /Kolache/.test(menu) && !/CUE/.test(menu));
+  assert.equal(deriveDoc("menu", sample), "", "no menu block, no menu script");
+  const names = nameBlocks(splitScript(draft)).map((b) => b.name);
+  assert.ok(names.includes("Menu") && names.includes("Anchor close"));
+});
+
+test("the menu reporter's name fills in", async () => {
+  const { fillNames } = await import("../js/segments.js");
+  assert.equal(fillNames("I'm [MENU REPORTER].", { mn: "Jo" }), "I'm Jo.");
+  assert.deepEqual(todos(splitScript("I'm [MENU REPORTER].")).map((t) => t.kind), ["NAME"]);
+});

@@ -5,8 +5,10 @@ School (La Joya ISD). These scripts take over the repetitive prep work. Students
 still do the reporting.
 
 Phase 1 (this folder): one dated prep doc with the weather read and a news tip
-sheet, generated the day before recording. The food menu segment is made in a
-separate video editing project and isn't part of this one.
+sheet, generated the day before recording. The menu read (breakfast and lunch
+for each school day) comes from the lajoya-menus project, which saves the
+district's High School menu as `output/menus.csv` every day; set
+`RGN_MENU_CSV` to read a different copy.
 
 ## Setup (once)
 

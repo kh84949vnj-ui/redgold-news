@@ -24,14 +24,14 @@ const DEFAULT_SETTINGS = { size: 56, width: 30, eye: 33, speed: 4, mirror: false
   engine: "vosk", grammar: true, mic: "", notes: false };
 let settings = { ...DEFAULT_SETTINGS, ...store.get("settings", {}) };
 // Who's on air, kept on this device only (never published).
-const getNames = () => store.get("names", { a1: "", a2: "", wx: "" });
+const getNames = () => ({ a1: "", a2: "", wx: "", mn: "", ...store.get("names", {}) });
 
 // ------------------------------------------------------------------ state
 const stageEl = $("stage");
 const stage = new Stage(stageEl);
 let editor = null;            // created below (operator page only)
 let board = null;             // school board panel (News rundown)
-let doc = null;               // "news" | "weather" | "custom" (null on the start page)
+let doc = null;               // "news" | "weather" | "menu" | "custom" (null on the start page)
 let stageStale = false;       // editor changed since the stage was last built
 const spring = new Spring(7);
 let script = null, aligner = null;
@@ -466,7 +466,7 @@ if (TALENT) {
   $("btnUpdate").onclick = requestUpdate;
   $("btnUpdate2").onclick = requestUpdate;
   // Who's on air
-  const nameIds = { a1: "nameA1", a2: "nameA2", wx: "nameWx" };
+  const nameIds = { a1: "nameA1", a2: "nameA2", wx: "nameWx", mn: "nameMn" };
   for (const [k, id] of Object.entries(nameIds)) {
     $(id).value = getNames()[k] || "";
     $(id).addEventListener("input", (e) => {
@@ -516,16 +516,18 @@ if (TALENT) {
 window.addEventListener("resize", () => stage.layout());
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => stage.layout());
 
-// ------------------------------------------------------------------ the three scripts
-// The start page offers three scripts, each saved separately on this device:
-//   news     the anchors' rundown, drafted weekly (weather becomes a cue card)
+// ------------------------------------------------------------------ the four scripts
+// The start page offers four scripts, each saved separately on this device:
+//   news     the anchors' rundown, drafted weekly (weather and menu become cue cards)
 //   weather  the forecast read, drafted weekly
+//   menu     the week's breakfast and lunch, drafted weekly
 //   custom   blank, for anything else
-// News and weather come from the weekly prep run (scripts/current.json). A
+// News, weather and menu come from the weekly prep run (scripts/current.json). A
 // newer draft loads by itself unless someone edited; then a button offers it.
 const DOCS = {
   news: { title: "News rundown", draft: true },
   weather: { title: "Weather", draft: true },
+  menu: { title: "Menu", draft: true },
   custom: { title: "Custom", draft: false },
 };
 let published = null;
@@ -651,6 +653,7 @@ function refreshDocUI() {
   $("homeEp").textContent = published ? `This week: episode of ${published.episode_label}.` : "";
   $("stNews").textContent = docStatus("news");
   $("stWeather").textContent = docStatus("weather");
+  $("stMenu").textContent = docStatus("menu");
   $("stCustom").textContent = docStatus("custom");
   if (!doc) { $("docLabel").textContent = ""; $("epLabel").textContent = ""; $("draftBanner").hidden = true; return; }
   const meta = getMeta();
@@ -658,9 +661,12 @@ function refreshDocUI() {
   $("epLabel").textContent = meta.label ? meta.label + (meta.source === "edited" ? " (edited)" : "") : meta.source === "manual" ? "Pasted" : "";
   $("edTitle").textContent = DOCS[doc].title + (meta.label ? ` · ${meta.label}` : "");
   // Which names this script needs.
-  $("nameA1Row").hidden = doc === "weather";
-  $("nameA2Row").hidden = doc === "weather" || (doc === "news" && anchors === 1);
-  $("nameWxRow").hidden = doc === "news" && !/\[WEATHER REPORTER\]/i.test(editor.getText());
+  const solo = doc === "weather" || doc === "menu";
+  const mentions = (re) => re.test(editor.getText());
+  $("nameA1Row").hidden = solo;
+  $("nameA2Row").hidden = solo || (doc === "news" && anchors === 1);
+  $("nameWxRow").hidden = doc === "menu" || (doc === "news" && !mentions(/\[WEATHER REPORTER\]/i));
+  $("nameMnRow").hidden = doc === "weather" || (doc !== "menu" && !mentions(/\[MENU REPORTER\]/i));
   $("btnReset").textContent = DOCS[doc].draft ? "Start over from this week's draft" : "Clear";
   board.render();
   $("anchorsOpt").hidden = doc !== "news";
@@ -699,7 +705,7 @@ function setView(v) {
   updateOpenBar();
 }
 
-/** Route: "" = start page, "#news" / "#weather" / "#custom" = that script. */
+/** Route: "" = start page, "#news" / "#weather" / "#menu" / "#custom" = that script. */
 function route() {
   const want = location.hash.replace("#", "");
   const next = DOCS[want] ? want : null;
