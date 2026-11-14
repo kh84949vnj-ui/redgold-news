@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-13T22:27-06:00",
-  "generated_label": "Friday, November 13 at 10:27 PM",
+  "generated": "2026-11-13T22:29-06:00",
+  "generated_label": "Friday, November 13 at 10:29 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -52,9 +52,9 @@
   "weather": {
     "script": [
       "Let's take a look at this week's weather forecast!",
-      "We're starting the week off mild, with highs of 72 on Monday and 71 on Tuesday under partly sunny skies. Tuesday morning dips to 58. Hoodie weather!",
+      "We're starting the week off mild, with highs of 72 and 71 Monday and Tuesday under partly sunny skies. Tuesday morning dips to 58. Hoodie weather!",
       "By Wednesday, the clouds roll in and it warms up to 77.",
-      "And as we head into the weekend, it keeps warming up, with highs of 80 on Thursday and 83 on Friday.",
+      "And as we head into the weekend, it keeps warming up, with highs of 80 and 83 Thursday and Friday.",
       "Have a great week, RedWolves!"
     ],
     "days": [
