@@ -164,12 +164,11 @@ def day_line(f: DayForecast) -> str:
     if f.low is not None:
         bits.append(f"low of {f.low}")
     temps = ", ".join(bits)
-    if not f.rain or f.rain < 10:
-        rain = "no rain expected"
-    else:
+    # Only say what's there: a rain chance, never "no rain".
+    if f.rain and f.rain >= 10:
         article = "an" if str(f.rain).startswith(("8", "11", "18")) else "a"
-        rain = f"{article} {f.rain} percent chance of rain"
-    return f"{name}, {tidy_conditions(f.conditions)}. Expect a {temps}, and {rain}."
+        return f"{name}, {tidy_conditions(f.conditions)}. Expect a {temps}, and {article} {f.rain} percent chance of rain."
+    return f"{name}, {tidy_conditions(f.conditions)}. Expect a {temps}."
 
 
 # ---------------------------------------------------------------- the read
@@ -217,8 +216,7 @@ def _details(f: DayForecast) -> list[str]:
     if rain >= 10:
         article = "an" if str(rain).startswith(("8", "11", "18")) else "a"
         out.append(f"{article} {rain} percent chance of {wet or 'rain'}{' later in the day' if later else ''}")
-    else:
-        out.append("no rain expected")
+    # A dry day says nothing about rain: "no rain" isn't news.
     return out
 
 
@@ -233,7 +231,6 @@ def _list(items: list[str]) -> str:
 def narrative(days: list[DayForecast]) -> list[str]:
     lines = []
     prev: DayForecast | None = None
-    dry_said = False  # "no rain" already said for this dry stretch
     for f in days:
         name = c.DAY_NAMES[f.date.weekday()]
         details = _details(f)
@@ -258,13 +255,6 @@ def narrative(days: list[DayForecast]) -> list[str]:
         # Two short sentences per day reads easier on camera than one long one:
         # "Tuesday warms up to 80 degrees. Expect cloudy skies, a morning low
         # of 67, and an 18 percent chance of rain."
-        # Say "no rain" once per dry stretch, not on every dry day.
-        if "no rain expected" in details:
-            details = [d for d in details if d != "no rain expected"] if dry_said else \
-                ["no rain" if d == "no rain expected" else d for d in details]
-            dry_said = True
-        else:
-            dry_said = False
         lines.append(f"{lead}. Expect {_list(details)}." if details else f"{lead}.")
         prev = f
     return lines
