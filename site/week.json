@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-13T15:24-06:00",
-  "generated_label": "Friday, November 13 at 3:24 PM",
+  "generated": "2026-11-13T20:20-06:00",
+  "generated_label": "Friday, November 13 at 8:20 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -53,10 +53,10 @@
     "script": [
       "Let's take a look at this week's weather forecast!",
       "We're starting the week off mild on Monday, with a high of 72 degrees. Expect partly sunny skies, a morning low of 64, and no rain.",
-      "Tuesday stays about the same, with a high of 71. Expect partly sunny skies, a morning low of 58, and no rain.",
-      "Wednesday warms up to 77 degrees. Expect mostly cloudy skies, a morning low of 62, and no rain.",
+      "Tuesday stays about the same, with a high of 71. Expect partly sunny skies and a morning low of 58.",
+      "Wednesday warms up to 77 degrees. Expect mostly cloudy skies and a morning low of 62.",
       "Thursday warms up to 80 degrees. Expect mostly cloudy skies, a morning low of 68, and a 12 percent chance of rain.",
-      "Friday warms up to 83 degrees. Expect mostly cloudy skies, a morning low of 70, and a 10 percent chance of rain.",
+      "Friday warms up to 83 degrees. Expect partly sunny skies, a morning low of 70, and a 10 percent chance of rain.",
       "Have a great week, RedWolves!"
     ],
     "days": [
@@ -106,17 +106,15 @@
         "high": 83,
         "low": 70,
         "rain": 10,
-        "conditions": "mostly cloudy",
+        "conditions": "Partly Sunny",
         "available": true,
-        "extended": true
+        "extended": false
       }
     ],
-    "updated": "Friday, November 13 at 3:18 PM",
+    "updated": "Friday, November 13 at 8:18 PM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
-    "notes": [
-      "Friday comes from NWS grid data because the 7-day text forecast doesn't reach it yet. These numbers can still change, so rerun the morning of recording."
-    ]
+    "notes": []
   },
   "menu": {
     "script": [
