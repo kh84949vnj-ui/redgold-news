@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-13T20:20-06:00",
-  "generated_label": "Friday, November 13 at 8:20 PM",
+  "generated": "2026-11-13T22:20-06:00",
+  "generated_label": "Friday, November 13 at 10:20 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -52,7 +52,7 @@
   "weather": {
     "script": [
       "Let's take a look at this week's weather forecast!",
-      "We're starting the week off mild on Monday, with a high of 72 degrees. Expect partly sunny skies, a morning low of 64, and no rain.",
+      "We're starting the week off mild on Monday, with a high of 72 degrees. Expect partly sunny skies and a morning low of 64.",
       "Tuesday stays about the same, with a high of 71. Expect partly sunny skies and a morning low of 58.",
       "Wednesday warms up to 77 degrees. Expect mostly cloudy skies and a morning low of 62.",
       "Thursday warms up to 80 degrees. Expect mostly cloudy skies, a morning low of 68, and a 12 percent chance of rain.",
@@ -111,7 +111,7 @@
         "extended": false
       }
     ],
-    "updated": "Friday, November 13 at 8:18 PM",
+    "updated": "Friday, November 13 at 10:18 PM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": []
