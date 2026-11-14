@@ -225,12 +225,15 @@ def _details(f: DayForecast) -> list[str]:
 def _list(items: list[str]) -> str:
     if len(items) <= 1:
         return "".join(items)
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
     return ", ".join(items[:-1]) + ", and " + items[-1]
 
 
 def narrative(days: list[DayForecast]) -> list[str]:
     lines = []
     prev: DayForecast | None = None
+    dry_said = False  # "no rain" already said for this dry stretch
     for f in days:
         name = c.DAY_NAMES[f.date.weekday()]
         details = _details(f)
@@ -255,8 +258,14 @@ def narrative(days: list[DayForecast]) -> list[str]:
         # Two short sentences per day reads easier on camera than one long one:
         # "Tuesday warms up to 80 degrees. Expect cloudy skies, a morning low
         # of 67, and an 18 percent chance of rain."
-        details = [("no rain" if d == "no rain expected" else d) for d in details]
-        lines.append(f"{lead}. Expect {_list(details)}.")
+        # Say "no rain" once per dry stretch, not on every dry day.
+        if "no rain expected" in details:
+            details = [d for d in details if d != "no rain expected"] if dry_said else \
+                ["no rain" if d == "no rain expected" else d for d in details]
+            dry_said = True
+        else:
+            dry_said = False
+        lines.append(f"{lead}. Expect {_list(details)}." if details else f"{lead}.")
         prev = f
     return lines
 
