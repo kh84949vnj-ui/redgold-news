@@ -25,9 +25,14 @@ class WeatherRead(unittest.TestCase):
         # Graphics and other automation key off each day's high.
         text = read(THIS_WEEK)
         for f in THIS_WEEK:
-            self.assertRegex(text, rf"\b{f.high}\b on {f.date:%A}|{f.date:%A}.*\b{f.high}\b")
-        self.assertIn("highs of 72 on Monday and 71 on Tuesday", text)
-        self.assertIn("highs of 80 on Thursday and 83 on Friday", text)
+            self.assertRegex(text, rf"\b{f.high}\b")
+            self.assertIn(f"{f.date:%A}", text)
+        self.assertIn("highs of 72 and 71 Monday and Tuesday", text)
+        self.assertIn("highs of 80 and 83 Thursday and Friday", text)
+
+    def test_same_high_two_days_said_once(self):
+        text = read(THIS_WEEK[:3] + [day(3, 80, 68, 0), day(4, 80, 70, 0)])
+        self.assertIn("a high of 80 both Thursday and Friday", text)
 
     def test_short_and_conversational(self):
         lines = narrative(THIS_WEEK)

@@ -260,8 +260,12 @@ def _groups(days: list[DayForecast]) -> list[list[DayForecast]]:
 
 
 def _highs(g: list[DayForecast]) -> str:
-    """'highs of 72 on Monday and 71 on Tuesday'"""
-    return "highs of " + _join([f"{f.high} on {c.DAY_NAMES[f.date.weekday()]}" for f in g])
+    """Days lumped together, every high kept, in day order:
+    'highs of 72 and 71 Monday and Tuesday' or 'a high of 80 both Thursday and Friday'."""
+    names = _join([c.DAY_NAMES[f.date.weekday()] for f in g])
+    if len({f.high for f in g}) == 1:
+        return f"a high of {g[0].high} {'both ' if len(g) == 2 else ''}{names}"
+    return "highs of " + _join([str(f.high) for f in g]) + " " + names
 
 
 WET = re.compile(r"rain|shower|storm|drizzle", re.I)
