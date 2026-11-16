@@ -35,6 +35,7 @@ class DayForecast:
     detail: str = ""
     icon: str = ""
     extended: bool = False  # filled from NWS grid data, not the 7-day text forecast
+    observed: bool = False  # numbers measured at a weather station (today's morning low, or a past day)
 
     @property
     def available(self) -> bool:
@@ -44,8 +45,12 @@ class DayForecast:
 GEO = {"Accept": "application/geo+json"}
 
 
+def _point() -> dict:
+    return c.get(f"https://api.weather.gov/points/{c.LAT:.4f},{c.LON:.4f}", headers=GEO).json()
+
+
 def fetch_periods() -> tuple[list[dict], str, str]:
-    pt = c.get(f"https://api.weather.gov/points/{c.LAT:.4f},{c.LON:.4f}", headers=GEO).json()
+    pt = _point()
     fc = c.get(pt["properties"]["forecast"], headers=GEO).json()
     props = fc["properties"]
     stamp = props.get("updateTime") or props.get("generatedAt", "")
@@ -116,6 +121,60 @@ def grid_day(grid: dict, d: dt.date) -> DayForecast | None:
     )
 
 
+# ---------------------------------------------------------------- observations
+
+def fetch_observations(start: dt.datetime, end: dt.datetime) -> tuple[str, list[tuple[dt.datetime, float, str]]]:
+    """Readings from the nearest NWS station that has any: (station name, [(time, °F, sky words)])."""
+    stations = c.get(_point()["properties"]["observationStations"], headers=GEO).json()["features"][:3]
+    for st in stations:
+        sid, name = st["properties"]["stationIdentifier"], st["properties"]["name"]
+        try:
+            feats = c.get(f"https://api.weather.gov/stations/{sid}/observations", headers=GEO,
+                          params={"start": start.astimezone(dt.timezone.utc).isoformat(),
+                                  "end": end.astimezone(dt.timezone.utc).isoformat()}).json()["features"]
+        except Exception:
+            continue
+        out = []
+        for f in feats:
+            p = f["properties"]
+            t = (p.get("temperature") or {}).get("value")
+            if t is None:
+                continue
+            when = dt.datetime.fromisoformat(p["timestamp"]).astimezone(c.TZ)
+            out.append((when, t * 9 / 5 + 32, (p.get("textDescription") or "").strip()))
+        if out:
+            return name, sorted(out)
+    return "", []
+
+
+def apply_observations(days: list[DayForecast], obs: list[tuple[dt.datetime, float, str]],
+                       now: dt.datetime) -> list[str]:
+    """Measured numbers where the day has already happened. Returns the days changed.
+    - today: the morning low is the lowest reading from midnight to 9 AM (the forecast
+      no longer lists last night, so it would otherwise read tonight's low);
+    - a past day: high and low as measured, sky from the most common daytime report."""
+    changed = []
+    for f in days:
+        if f.date > now.date():
+            continue
+        morning = [t for when, t, _ in obs if when.date() == f.date and when.hour < 9]
+        if morning:
+            f.low = round(min(morning))
+        if f.date < now.date():
+            daytime = [(t, sky) for when, t, sky in obs if when.date() == f.date and 7 <= when.hour < 19]
+            if daytime:
+                f.high = round(max(t for t, _ in daytime))
+                skies = [sky for _, sky in daytime if sky]
+                if skies:
+                    f.conditions = max(set(skies), key=skies.count)
+                f.rain = None
+                f.extended = False
+        if morning:
+            f.observed = True
+            changed.append(c.DAY_NAMES[f.date.weekday()])
+    return changed
+
+
 def _date(p: dict) -> dt.date:
     return dt.datetime.fromisoformat(p["startTime"]).astimezone(c.TZ).date()
 
@@ -134,7 +193,8 @@ def daily(periods: list[dict], days: list[dt.date]) -> list[DayForecast]:
         day = next((p for p in periods if p["isDaytime"] and _date(p) == d), None)
         # The low students feel that morning is the night that starts the day before.
         night = next((p for p in periods if not p["isDaytime"] and _date(p) == d - dt.timedelta(days=1)), None)
-        night = night or next((p for p in periods if not p["isDaytime"] and _date(p) == d), None)
+        # (No fallback to the night after: on the day itself that is tonight's low, not this
+        # morning's. Today's morning low comes from the weather station instead.)
         if day:
             f.high = day["temperature"]
             f.rain = _pop(day)
@@ -397,6 +457,19 @@ def build(week: c.SchoolWeek) -> WeatherResult:
                     f.low = g.low
         except Exception as ex:
             notes.append(f"Could not read NWS grid data for the later days ({ex}).")
+    # Days that have started: use what the weather station measured.
+    now = dt.datetime.now(c.TZ)
+    if days and days[0].date <= now.date():
+        try:
+            start = dt.datetime.combine(days[0].date, dt.time(0), c.TZ)
+            station, obs = fetch_observations(start, now)
+            changed = apply_observations(days, obs, now)
+            if changed:
+                notes.append(f"Measured at {station} (NWS weather station): {_join(changed)} morning low"
+                             + (", and the high and sky for days already past." if any(f.date < now.date() for f in days if f.observed) else "."))
+        except Exception as ex:
+            notes.append(f"Could not read today's weather station readings ({ex}).")
+
     extended = [c.DAY_NAMES[f.date.weekday()] for f in days if f.extended]
     if extended:
         notes.append(

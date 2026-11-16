@@ -70,3 +70,19 @@ class WeatherRead(unittest.TestCase):
     def test_day_line_skips_dry_days_rain(self):
         self.assertNotIn("rain", day_line(day(0, 72, 64, 0)))
         self.assertIn("25 percent chance of rain", day_line(day(0, 72, 64, 25)))
+
+
+class StationReadings(unittest.TestCase):
+    def test_today_uses_measured_morning_low_and_past_days_measured_high(self):
+        from rgn.weather import apply_observations
+        from rgn.common import TZ
+        at = lambda d, h, t, sky="Cloudy": (dt.datetime.combine(MON + dt.timedelta(days=d), dt.time(h), TZ), t, sky)
+        obs = [at(0, 3, 61.0), at(0, 6, 58.6), at(0, 10, 70.0, "Sunny"), at(0, 14, 74.2, "Sunny"),
+               at(1, 2, 60.0), at(1, 7, 59.4), at(1, 8, 62.0)]
+        days = [day(0, 80, None, 30), day(1, 81, 54, 10), day(2, 82, 60, 0)]
+        now = dt.datetime.combine(MON + dt.timedelta(days=1), dt.time(9), TZ)
+        changed = apply_observations(days, obs, now)
+        self.assertEqual(changed, ["Monday", "Tuesday"])
+        self.assertEqual((days[0].high, days[0].low, days[0].conditions), (74, 59, "Sunny"))  # past day: measured
+        self.assertEqual((days[1].high, days[1].low), (81, 59))  # today: forecast high, measured morning low
+        self.assertEqual((days[2].high, days[2].low, days[2].observed), (82, 60, False))  # future: untouched

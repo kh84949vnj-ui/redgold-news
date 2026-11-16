@@ -71,7 +71,7 @@ def collect(monday: dt.date) -> dict:
             "days": [
                 {"day": c.DAY_NAMES[f.date.weekday()], "date": f.date.isoformat(), "high": f.high, "low": f.low,
                  "rain": f.rain, "conditions": f.conditions, "available": f.available,
-                 "extended": f.extended}
+                 "extended": f.extended, "observed": f.observed}
                 for f in w.days
             ],
             "updated": w.updated,
