@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-15T20:06-06:00",
-  "generated_label": "Sunday, November 15 at 8:06 PM",
+  "generated": "2026-11-16T09:27-06:00",
+  "generated_label": "Monday, November 16 at 9:27 AM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -52,67 +52,74 @@
   "weather": {
     "script": [
       "Let's take a look at this week's weather forecast!",
-      "We're starting the week off mild, with highs of 69 and 71 Monday and Tuesday under mostly cloudy skies. Tuesday morning dips to 55. Hoodie weather!",
-      "By Wednesday, it warms up to 80.",
-      "And as we head into the weekend, the sun comes back out and it keeps warming up, with a high of 84 both Thursday and Friday. There's a 29 percent chance of showers and thunderstorms later in the day on Thursday.",
+      "We're starting the week off cool, with highs of 65 and 71 Monday and Tuesday under mostly cloudy skies. Tuesday morning dips to 54. Hoodie weather!",
+      "By Wednesday, the sun comes back out and it warms up to 78.",
+      "And as we head into the weekend, it keeps warming up, with highs of 82 and 84 Thursday and Friday. There's a 21 percent chance of rain showers later in the day on Thursday.",
       "Have a great week, RedWolves!"
     ],
     "days": [
       {
         "day": "Monday",
         "date": "2026-11-16",
-        "high": 69,
-        "low": 58,
-        "rain": 5,
+        "high": 65,
+        "low": 59,
+        "rain": 13,
         "conditions": "Mostly Cloudy",
         "available": true,
-        "extended": false
+        "extended": false,
+        "observed": true
       },
       {
         "day": "Tuesday",
         "date": "2026-11-17",
         "high": 71,
-        "low": 55,
-        "rain": 11,
-        "conditions": "Partly Sunny",
+        "low": 54,
+        "rain": 2,
+        "conditions": "Sunny",
         "available": true,
-        "extended": false
+        "extended": false,
+        "observed": false
       },
       {
         "day": "Wednesday",
         "date": "2026-11-18",
-        "high": 80,
-        "low": 62,
-        "rain": 10,
-        "conditions": "Mostly Cloudy",
+        "high": 78,
+        "low": 58,
+        "rain": 3,
+        "conditions": "Partly Sunny",
         "available": true,
-        "extended": false
+        "extended": false,
+        "observed": false
       },
       {
         "day": "Thursday",
         "date": "2026-11-19",
-        "high": 84,
-        "low": 67,
-        "rain": 29,
-        "conditions": "Partly Sunny then Chance Showers And Thunderstorms",
+        "high": 82,
+        "low": 63,
+        "rain": 21,
+        "conditions": "Partly Sunny then Slight Chance Rain Showers",
         "available": true,
-        "extended": false
+        "extended": false,
+        "observed": false
       },
       {
         "day": "Friday",
         "date": "2026-11-20",
         "high": 84,
-        "low": 68,
-        "rain": 7,
-        "conditions": "Partly Sunny",
+        "low": 66,
+        "rain": 2,
+        "conditions": "Mostly Sunny",
         "available": true,
-        "extended": false
+        "extended": false,
+        "observed": false
       }
     ],
-    "updated": "Sunday, November 15 at 8:00 PM",
+    "updated": "Monday, November 16 at 9:18 AM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
-    "notes": []
+    "notes": [
+      "Measured at McAllen, Miller International Airport (NWS weather station): Monday morning low."
+    ]
   },
   "menu": {
     "script": [
