@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-16",
   "episode_label": "Monday, November 16, 2026",
-  "generated": "2026-11-13T22:29-06:00",
-  "generated_label": "Friday, November 13 at 10:29 PM",
+  "generated": "2026-11-15T20:06-06:00",
+  "generated_label": "Sunday, November 15 at 8:06 PM",
   "school_days": [
     {
       "date": "2026-11-16",
@@ -52,19 +52,19 @@
   "weather": {
     "script": [
       "Let's take a look at this week's weather forecast!",
-      "We're starting the week off mild, with highs of 72 and 71 Monday and Tuesday under partly sunny skies. Tuesday morning dips to 58. Hoodie weather!",
-      "By Wednesday, the clouds roll in and it warms up to 77.",
-      "And as we head into the weekend, it keeps warming up, with highs of 80 and 83 Thursday and Friday.",
+      "We're starting the week off mild, with highs of 69 and 71 Monday and Tuesday under mostly cloudy skies. Tuesday morning dips to 55. Hoodie weather!",
+      "By Wednesday, it warms up to 80.",
+      "And as we head into the weekend, the sun comes back out and it keeps warming up, with a high of 84 both Thursday and Friday. There's a 29 percent chance of showers and thunderstorms later in the day on Thursday.",
       "Have a great week, RedWolves!"
     ],
     "days": [
       {
         "day": "Monday",
         "date": "2026-11-16",
-        "high": 72,
-        "low": 64,
-        "rain": 7,
-        "conditions": "Partly Sunny",
+        "high": 69,
+        "low": 58,
+        "rain": 5,
+        "conditions": "Mostly Cloudy",
         "available": true,
         "extended": false
       },
@@ -72,8 +72,8 @@
         "day": "Tuesday",
         "date": "2026-11-17",
         "high": 71,
-        "low": 58,
-        "rain": 4,
+        "low": 55,
+        "rain": 11,
         "conditions": "Partly Sunny",
         "available": true,
         "extended": false
@@ -81,9 +81,9 @@
       {
         "day": "Wednesday",
         "date": "2026-11-18",
-        "high": 77,
+        "high": 80,
         "low": 62,
-        "rain": 3,
+        "rain": 10,
         "conditions": "Mostly Cloudy",
         "available": true,
         "extended": false
@@ -91,25 +91,25 @@
       {
         "day": "Thursday",
         "date": "2026-11-19",
-        "high": 80,
-        "low": 68,
-        "rain": 12,
-        "conditions": "Mostly Cloudy",
+        "high": 84,
+        "low": 67,
+        "rain": 29,
+        "conditions": "Partly Sunny then Chance Showers And Thunderstorms",
         "available": true,
         "extended": false
       },
       {
         "day": "Friday",
         "date": "2026-11-20",
-        "high": 83,
-        "low": 70,
-        "rain": 10,
+        "high": 84,
+        "low": 68,
+        "rain": 7,
         "conditions": "Partly Sunny",
         "available": true,
         "extended": false
       }
     ],
-    "updated": "Friday, November 13 at 10:18 PM",
+    "updated": "Sunday, November 15 at 8:00 PM",
     "source": "National Weather Service, La Joya TX",
     "source_url": "https://forecast.weather.gov/MapClick.php?lat=26.247&lon=-98.4814",
     "notes": []
