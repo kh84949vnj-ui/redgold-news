@@ -10,6 +10,7 @@ CSV = """date,weekday,breakfast,lunch
 2026-11-16,Monday,Hawaiian Sandwich,Pulled Pork Burger; Ranch Style Beans; Onion Rings
 2026-11-17,Tuesday,Kolache,Cherry Blossom Chicken w/ Fried Rice & Egg Roll; Carrot Coins
 2026-11-18,Wednesday,,Pizza w/ Wings
+2026-11-20,Friday,Kolache,Chili & Cheese; Hot Dog; Tater Tots
 """
 DAYS = [dt.date(2026, 11, 16) + dt.timedelta(days=i) for i in range(4)]
 
@@ -33,6 +34,10 @@ class MenuRead(unittest.TestCase):
     def test_missing_day_is_flagged_not_guessed(self):
         self.assertEqual(self.lines[4], "[ADD MENU: Thursday]")
         self.assertEqual(self.notes, ["No menu posted for Thursday, November 19."])
+
+    def test_one_dish_pairs_are_merged_like_the_menu_board(self):
+        lines, _ = script([dt.date(2026, 11, 20)], parse_csv(CSV))
+        self.assertIn("For lunch, it's Chili Cheese Hot Dog, plus Tater Tots.", lines[1])
 
     def test_no_time_of_day_greeting(self):
         self.assertNotRegex(" ".join(self.lines).lower(), r"good (morning|afternoon|evening)")

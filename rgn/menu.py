@@ -21,6 +21,25 @@ MENU_CSV = os.getenv(
 SOURCE_URL = "https://www.lajoyaisdcns.com/index.php?sid=0208131445498761&page=menus"
 
 
+# Dishes the district lists as two that are really one. Same rules as rgn-show's What's Cookin'
+# (segments/whats-cookin/menu.py), so the read and the menu board name the same dishes.
+MERGE = {("chili & cheese", "hot dog"): "Chili Cheese Hot Dog"}
+TOPPING = re.compile(r"^(chili|bacon|cheese)\s*(&|and)\s*(cheese|bacon|chili)$", re.I)  # "X & Cheese" + next dish
+
+
+def merge_pairs(items: list[str]) -> list[str]:
+    out, i = [], 0
+    while i < len(items):
+        a = items[i]
+        b = items[i + 1] if i + 1 < len(items) else None
+        if b and (a.lower(), b.lower()) in MERGE:
+            out.append(MERGE[(a.lower(), b.lower())]); i += 2; continue
+        if b and TOPPING.match(a.strip()):
+            out.append(re.sub(r"\s*(&|and)\s*", " ", a.strip()) + " " + b); i += 2; continue
+        out.append(a); i += 1
+    return out
+
+
 def parse_csv(text: str) -> dict[str, dict]:
     """{iso date: {"breakfast": str, "lunch": [items]}}"""
     out = {}
@@ -28,7 +47,8 @@ def parse_csv(text: str) -> dict[str, dict]:
         d = (row.get("date") or "").strip()
         if not d:
             continue
-        lunch = [tidy(x) for x in (row.get("lunch") or "").split(";")]
+        raw = [x.strip() for x in (row.get("lunch") or "").split(";") if x.strip()]
+        lunch = [tidy(x) for x in merge_pairs(raw)]
         out[d] = {"breakfast": tidy(row.get("breakfast") or ""), "lunch": [x for x in lunch if x]}
     return out
 
