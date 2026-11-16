@@ -343,7 +343,7 @@ document.addEventListener("keydown", (e) => {
   if (k === " " || k === "Spacebar") { e.preventDefault(); paused = !paused; }
   else if (k === "ArrowDown" || k === "PageDown" || k === "ArrowRight") { e.preventDefault(); step(1); }
   else if (k === "ArrowUp" || k === "PageUp" || k === "ArrowLeft") { e.preventDefault(); step(-1); }
-  else if (k === "Home") { e.preventDefault(); setPosition(0); }
+  else if (k === "Home") { e.preventDefault(); $("btnRestart").click(); }
   else if (k === "m" || k === "M") { settings.mirror = !settings.mirror; saveSettings(); }
   else if (k === "+" || k === "=") { settings.size = Math.min(120, settings.size + 4); saveSettings(); }
   else if (k === "-" || k === "_") { settings.size = Math.max(28, settings.size - 4); saveSettings(); }
@@ -354,6 +354,15 @@ if (TALENT) {
   stageEl.addEventListener("dblclick", toggleFullscreen);
 } else {
   $("btnListen").onclick = () => (listening ? stopListening() : startListening());
+  // Back to the top: after edits the prompter keeps its place, so give a way to start over.
+  // Steady scroll pauses there; voice following just waits for the first words.
+  $("btnRestart").onclick = () => {
+    if (!script) return;
+    if (mode === "manual") paused = true;
+    partial = [];
+    setPosition(0);
+    spring.snap(targetOffset(0));
+  };
   // Steady scroll without a microphone: Play/Pause and speed.
   $("btnPlay").onclick = () => {
     if (mode === "manual" && !paused) { paused = true; return; }
