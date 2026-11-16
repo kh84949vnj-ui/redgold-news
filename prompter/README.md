@@ -5,6 +5,11 @@ holds when they pause or ad-lib, and catches up if they skip ahead.
 
 Live at (once GitHub Pages is on): `https://kh84949vnj-ui.github.io/redgold-news/prompter/`
 
+**Recording** (Prompt view, ● Rec): records the reader's voice while prompting, on the same
+microphone stream as voice following (`js/mic.js`; iPads stop the first stream if a page asks
+twice). Takes stay in memory on the device until saved with Save (`RGN <script> <date> take N`,
+AAC `.m4a` where the browser can, else Opus `.webm`). Not on the claude.ai copy (no microphone).
+
 **Google Apps Script copy** (for school Wi-Fi that blocks github.io):
 `gas/Code.gs` is pasted once into a new Apps Script project and deployed as a
 web app (Execute as: Me, Who has access: Anyone). On each visit it fetches

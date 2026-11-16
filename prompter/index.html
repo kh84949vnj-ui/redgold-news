@@ -28,6 +28,10 @@
       <span class="speed" id="speedLabel" aria-live="polite">Speed 4</span>
       <button type="button" id="btnFaster" aria-label="Faster" title="Faster">+</button>
     </div>
+    <div class="rec-group" id="recGroup" hidden>
+      <button type="button" id="btnRec" title="Record your voice while you read (saved on this device)">● Rec</button>
+      <span class="rec-time" id="recTime" aria-live="off"></span>
+    </div>
     <span class="pill" id="pill" data-state="idle">Not listening</span>
     <div class="meter" aria-hidden="true"><i id="meter"></i></div>
   </div>
@@ -35,6 +39,12 @@
     <button type="button" id="btnSettings" aria-expanded="false">Settings</button>
   </div>
 </header>
+
+<div class="takes prompt-only" id="takes" hidden>
+  <span class="takes-k">Takes</span>
+  <ul id="takeList"></ul>
+  <span class="takes-note">Saved to this device only. Save each take you want to keep before you close the page.</span>
+</div>
 
 <div class="offbar" id="offBar" role="status" hidden>
   Can’t reach the prompter site from this device, so this is the copy saved here earlier. New drafts and fixes won’t show until it connects. Try your phone, or a different Wi-Fi network.

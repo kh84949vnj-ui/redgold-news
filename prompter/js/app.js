@@ -9,6 +9,7 @@ import { deriveDoc, oneAnchor, fillNames } from "./segments.js";
 import { boardPanel } from "./board-panel.js";
 import { store } from "./store.js";
 import { host, viaGoogle, gasCall } from "./host.js";
+import { Recorder, canRecord, extFor } from "./recorder.js";
 
 const $ = (id) => document.getElementById(id);
 // Apps Script passes ?view= in a meta tag (the page runs in a Google frame).
@@ -234,8 +235,93 @@ function updatePlayButton() {
   b.setAttribute("aria-pressed", String(playing));
 }
 
+// ------------------------------------------------------------------ recording
+// Audio takes recorded while reading, kept in memory until saved.
+const recorder = new Recorder();
+const takes = [];
+let recShown = "";
+
+function fmtSecs(s) {
+  s = Math.max(0, Math.floor(s));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function takeName(n, type) {
+  const d = new Date();
+  const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const title = (doc && DOCS[doc] ? DOCS[doc].title : "Script").replace(/[^\w ]+/g, "").trim();
+  return `RGN ${title} ${ymd} take ${n}.${extFor(type)}`;
+}
+
+let playing = null;
+function renderTakes() {
+  const list = $("takeList");
+  list.replaceChildren(...takes.map((tk) => {
+    const li = document.createElement("li");
+    if (tk.saved) li.classList.add("saved");
+    const label = document.createElement("span");
+    label.textContent = `Take ${tk.n}`;
+    const time = document.createElement("span");
+    time.className = "t-time";
+    time.textContent = fmtSecs(tk.seconds);
+    const listen = document.createElement("button");
+    listen.type = "button";
+    listen.textContent = playing && playing.tk === tk ? "■ Stop" : "▶ Listen";
+    listen.onclick = () => {
+      const was = playing && playing.tk;
+      if (playing) { playing.audio.pause(); playing = null; }
+      if (was !== tk) {
+        const audio = new Audio(tk.url);
+        audio.onended = () => { playing = null; renderTakes(); };
+        audio.play().catch(() => {});
+        playing = { tk, audio };
+      }
+      renderTakes();
+    };
+    const save = document.createElement("a");
+    save.href = tk.url;
+    save.download = tk.name;
+    save.textContent = tk.saved ? "Saved ✓" : "Save";
+    save.title = tk.name;
+    save.onclick = () => { tk.saved = true; setTimeout(renderTakes, 0); };
+    li.append(label, time, listen, save);
+    return li;
+  }));
+  $("takes").hidden = !takes.length;
+}
+
+async function toggleRecording() {
+  if (recorder.recording) {
+    const out = await recorder.stop();
+    document.body.classList.remove("recording");
+    $("btnRec").textContent = "● Rec";
+    $("recTime").textContent = "";
+    if (out && out.blob.size) {
+      const n = takes.length + 1;
+      takes.push({ n, seconds: out.seconds, url: URL.createObjectURL(out.blob), name: takeName(n, out.type), saved: false });
+      renderTakes();
+    }
+    return;
+  }
+  try {
+    await recorder.start(settings.mic || null);
+    document.body.classList.add("recording");
+    $("btnRec").textContent = "● Stop";
+  } catch (err) {
+    setStatus(friendlyError(err).replace("Couldn't start listening", "Couldn't start recording"));
+  }
+}
+
+window.addEventListener("beforeunload", (e) => {
+  if (recorder.recording || takes.some((tk) => !tk.saved)) { e.preventDefault(); e.returnValue = ""; }
+});
+
 function updateStatus(t) {
   if (TALENT) return;
+  if (recorder.recording) {
+    const s = fmtSecs(recorder.elapsed());
+    if (s !== recShown) { recShown = s; $("recTime").textContent = s; }
+  }
   const m = $("meter");
   if (m) m.style.width = Math.min(100, Math.round(levelAvg * 900)) + "%";
   updatePlayButton();
@@ -354,6 +440,9 @@ if (TALENT) {
   stageEl.addEventListener("dblclick", toggleFullscreen);
 } else {
   $("btnListen").onclick = () => (listening ? stopListening() : startListening());
+  // Recording: not on claude.ai (no microphone there) or the talent screen.
+  $("recGroup").hidden = TALENT || onClaude || !canRecord();
+  $("btnRec").onclick = toggleRecording;
   // Back to the top: after edits the prompter keeps its place, so give a way to start over.
   // Steady scroll pauses there; voice following just waits for the first words.
   $("btnRestart").onclick = () => {

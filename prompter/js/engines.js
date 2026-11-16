@@ -8,6 +8,7 @@
 // Chrome that may send audio to Apple or Google, so it is opt-in.
 
 import { host, viaGoogle, gasCall } from "./host.js";
+import { acquireMic, releaseMic } from "./mic.js";
 
 const MODEL_FILE = "vosk-model-small-en-us-0.15.tar.gz";
 // On Apps Script the page can't load files from its own server, so the
@@ -71,18 +72,8 @@ function loadModel(onProgress) {
   return modelPromise;
 }
 
-async function openMic(deviceId) {
-  return navigator.mediaDevices.getUserMedia({
-    video: false,
-    audio: {
-      deviceId: deviceId ? { exact: deviceId } : undefined,
-      channelCount: 1,
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    },
-  });
-}
+// The microphone is shared with the recorder (mic.js).
+const openMic = acquireMic;
 
 function rms(buf) {
   let s = 0;
@@ -133,7 +124,7 @@ export class VoskEngine {
     try { this.node && this.node.disconnect(); } catch (e) {}
     try { this.src && this.src.disconnect(); } catch (e) {}
     try { this.rec && this.rec.remove && this.rec.remove(); } catch (e) {}
-    if (this.stream) this.stream.getTracks().forEach((t) => t.stop());
+    if (this.stream) releaseMic();
     if (this.ctx) this.ctx.close().catch(() => {});
     this.node = this.src = this.rec = this.stream = this.ctx = null;
     this.h.onState("stopped", "");
@@ -209,7 +200,7 @@ export class WebSpeechEngine {
     this.on = false;
     try { this.r && this.r.abort(); } catch (e) {}
     cancelAnimationFrame(this.raf);
-    if (this.stream) this.stream.getTracks().forEach((t) => t.stop());
+    if (this.stream) releaseMic();
     if (this.ctx) this.ctx.close().catch(() => {});
     this.r = this.stream = this.ctx = null;
     this.h.onState("stopped", "");

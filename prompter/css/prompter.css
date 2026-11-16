@@ -42,6 +42,22 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .bar-main, .bar-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .bar-side { margin-left: auto; }
 .play-group { display: inline-flex; align-items: center; gap: 4px; }
+.rec-group { display: inline-flex; align-items: center; gap: 6px; }
+#btnRec { font-weight: 700; }
+body.recording #btnRec { background: var(--red, #CA0001); border-color: var(--red, #CA0001); color: #fff; }
+body.recording #btnRec::first-letter { animation: recpulse 1s steps(2, start) infinite; }
+@keyframes recpulse { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { body.recording #btnRec::first-letter { animation: none; } }
+.rec-time { font: 600 13px var(--mono); font-variant-numeric: tabular-nums; min-width: 3.2em; }
+.takes { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 6px max(12px, env(safe-area-inset-right, 0px)) 6px max(12px, env(safe-area-inset-left, 0px)); background: var(--chrome-2); border-bottom: 1px solid var(--line); font-size: 14px; }
+.takes-k { font-weight: 700; }
+.takes ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.takes li { display: inline-flex; align-items: center; gap: 6px; padding: 2px 4px 2px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.takes li .t-time { font: 600 12px var(--mono); font-variant-numeric: tabular-nums; }
+.takes li button, .takes li a { min-height: 28px; font-size: 13px; }
+.takes li a { display: inline-flex; align-items: center; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); color: inherit; text-decoration: none; }
+.takes li.saved a { opacity: .6; }
+.takes-note { color: var(--muted, #9a9488); font-size: 12px; flex-basis: 100%; }
 .play-group #btnSlower, .play-group #btnFaster { min-width: 36px; font-weight: 700; }
 .play-group .speed { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; font-size: 14px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
