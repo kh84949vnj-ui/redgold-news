@@ -439,7 +439,9 @@ class WeatherResult:
 
 def build(week: c.SchoolWeek) -> WeatherResult:
     periods, updated, grid_url = fetch_periods()
-    days = daily(periods, week.school_days)
+    # A week off (Thanksgiving, winter break) still gets a forecast: for the days off.
+    break_week = not week.school_days and bool(week.closures)
+    days = daily(periods, week.school_days or (week.days if break_week else []))
     lines: list[str] = []
     notes: list[str] = []
 
@@ -477,19 +479,22 @@ def build(week: c.SchoolWeek) -> WeatherResult:
             "it yet. These numbers can still change, so rerun the morning of recording."
         )
 
-    if not week.school_days:
+    if not days:
         return WeatherResult(days=[], lines=[], updated=updated, notes=["No school days this week, so no forecast read."])
+    reason = max(set(week.closures.values()), key=list(week.closures.values()).count) if break_week else ""
     have = [f for f in days if f.available]
     missing = [c.DAY_NAMES[f.date.weekday()] for f in days if not f.available]
     # Never leave holes in the read: if NWS doesn't reach the end of the week
     # yet, the read covers the days it has and says so.
     intro = "Let's take a look at this week's weather forecast!" if not missing else (
         f"Let's take a look at the weather through {c.DAY_NAMES[have[-1].date.weekday()]}!" if have else "")
+    if break_week:
+        intro = f"There's no school this week for {reason}, so here's your forecast for the time off!"
     if week.prior_break:
         intro = f"Welcome back from {week.prior_break}! {intro}".strip()
     if intro:
         lines.append(intro)
-    if week.closures:
+    if week.closures and not break_week:
         by_reason: dict[str, list[str]] = {}
         for d, r in sorted(week.closures.items()):
             by_reason.setdefault(r, []).append(c.DAY_NAMES[d.weekday()])
@@ -497,7 +502,13 @@ def build(week: c.SchoolWeek) -> WeatherResult:
             lines.append(f"Remember, there's no school {_join(names)} for {r}.")
     lines += narrative(have)
     if have:
-        lines.append(sign_off(have))
+        end = sign_off(have)
+        if break_week:
+            holiday = re.sub(r"\s*break$", "", reason, flags=re.I).strip()
+            wish = f"have a happy {holiday}" if holiday else "enjoy your break"
+            end = re.sub(r"have a great week", wish, end, flags=re.I).replace("in your backpack", "handy")
+            end = end[0].upper() + end[1:]
+        lines.append(end)
 
     if missing:
         notes.append(

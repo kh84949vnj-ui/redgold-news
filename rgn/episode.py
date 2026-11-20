@@ -186,7 +186,8 @@ def closures_line(week: dict) -> str | None:
     by: dict[str, list[str]] = {}
     for x in cl:
         by.setdefault(x["reason"], []).append(DAY[_d(x["date"]).weekday()])
-    parts = [f"there's no school {_join(days)} for {reason}" for reason, days in by.items()]
+    parts = [f"there's no school all week for {reason}" if len(days) >= 5 else
+             f"there's no school {_join(days)} for {reason}" for reason, days in by.items()]
     return "Remember, " + "; ".join(parts) + "."
 
 
@@ -356,7 +357,13 @@ def build_script(week: dict, board_picks=None) -> str:
     # ---- Weather (its own script on the start page).
     add("[WEATHER]")
     wx = (week.get("weather") or {}).get("script") or []
-    if wx:
+    days_out = [d for d in (week.get("weather") or {}).get("days") or [] if d.get("available")]
+    if wx and not days_out and (week.get("weather") or {}).get("days"):
+        # The forecast doesn't reach this week yet (more than ~7 days out): say so instead of an empty read.
+        add("Hey, RedWolves! I'm [WEATHER REPORTER]. " + wx[0])
+        add("[ADD: weather read. The forecast for this week isn't out yet; it fills in Sunday evening, "
+            "or press Update this week's draft the morning of recording.]")
+    elif wx:
         # The reporter's name goes in front of the forecast's own opener.
         add("Hey, RedWolves! I'm [WEATHER REPORTER]. " + wx[0])
         out.extend(wx[1:])
@@ -370,14 +377,23 @@ def build_script(week: dict, board_picks=None) -> str:
     # ---- Menu (its own script on the start page), from the lajoya-menus CSV.
     add("[MENU]")
     menu = (week.get("menu") or {}).get("script") or []
-    if menu:
+    off_week = not week.get("school_days") and bool(week.get("closures"))
+    if off_week:
+        add("[NO MENU THIS WEEK: no school, so no school meals. Skip this segment.]")
+    elif menu:
         out.extend(menu)
     else:
         add("[ADD: menu read]")
     add("")
 
     # ---- Close: a quick reminder and the sign-off.
-    if brk:
+    if off_week:
+        reason = (week.get("closures") or [{}])[0].get("reason", "the break")
+        holiday = re.sub(r"\s*break$", "", reason, flags=re.I).strip()
+        say(1, "That's it for this week's RGN.", "Enjoy the time off with your family.")
+        say(2, "Thanks for watching.",
+            f"Have a safe and happy {holiday}, RedWolves!" if holiday else "Have a safe and happy break, RedWolves!")
+    elif brk:
         say(1, "That's it for this week's RGN.",
             f"Remember, there's no school next week for {brk['reason']}.",
             f"We'll see you back on {brk['back'].strftime('%B')} {brk['back'].day}.")

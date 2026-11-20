@@ -104,7 +104,7 @@ def board_meetings() -> list[Meeting]:
         agenda = next((a["href"] for a in tr.find_all("a", href=True) if "/Public/Agenda/" in a["href"]), "")
         out.append(Meeting(
             when=when,
-            title=m["title"].strip(),
+            title=re.sub(r'(\w)"(\w)', r'\1" \2', m["title"].strip()),  # 'Horror"Theatre' -> 'Horror" Theatre'
             agenda_url=c.BOARDBOOK_BASE + agenda if agenda.startswith("/") else agenda,
             posted=(m["posted"] or "").strip(),
         ))

@@ -93,3 +93,20 @@ class EpisodeScript(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class WeekOff(unittest.TestCase):
+    """Thanksgiving week: no school, but there's still a show (mostly weather)."""
+    def setUp(self):
+        days = ["2026-11-23", "2026-11-24", "2026-11-25", "2026-11-26", "2026-11-27"]
+        self.week = {**WEEK, "episode_date": "2026-11-23", "school_days": [], "next_closures": [],
+                     "closures": [{"date": d, "label": d, "reason": "Thanksgiving Break"} for d in days]}
+        self.script = build_script(self.week)
+
+    def test_says_no_school_all_week_once(self):
+        self.assertIn("there's no school all week for Thanksgiving Break", self.script)
+        self.assertNotIn("Monday, Tuesday, Wednesday", self.script)
+
+    def test_no_menu_and_a_holiday_sign_off(self):
+        self.assertIn("[NO MENU THIS WEEK", self.script)
+        self.assertIn("Have a safe and happy Thanksgiving, RedWolves!", self.script)
