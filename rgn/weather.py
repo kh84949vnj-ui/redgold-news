@@ -309,13 +309,16 @@ def _rain(f: DayForecast) -> str:
 
 
 def _groups(days: list[DayForecast]) -> list[list[DayForecast]]:
-    """The week as start / midweek / end stretches (five days: 2, 1, 2)."""
-    n = len(days)
-    sizes = {1: [1], 2: [1, 1], 3: [1, 1, 1], 4: [2, 2], 5: [2, 1, 2]}.get(n) or [n // 3, n - 2 * (n // 3), n // 3]
-    out, i = [], 0
-    for k in sizes:
-        out.append(days[i:i + k])
-        i += k
+    """One day per sentence, except two neighbouring days that are really alike (highs within
+    2 degrees, same sky, no rain worth saying) share one. Never more than two together."""
+    out: list[list[DayForecast]] = []
+    for f in days:
+        g = out[-1] if out else None
+        if g and len(g) == 1 and abs(f.high - g[0].high) <= 2 and _sky(f) == _sky(g[0]) \
+                and not _rain(f) and not _rain(g[0]):
+            g.append(f)
+        else:
+            out.append([f])
     return out
 
 
@@ -368,10 +371,10 @@ def narrative(days: list[DayForecast]) -> list[str]:
             hot = min(f.high for f in g) >= 90
             if delta >= 3:
                 verb, to = ("it gets even hotter", "it gets even hotter, up to") if hot else \
-                    ("it keeps warming up", "it keeps warming up, to") if trend == "up" else ("it warms up", "it warms up to")
+                    ("it keeps warming up", "it keeps warming up to") if trend == "up" else ("it warms up", "it warms up to")
                 trend = "up"
             elif delta <= -3 and not hot:
-                verb, to = ("it keeps cooling down", "it keeps cooling down, to") if trend == "down" else \
+                verb, to = ("it keeps cooling down", "it keeps cooling down to") if trend == "down" else \
                     ("it cools down", "it cools down to")
                 trend = "down"
             elif hot:
@@ -388,9 +391,11 @@ def narrative(days: list[DayForecast]) -> list[str]:
                 change += _under(sky)
             names = [c.DAY_NAMES[f.date.weekday()] for f in g]
             if i == len(groups) - 1 and g[-1].date.weekday() == 4 and len(groups) > 1:
-                lead = "And as we head into the weekend, "
+                # Name the day when it stands alone (the weather board times each card on its name).
+                lead = "And as we head into the weekend, " if len(g) > 1 else "And on Friday, as we head into the weekend, "
             else:
-                lead = f"By {names[0]}, "
+                # Vary the way in, so a day-by-day stretch doesn't sound like a list.
+                lead = ["Then on {d}, ", "By {d}, ", "On {d}, ", "Come {d}, "][(i - 1) % 4].format(d=names[0])
             line = f"{lead}{change}."
         for f in g:
             r = _rain(f)

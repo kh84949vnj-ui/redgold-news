@@ -28,7 +28,15 @@ class WeatherRead(unittest.TestCase):
             self.assertRegex(text, rf"\b{f.high}\b")
             self.assertIn(f"{f.date:%A}", text)
         self.assertIn("highs of 72 and 71 Monday and Tuesday", text)
-        self.assertIn("highs of 80 and 83 Thursday and Friday", text)
+        self.assertIn("it keeps warming up to 80", text)
+
+    def test_only_alike_days_share_a_sentence(self):
+        days = [day(0, 68, 60, 50, "Chance Showers"), day(1, 70, 58, 0, "Mostly Cloudy"),
+                day(2, 67, 55, 0, "Sunny"), day(3, 69, 50, 0, "Sunny"), day(4, 75, 54, 0, "Sunny")]
+        lines = narrative(days)
+        self.assertEqual(len(lines), 4, lines)  # Mon (rain) / Tue / Wed+Thu (alike) / Fri (6 degrees warmer)
+        self.assertIn("highs of 67 and 69 Wednesday and Thursday", lines[2])
+        self.assertNotIn("Wednesday and Thursday, ", lines[2].split("with")[0])
 
     def test_same_high_two_days_said_once(self):
         text = read(THIS_WEEK[:3] + [day(3, 80, 68, 0), day(4, 80, 70, 0)])
@@ -36,8 +44,8 @@ class WeatherRead(unittest.TestCase):
 
     def test_short_and_conversational(self):
         lines = narrative(THIS_WEEK)
-        self.assertLessEqual(len(lines), 3, lines)
-        self.assertLessEqual(len(read(THIS_WEEK).split()), 80)
+        self.assertLessEqual(len(lines), 5, lines)
+        self.assertLessEqual(len(read(THIS_WEEK).split()), 90)
         self.assertIn("as we head into the weekend", read(THIS_WEEK))
 
     def test_never_says_what_isnt_happening(self):
