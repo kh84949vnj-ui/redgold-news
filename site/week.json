@@ -1,8 +1,8 @@
 {
   "episode_date": "2026-11-23",
   "episode_label": "Monday, November 23, 2026",
-  "generated": "2026-11-20T11:39-06:00",
-  "generated_label": "Friday, November 20 at 11:39 AM",
+  "generated": "2026-11-20T11:42-06:00",
+  "generated_label": "Friday, November 20 at 11:42 AM",
   "school_days": [],
   "closures": [
     {
@@ -36,9 +36,10 @@
   "weather": {
     "script": [
       "There's no school this week for Thanksgiving Break, so here's your forecast for the time off!",
-      "We're starting the week off cool, with highs of 68 and 70 Monday and Tuesday. There's a 50 percent chance of showers and thunderstorms on Monday.",
-      "By Wednesday, the sun comes back out and it cools down to 67.",
-      "And as we head into the weekend, it stays about the same, with highs of 69 and 68 Thursday and Friday. Thursday morning is the cool one, down to 50.",
+      "We're starting the week off cool, with a high of 68 on Monday. There's a 50 percent chance of showers and thunderstorms that day.",
+      "Then on Tuesday, the clouds roll in and it stays around 70.",
+      "By Wednesday, the sun comes back out and it stays about the same, with highs of 67 and 69 Wednesday and Thursday. Thursday morning is the cool one, down to 50.",
+      "And on Friday, as we head into the weekend, it stays around 68 under partly sunny skies.",
       "Keep an umbrella handy, and have a happy Thanksgiving, RedWolves!"
     ],
     "days": [
