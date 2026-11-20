@@ -21,47 +21,40 @@ def read(days):
 
 
 class WeatherRead(unittest.TestCase):
-    def test_every_days_high_is_said(self):
-        # Graphics and other automation key off each day's high.
+    def test_every_day_is_named_with_its_high(self):
+        # The weather board times each card on the day's name; graphics key off each high.
         text = read(THIS_WEEK)
         for f in THIS_WEEK:
-            self.assertRegex(text, rf"\b{f.high}\b")
-            self.assertIn(f"{f.date:%A}", text)
-        self.assertIn("highs of 72 and 71 Monday and Tuesday", text)
-        self.assertIn("it keeps warming up to 80", text)
+            self.assertRegex(text, rf"{f.date:%A}[^.]*?\b{f.high}\b", f"{f.date:%A} {f.high}")
 
-    def test_only_alike_days_share_a_sentence(self):
-        days = [day(0, 68, 60, 50, "Chance Showers"), day(1, 70, 58, 0, "Mostly Cloudy"),
-                day(2, 67, 55, 0, "Sunny"), day(3, 69, 50, 0, "Sunny"), day(4, 75, 54, 0, "Sunny")]
-        lines = narrative(days)
-        self.assertEqual(len(lines), 4, lines)  # Mon (rain) / Tue / Wed+Thu (alike) / Fri (6 degrees warmer)
-        self.assertIn("highs of 67 and 69 Wednesday and Thursday", lines[2])
-        self.assertNotIn("Wednesday and Thursday, ", lines[2].split("with")[0])
-
-    def test_same_high_two_days_said_once(self):
-        text = read(THIS_WEEK[:3] + [day(3, 80, 68, 0), day(4, 80, 70, 0)])
-        self.assertIn("a high of 80 both Thursday and Friday", text)
-
-    def test_short_and_conversational(self):
+    def test_flows_like_tv_weather(self):
         lines = narrative(THIS_WEEK)
         self.assertLessEqual(len(lines), 5, lines)
-        self.assertLessEqual(len(read(THIS_WEEK).split()), 90)
-        self.assertIn("as we head into the weekend", read(THIS_WEEK))
+        self.assertLessEqual(len(read(THIS_WEEK).split()), 80)
+        self.assertTrue(lines[-1].startswith("And "), lines[-1])
+        self.assertNotRegex(read(THIS_WEEK), r"highs of \d+ and \d+", "no numbers-before-days lists")
+
+    def test_quiet_days_share_a_sentence(self):
+        days = [day(0, 80, 70, 0), day(1, 81, 70, 0), day(2, 82, 70, 0), day(3, 83, 70, 0), day(4, 84, 70, 0)]
+        lines = narrative(days)
+        self.assertEqual(len(lines), 4, lines)  # Monday / Tuesday and Wednesday / Thursday / And Friday
+        self.assertIn(", and ", lines[1])
 
     def test_never_says_what_isnt_happening(self):
         self.assertFalse(re.search(r"\bno\b", read(THIS_WEEK), re.I))
 
     def test_rain_under_20_percent_is_left_out(self):
         self.assertNotIn("percent", read(THIS_WEEK))
-        wet = [day(0, 85, 72, 30, "Chance Showers"), day(1, 85, 72, 0)]
-        self.assertIn("30 percent chance", read(wet))
+        wet = [day(0, 85, 72, 0), day(1, 85, 72, 30, "Chance Showers"), day(2, 85, 72, 0)]
+        self.assertIn("Tuesday brings a 30 percent chance", read(wet))
 
-    def test_south_texas_cool_morning_gets_one_quip(self):
+    def test_south_texas_cool_morning_folded_in_with_one_quip(self):
         text = read(THIS_WEEK)
-        self.assertIn("Tuesday morning dips to 58. Hoodie weather!", text)
-        self.assertNotIn("Monday morning", text, "only the coolest morning")
+        self.assertIn("after a cool start at 58", text)
+        self.assertEqual(text.count("start at"), 1, "only the coolest morning")
+        self.assertIn("hoodie", text)
         warm = [day(0, 88, 72, 0), day(1, 89, 73, 0)]
-        self.assertNotIn("morning", read(warm), "warm mornings aren't mentioned")
+        self.assertNotIn("start at", read(warm), "warm mornings aren't mentioned")
 
     def test_hot_week_never_cools_down_in_the_90s(self):
         hot = [day(1, 95, 77, 0, "Sunny"), day(2, 97, 78, 0, "Sunny"), day(3, 96, 78, 0, "Sunny"), day(4, 94, 77, 0, "Sunny")]
@@ -69,11 +62,11 @@ class WeatherRead(unittest.TestCase):
         self.assertNotIn("cools down", text)
         self.assertIn("water", text)
 
-    def test_heavy_rain_quip_and_cool_morning_dont_double_up(self):
+    def test_heavy_rain_quip_wins_over_cool_morning(self):
         days = [day(0, 70, 55, 50, "Showers Likely"), day(1, 72, 60, 0)]
         text = read(days)
         self.assertIn("umbrella", text)
-        self.assertNotIn("Hoodie", text)
+        self.assertNotIn("hoodie", text)
 
     def test_day_line_skips_dry_days_rain(self):
         self.assertNotIn("rain", day_line(day(0, 72, 64, 0)))

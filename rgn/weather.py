@@ -308,38 +308,6 @@ def _rain(f: DayForecast) -> str:
     return next((d for d in _details(f) if "percent chance" in d), "")
 
 
-def _groups(days: list[DayForecast]) -> list[list[DayForecast]]:
-    """One day per sentence, except two neighbouring days that are really alike (highs within
-    2 degrees, same sky, no rain worth saying) share one. Never more than two together."""
-    out: list[list[DayForecast]] = []
-    for f in days:
-        g = out[-1] if out else None
-        if g and len(g) == 1 and abs(f.high - g[0].high) <= 2 and _sky(f) == _sky(g[0]) \
-                and not _rain(f) and not _rain(g[0]):
-            g.append(f)
-        else:
-            out.append([f])
-    return out
-
-
-def _highs(g: list[DayForecast]) -> str:
-    """Days lumped together, every high kept, in day order:
-    'highs of 72 and 71 Monday and Tuesday' or 'a high of 80 both Thursday and Friday'."""
-    names = _join([c.DAY_NAMES[f.date.weekday()] for f in g])
-    if len({f.high for f in g}) == 1:
-        return f"a high of {g[0].high} {'both ' if len(g) == 2 else ''}{names}"
-    return "highs of " + _join([str(f.high) for f in g]) + " " + names
-
-
-WET = re.compile(r"rain|shower|storm|drizzle", re.I)
-
-
-def _under(sky: str) -> str:
-    if not sky or WET.search(sky):
-        return ""
-    return f" under {sky}" if sky.endswith("skies") else f", with {sky}"
-
-
 def _coolest(days: list[DayForecast]) -> DayForecast | None:
     lows = [f for f in days if f.low is not None and f.low <= COOL_MORNING]
     return min(lows, key=lambda f: f.low) if lows else None
@@ -349,84 +317,103 @@ def _quip_is_rain(days: list[DayForecast]) -> bool:
     return any((f.rain or 0) >= 40 for f in days)
 
 
+WET = re.compile(r"rain|shower|storm|drizzle", re.I)
+HIGHS = ["with a high of {h}", "topping out at {h}", "reaching {h}"]
+
+
+def _sky_adj(sky: str) -> str:
+    """'partly sunny skies' -> 'partly sunny'; '' for wind or rain wording."""
+    return sky[:-6] if sky.endswith(" skies") else ""
+
+
+def _clause(f: DayForecast, prev: DayForecast | None, k: int, cool: DayForecast | None) -> str:
+    """One day as one clause, the day as its subject: 'Tuesday stays mostly cloudy, around 70'.
+    Rain (20%+) and the coolest morning are folded in, not tacked on as sentences."""
+    day = c.DAY_NAMES[f.date.weekday()]
+    h = f.high
+    high = HIGHS[k % len(HIGHS)].format(h=h)
+    sky, rain = _sky(f), _rain(f)
+    adj = _sky_adj(sky)
+    if prev is None:
+        if rain and (f.rain or 0) >= 40:
+            mood = "stormy" if "storm" in rain else "rainy"
+            text = f"we're starting the week off {mood} on {day}, with {rain} and a high of {h}"
+        else:
+            under = f" under {sky}" if adj else ""
+            text = f"we're starting the week off {feel(h)} on {day}, with a high of {h}{under}"
+            if rain:
+                text += f" and {rain}"
+    else:
+        psky = _sky(prev)
+        delta = h - prev.high
+        hot = h >= 90
+        if rain:
+            text = f"{day} brings {rain}, {high}"
+        elif adj and sky != psky and "cloudy" in sky and "cloudy" not in psky:
+            text = f"clouds roll in {day}, {high}"
+        elif adj and sky != psky and "sunny" in sky and "sunny" not in psky:
+            text = f"the sun comes back out {day}, {high}"
+        elif delta >= 3:
+            text = f"{day} gets even hotter, up to {h}" if hot else f"{day} warms up to {h}"
+        elif delta <= -3 and not hot:
+            text = f"{day} cools down to {h}"
+        elif hot:
+            text = f"{day} stays hot, around {h}"
+        elif adj:
+            text = f"{day} stays {adj}, around {h}"
+        else:
+            text = f"{day} stays about the same, around {h}"
+    if cool is f:
+        word = "chilly" if cool.low <= JACKET_MORNING else "cool"
+        text += f", after a {word} start at {cool.low}"
+    return text
+
+
 def narrative(days: list[DayForecast]) -> list[str]:
-    """A short, conversational read: the week in up to three stretches, every
-    day's high (graphics and other automation key off them), the coolest
-    morning only when it's cool for South Texas, and rain only at 20%+."""
+    """A short read that flows like TV weather: each day is the subject of its own clause
+    ('Tuesday stays cloudy, around 70'), two quiet days share a sentence with 'and', the
+    first day opens and Friday closes on their own. Every day's name and high are said
+    (the weather board times each card on the day's name); rain only at 20%+; the coolest
+    morning only when it's cool for South Texas."""
     if not days:
         return []
-    groups = _groups(days)
     cool = _coolest(days)
-    lines = []
-    prev: list[DayForecast] | None = None
-    trend = ""
-    for i, g in enumerate(groups):
-        sky = _sky(g[0])
-        if prev is None:
-            mood = feel(round(sum(f.high for f in g) / len(g)))
-            temps = f"a high of {g[0].high} on {c.DAY_NAMES[g[0].date.weekday()]}" if len(g) == 1 else _highs(g)
-            line = f"We're starting the week off {mood}, with {temps}{_under(sky)}."
+    clauses = [_clause(f, days[i - 1] if i else None, i, cool) for i, f in enumerate(days)]
+    cap = lambda t: t[0].upper() + t[1:]
+    lines = [cap(clauses[0]) + "."]
+    middle = list(range(1, len(days) - 1)) if len(days) > 2 else []
+    i = 0
+    while i < len(middle):
+        a = middle[i]
+        b = middle[i + 1] if i + 1 < len(middle) else None
+        # Two days share a sentence unless one has rain or the cool morning (it gets room to breathe).
+        if b is not None and not _rain(days[a]) and not _rain(days[b]) and cool not in (days[a], days[b]):
+            lines.append(cap(clauses[a]) + ", and " + clauses[b] + ".")
+            i += 2
         else:
-            delta = g[-1].high - prev[-1].high
-            hot = min(f.high for f in g) >= 90
-            if delta >= 3:
-                verb, to = ("it gets even hotter", "it gets even hotter, up to") if hot else \
-                    ("it keeps warming up", "it keeps warming up to") if trend == "up" else ("it warms up", "it warms up to")
-                trend = "up"
-            elif delta <= -3 and not hot:
-                verb, to = ("it keeps cooling down", "it keeps cooling down to") if trend == "down" else \
-                    ("it cools down", "it cools down to")
-                trend = "down"
-            elif hot:
-                verb, to = "it stays hot", "it stays hot, around"
-            else:
-                verb, to = "it stays about the same", "it stays around"
-            change = f"{to} {g[0].high}" if len(g) == 1 else f"{verb}, with {_highs(g)}"
-            psky = _sky(prev[0])
-            if sky != psky and "cloudy" in sky and "cloudy" not in psky:
-                change = "the clouds roll in and " + change
-            elif sky != psky and "sunny" in sky and "sunny" not in psky:
-                change = "the sun comes back out and " + change
-            elif sky != psky:
-                change += _under(sky)
-            names = [c.DAY_NAMES[f.date.weekday()] for f in g]
-            if i == len(groups) - 1 and g[-1].date.weekday() == 4 and len(groups) > 1:
-                # Name the day when it stands alone (the weather board times each card on its name).
-                lead = "And as we head into the weekend, " if len(g) > 1 else "And on Friday, as we head into the weekend, "
-            else:
-                # Vary the way in, so a day-by-day stretch doesn't sound like a list.
-                lead = ["Then on {d}, ", "By {d}, ", "On {d}, ", "Come {d}, "][(i - 1) % 4].format(d=names[0])
-            line = f"{lead}{change}."
-        for f in g:
-            r = _rain(f)
-            if r:
-                line += f" There's {r} " + (f"on {c.DAY_NAMES[f.date.weekday()]}." if len(g) > 1 else "that day.")
-        if cool and cool in g:
-            day = c.DAY_NAMES[cool.date.weekday()]
-            if _quip_is_rain(days):
-                line += f" {day} morning is the cool one, down to {cool.low}."
-            elif cool.low <= BUNDLE_MORNING:
-                line += f" {day} morning drops to {cool.low}, so bundle up!"
-            elif cool.low <= JACKET_MORNING:
-                line += f" {day} morning drops to {cool.low}, so grab a jacket!"
-            else:
-                line += f" {day} morning dips to {cool.low}. Hoodie weather!"
-        lines.append(line)
-        prev = g
+            lines.append(cap(clauses[a]) + ".")
+            i += 1
+    if len(days) > 1:
+        lines.append("And " + clauses[-1] + ".")
     return lines
 
 
 def sign_off(days: list[DayForecast]) -> str:
-    """The sign-off, with one quick line about what stands out (if the cool
-    morning didn't already get it)."""
+    """The sign-off, with one quick line about what stands out."""
     m = c.MASCOT
     if _quip_is_rain(days):
         return f"Keep an umbrella in your backpack, and have a great week, {m}!"
-    if not _coolest(days):
-        if max(f.high for f in days) >= 95:
-            return f"Stay cool and drink plenty of water, {m}!"
-        if max(f.high for f in days) >= 90:
-            return f"Don't forget your water bottle, and have a great week, {m}!"
+    cool = _coolest(days)
+    if cool:
+        if cool.low <= BUNDLE_MORNING:
+            return f"Bundle up on those cold mornings, and have a great week, {m}!"
+        if cool.low <= JACKET_MORNING:
+            return f"Grab a jacket for those chilly mornings, and have a great week, {m}!"
+        return f"Grab a hoodie for those cool mornings, and have a great week, {m}!"
+    if max(f.high for f in days) >= 95:
+        return f"Stay cool and drink plenty of water, {m}!"
+    if max(f.high for f in days) >= 90:
+        return f"Don't forget your water bottle, and have a great week, {m}!"
     return f"Have a great week, {m}!"
 
 
